@@ -1,0 +1,80 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Project Structure Guide
+
+This is a Next.js project with TypeScript, using Vitest for testing and Biome for code quality. The project follows a "Package by Feature" architecture.
+
+## Package by Feature Architecture
+The codebase is organized around business features rather than technical layers. This approach:
+- Makes each feature self-contained with its own components, logic, and types
+- Reduces coupling between features
+- Makes the codebase more maintainable and scalable
+- Facilitates parallel development
+
+## Directory Structure
+The source code is organized in the `src` directory with the following structure:
+
+### App Router (`src/app/`)
+- Contains Next.js pages and layouts
+- Feature-specific pages and routes
+- Follows Next.js routing conventions
+- Each feature can have multiple pages and nested routes
+- リクエスト・ルーティングを処理するレイヤー
+- 主な責務：
+  - URLやリクエストパラメータの検証
+  - Cookieやヘッダーからのセッション読み取り
+  - 認証・認可の確認（ログイン要求・リダイレクトなど）
+  - 適切な feature のロジックの呼び出し
+- 具体的な実装：
+  - Next.js のページコンポーネント
+  - ミドルウェアやルートハンドラー
+  - レイアウトコンポーネント
+- このレイヤーでは以下を行わない：
+  - 複雑なビジネスロジック（features/ に置く）
+  - UIコンポーネントの実装（components/ に置く）
+  - データベースアクセス（features/ のロジック経由で行う）
+
+### Features (`src/features/`)
+Each feature directory contains:
+- `components/` - Feature-specific UI components only
+- Feature-specific business logic, types, and utilities directly in the feature directory
+- Example files:
+  - `auth.ts` - Core business logic
+  - `types.ts` - Feature-specific types
+  - `utils.ts` - Feature-specific utilities
+
+### Shared Components (`src/components/`)
+- Reusable UI components only
+- Feature-agnostic (e.g., Button, Card)
+- Should not contain business logic
+
+### Shared Libraries (`src/lib/`)
+- Shared utilities and configurations
+- Database configurations and schema
+- Helper functions used across features
+
+## Key Configuration Files
+- [vitest.config.ts](mdc:vitest.config.ts) - Test configuration with path aliases
+- [tsconfig.json](mdc:tsconfig.json) - TypeScript configuration
+- [next.config.ts](mdc:next.config.ts) - Next.js configuration
+- [biome.json](mdc:biome.json) - Code quality and formatting rules
+
+## File Naming Conventions
+- React Components: kebab-case (e.g., `login-button.tsx`)
+- Other files: kebab-case (e.g., `main-navigation.tsx`, `use-auth.ts`)
+- Next.js special files: as per Next.js conventions (e.g., `layout.tsx`, `page.tsx`)
+
+## Testing
+Tests are configured to run in the following locations:
+- Test files should be named `*.test.ts`
+- Tests are included from: `src/**/*.test.ts`
+- Node environment is set to "test" during test execution
+
+## Path Aliases
+The project uses TypeScript path aliases for cleaner imports:
+- `@/*` maps to `src/*`
+- Use absolute imports with `@/` prefix for non-relative imports
+- Use relative imports for files within the same feature/module

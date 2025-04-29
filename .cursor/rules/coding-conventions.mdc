@@ -1,0 +1,67 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Coding Conventions
+
+## Package by Feature Guidelines
+- Each feature should be self-contained in its own directory under `src/features/`
+- Avoid cross-feature dependencies - use shared components/utilities instead
+- Keep feature-specific code within the feature directory
+- Only UI components should be separated into a `components/` directory
+- Business logic, types, and utilities should live directly in the feature directory
+- If code is used by multiple features, consider moving it to shared components/lib
+
+## Feature Organization
+- Keep UI components in `components/` directory
+- Place business logic in appropriately named files (e.g., `auth.ts`, `votes.ts`)
+- Group related types in `types.ts`
+- Place feature-specific utilities in `utils.ts`
+- Keep files focused and single-purpose
+- Consider splitting files if they grow too large or handle multiple concerns
+
+## Business Logic Guidelines
+- Business logic belongs in the feature's `models/` directory
+- Domain models should be clearly defined and typed
+- Keep business logic separate from utilities and UI components
+- Business logic should not depend on UI components
+- Business logic can depend on utilities, but not vice versa
+
+## TypeScript
+- Use TypeScript for all new code
+- Follow strict type checking rules as defined in [tsconfig.json](mdc:tsconfig.json)
+- Keep types close to where they are used (in the feature directory)
+
+## Code Quality
+- Code formatting and linting is handled by Biome as configured in [biome.json](mdc:biome.json)
+- Use CSpell for spell checking as configured in [.cspell.json](mdc:.cspell.json)
+
+## Component Structure
+- Shared components go in `src/components/`
+- Feature-specific components go in `features/[feature]/components/`
+- Each component should have:
+  - Main component file (kebab-case.tsx)
+  - Associated test file (kebab-case.test.ts)
+  - Any component-specific utilities
+
+## Testing
+- Write tests for all new functionality
+- Test files should be co-located with the code they test
+- Use Vitest for testing as configured in [vitest.config.ts](mdc:vitest.config.ts)
+
+## File Naming
+- Use kebab-case for all files
+- React Components: `component-name.tsx`
+- Hooks: `use-hook-name.ts`
+- Utils: `util-name.ts`
+- Next.js special files: Follow Next.js conventions (`layout.tsx`, `page.tsx`)
+
+## Imports
+- Use absolute imports with `@/` prefix for shared code
+- Use relative imports for code within the same feature
+- Group imports in the following order:
+  1. External dependencies
+  2. Shared modules (@/components/*, @/lib/*)
+  3. Feature-specific imports (relative)
+  4. Types and interfaces
