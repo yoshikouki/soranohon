@@ -1,10 +1,19 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
-    <div className="grid min-h-screen gri d-rows-[20px_1fr_20px] items-center justify-items-center gap-16 p-8 pb-20 font-[family-name:var(--font-geist-sans)] sm:p-20">
-      <main className="row-start-2 flex flex-col items-center gap-[32px] sm:items-start">
-        <h1 className="font-bold text-4xl">そらのほん</h1>
-        <p className="text-lg">青空文庫の児童文学を読むためのサイト</p>
-      </main>
-    </div>
+    <main className="w-full flex flex-col items-center justify-center">
+      <p className="text-lg">青空文庫の児童文学を読むためのサイト</p>
+      <ul className="mt-8 space-y-4">
+        <li>
+          <Link
+            href="/books/59835_72466"
+            className="block rounded-lg bg-primary text-primary-foreground px-6 py-4 text-xl font-bold shadow hover:bg-primary/80 transition"
+          >
+            赤ずきん
+          </Link>
+        </li>
+      </ul>
+    </main>
   );
 }

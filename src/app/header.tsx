@@ -13,7 +13,7 @@ export const Header = () => {
             width={32}
             height={32}
           />
-          <h1 className="font-black text-6xl">soranohon</h1>
+          <h1 className="font-black text-6xl">そらのほん</h1>
         </Link>
       </div>
     </header>
