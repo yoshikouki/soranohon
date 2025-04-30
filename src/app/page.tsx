@@ -7,7 +7,7 @@ export default function Home() {
       <ul className="mt-8 space-y-4">
         <li>
           <Link
-            href="/books/59835_72466"
+            href="/books/001091"
             className="block rounded-lg bg-primary text-primary-foreground px-6 py-4 text-xl font-bold shadow hover:bg-primary/80 transition"
           >
             赤ずきん
