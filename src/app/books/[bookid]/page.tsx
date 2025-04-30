@@ -1,9 +1,17 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 
+
+const bookIdTable: Record<string, string> = {
+  "001091": "59835_72466.html",
+}
+
+const baseUrl = process.env.BASE_URL || "http://localhost:8888";
+
 export async function generateMetadata({ params }: { params: Promise<{ bookId: string }> }): Promise<Metadata> {
   const { bookId } = await params;
-  const res = await fetch(`/assets/books/html/${bookId}`);
+  const file = new URL(`/assets/books/html/${bookIdTable[bookId]}`, baseUrl).toString();
+  const res = await fetch(file);
   if (!res.ok) return {};
   const html = await res.text();
   const titleMatch = html.match(/<h1 class="title">([^<]+)<\/h1>/);
@@ -26,7 +34,8 @@ export default async function BookPage({
   params: Promise<{ bookId: string }>;
 }) {
   const { bookId } = await params;
-  const res = await fetch(`/assets/books/html/${bookId}`);
+  const file = new URL(`/assets/books/html/${bookIdTable[bookId]}`, baseUrl).toString();
+  const res = await fetch(file);
   if (!res.ok) return notFound();
   const html = await res.text();
   const mainTextHtml = extractMainText(html);
