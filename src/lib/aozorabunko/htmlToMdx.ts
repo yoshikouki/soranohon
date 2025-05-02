@@ -14,18 +14,29 @@ export function htmlToMdx(html: string): string {
   }
   // 子要素を順にたどり、<br>だけの行や空白行を除去しつつ連結
   let lines: string[] = [];
+  let prevIsBr = false;
   main.contents().each((_, el) => {
     if (el.type === "text") {
       const text = $(el)
         .text()
         .replace(/^[ \t\n\r]+|[ \t\n\r]+$/g, "");
-      if (text.length > 0) lines.push(text);
+      if (text.length > 0) {
+        lines.push(text);
+        prevIsBr = false;
+      }
     } else if (el.type === "tag" && el.name === "br") {
-      lines.push("<br />");
+      // 直前が<br />ならスキップ
+      if (!prevIsBr) {
+        lines.push("<br />");
+        prevIsBr = true;
+      }
     } else if (el.type === "tag") {
       // ルビやemなどのタグはHTMLとして出力
       const html = $.html(el).replace(/class=/g, "className=");
-      if (html.trim().length > 0) lines.push(html.trim());
+      if (html.trim().length > 0) {
+        lines.push(html.trim());
+        prevIsBr = false;
+      }
     }
   });
   // 先頭・末尾の<br />や空白行を除去
