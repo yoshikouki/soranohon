@@ -31,5 +31,30 @@ export function htmlToMdx(html: string): string {
   // 先頭・末尾の<br />や空白行を除去
   while (lines.length && lines[0] === "<br />") lines.shift();
   while (lines.length && lines[lines.length - 1] === "<br />") lines.pop();
-  return lines.join("");
+  // <br /> で分割した各行のうち、全角スペース（U+3000）、（、または「ではじまる行を新しい段落の起点とし、段落ごとに空行で区切る
+  let paragraphs: string[] = [];
+  let current: string[] = [];
+  for (const line of lines) {
+    if (/^　|^「|^（/.test(line)) {
+      // 全角スペース or 「 or （で始まる
+      if (current.length > 0) {
+        // 段落の最後が <br /> なら削除
+        while (current.length > 0 && current[current.length - 1] === "<br />") {
+          current.pop();
+        }
+        paragraphs.push(current.join(""));
+        current = [];
+      }
+      current.push(line);
+    } else {
+      current.push(line);
+    }
+  }
+  if (current.length > 0) {
+    while (current.length > 0 && current[current.length - 1] === "<br />") {
+      current.pop();
+    }
+    paragraphs.push(current.join(""));
+  }
+  return paragraphs.join("\n\n");
 }
