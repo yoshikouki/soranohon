@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { readFile, writeFile } from "fs/promises";
 import * as process from "process";
+import { extractBookMeta } from "../src/lib/aozorabunko/bookMeta";
 import { detectAndDecode } from "../src/lib/aozorabunko/encoding";
 import { htmlToMdx } from "../src/lib/aozorabunko/htmlToMdx";
 import { getMdxOutputPath } from "../src/lib/aozorabunko/path";
@@ -27,6 +28,11 @@ async function main() {
   }
   await writeFile(outPath, mdx, "utf-8");
   console.log(`Converted: ${inputHtml} (${encoding}) -> ${outPath}`);
+
+  // booksエントリを標準出力
+  const meta = extractBookMeta(inputHtml, html);
+  const entry = `\n--- books entry ---\n"${meta.id}": {\n  id: "${meta.id}",\n  title: "${meta.title}",\n  creator: "${meta.creator}",\n  translator: ${meta.translator ? `"${meta.translator}"` : "undefined"},\n  bibliographyRaw: \`${meta.bibliographyRaw}\`,\n  mdx: () => import("./${meta.id}.mdx"),\n},\n--- end ---`;
+  console.log(entry);
 }
 
 if (require.main === module) {
