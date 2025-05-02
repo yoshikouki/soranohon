@@ -18,14 +18,16 @@ export async function generateMetadata({
 
 export default async function BookPage({ params }: { params: Promise<{ bookId: string }> }) {
   const { bookId } = await params;
-  const book = books[bookId as keyof typeof books];
-  if (!book) return notFound();
-  const title = book.title;
-
-  // books[index].mdx からインポート
+  const book = books[bookId];
   const importMdx = book.mdx;
-  if (!importMdx) return notFound();
-  const BookContent = (await importMdx()).default;
+  type MdxModule = { default: React.ComponentType };
+  function isMdxModule(mod: unknown): mod is MdxModule {
+    return typeof mod === "object" && mod !== null && "default" in mod;
+  }
+  const mod = await importMdx();
+  if (!isMdxModule(mod)) return notFound();
+  const BookContent = mod.default;
+  const title = book.title;
 
   return (
     <div className="mx-auto mt-8 mb-16 max-w-2xl rounded-lg p-6 shadow sm:p-10">
