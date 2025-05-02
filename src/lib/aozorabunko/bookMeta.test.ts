@@ -1,13 +1,26 @@
-import { readFile } from "fs/promises";
 import { describe, expect, it } from "vitest";
 import { extractBookMeta } from "./bookMeta";
 
-const HTML_PATH = "public/assets/books/html/59835_72466.html";
-
 describe("extractBookMeta", () => {
   it("should extract correct metadata from 赤ずきん html", async () => {
-    const html = await readFile(HTML_PATH, "utf-8");
-    const meta = extractBookMeta(HTML_PATH, html);
+    const html = `
+      <html>
+        <head>
+          <meta charset=\"UTF-8\">
+          <title>赤ずきん</title>
+        </head>
+        <body>
+          <h1 class=\"title\">赤ずきん</h1>
+          <h2 class=\"author\">グリム　Grimm</h2>
+          <h2 class=\"translator\">矢崎源九郎訳</h2>
+          <div class=\"bibliographical_information\">
+            底本：グリム童話集
+            入力：sogo
+          </div>
+        </body>
+      </html>
+    `;
+    const meta = extractBookMeta("59835_72466.html", html);
     expect(meta.id).toBe("59835_72466");
     expect(meta.title).toBe("赤ずきん");
     expect(meta.creator).toBe("グリム　Grimm");
