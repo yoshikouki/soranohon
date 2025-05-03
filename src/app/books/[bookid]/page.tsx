@@ -18,14 +18,35 @@ export async function generateMetadata({
 
 export default async function BookPage({ params }: { params: Promise<{ bookId: string }> }) {
   const { bookId } = await params;
-  const book = books[bookId];
+
+  // bookIdが存在するか確認
+  if (!(bookId in books)) {
+    console.error(`Book not found with ID: ${bookId}`);
+    return notFound();
+  }
+
+  const book = books[bookId as keyof typeof books];
+
+  // bookオブジェクトの存在確認
+  if (!book || !book.mdx) {
+    console.error(`Invalid book data for ID: ${bookId}`);
+    return notFound();
+  }
+
+  // MDXモジュールのインポート
   const importMdx = book.mdx;
   type MdxModule = { default: React.ComponentType };
   function isMdxModule(mod: unknown): mod is MdxModule {
     return typeof mod === "object" && mod !== null && "default" in mod;
   }
+
   const mod = await importMdx();
-  if (!isMdxModule(mod)) return notFound();
+
+  if (!isMdxModule(mod)) {
+    console.error(`Invalid MDX module for book: ${bookId}`);
+    return notFound();
+  }
+
   const BookContent = mod.default;
   const title = book.title;
 
