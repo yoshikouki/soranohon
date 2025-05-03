@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   addPlaceholderRubyToKanji,
   addRubyTagsToMdx,
+  convertHtmlToMdxWithRuby,
   extractLines,
   extractMainText,
   formParagraphs,
   htmlToMdx,
-  convertHtmlToMdxWithRuby,
   removeTrailingBreaks,
 } from "./htmlToMdx";
 
@@ -179,7 +179,6 @@ describe("htmlToMdx", () => {
     const expected = "<ruby>簡<rt>かん</rt></ruby>単と<ruby>複<rt>ふく</rt></ruby>雑";
     expect(htmlToMdx(html)).toBe(expected);
   });
-
 });
 
 describe("extractLines", () => {
@@ -379,7 +378,8 @@ describe("addRubyTagsToMdx", () => {
 
   it("should process a realistic example from a book", () => {
     const mdx = "まえかけの下にもっているのは、なあに。";
-    const expected = "まえかけの<ruby>下<rt>{{required_ruby}}</rt></ruby>にもっているのは、なあに。";
+    const expected =
+      "まえかけの<ruby>下<rt>{{required_ruby}}</rt></ruby>にもっているのは、なあに。";
     expect(addRubyTagsToMdx(mdx)).toBe(expected);
   });
 });

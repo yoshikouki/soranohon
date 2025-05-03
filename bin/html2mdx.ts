@@ -27,7 +27,9 @@ async function main() {
   if (!inputHtml) {
     console.error("Usage: bun run ./bin/html2mdx.ts [--no-ruby|-n] <input.html> [output.mdx]");
     console.error("Options:");
-    console.error("  --no-ruby, -n    Disable adding ruby placeholder tags to kanji characters");
+    console.error(
+      "  --no-ruby, -n    Disable adding ruby placeholder tags to kanji characters",
+    );
     process.exit(1);
   }
 
@@ -41,7 +43,7 @@ async function main() {
   try {
     // HTML→MDX変換
     mdx = htmlToMdx(html);
-    
+
     // ルビプレースホルダーの追加（デフォルト有効）
     if (addRuby) {
       mdx = addRubyTagsToMdx(mdx);

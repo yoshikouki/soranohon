@@ -219,7 +219,7 @@ export function htmlToMdx(html: string): string {
   const main = extractMainText(html);
   const lines = extractLines(main);
   const paragraphs = formParagraphs(lines);
-  return paragraphs.join("\n\n");
+  return paragraphs.join("\n\n") + "\n";
 }
 
 /**
@@ -239,7 +239,10 @@ export function addRubyTagsToMdx(mdx: string): string {
  * @throws main_textが見つからない場合
  * @deprecated 代わりに htmlToMdx() と addRubyTagsToMdx() を組み合わせて使用してください
  */
-export function convertHtmlToMdxWithRuby(html: string, addRubyPlaceholder: boolean = false): string {
+export function convertHtmlToMdxWithRuby(
+  html: string,
+  addRubyPlaceholder: boolean = false,
+): string {
   const mdx = htmlToMdx(html);
   return addRubyPlaceholder ? addRubyTagsToMdx(mdx) : mdx;
 }
