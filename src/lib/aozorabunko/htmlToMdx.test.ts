@@ -350,6 +350,29 @@ describe("addPlaceholderRubyToKanji", () => {
       "<span><ruby>漢字<rt>{{required_ruby}}</rt></ruby></span>と<em><ruby>日本<rt>{{required_ruby}}</rt></ruby></em><ruby>語<rt>{{required_ruby}}</rt></ruby>";
     expect(addPlaceholderRubyToKanji(input)).toBe(expected);
   });
+
+  it("should preserve existing ruby tags and their content", () => {
+    const input = "<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>じ</rt></ruby>";
+    expect(addPlaceholderRubyToKanji(input)).toBe(input);
+  });
+
+  it("should handle complex content with multiple existing ruby tags", () => {
+    const input = "むかしむかし、あるところにちっちゃな、かわいい<ruby>女<rt>おんな</rt></ruby>の<ruby>子<rt>こ</rt></ruby>がおりました。";
+    const expected = "むかしむかし、あるところにちっちゃな、かわいい<ruby>女<rt>おんな</rt></ruby>の<ruby>子<rt>こ</rt></ruby>がおりました。";
+    expect(addPlaceholderRubyToKanji(input)).toBe(expected);
+  });
+
+  it("should add ruby tags to kanji outside existing ruby tags", () => {
+    const input = "これは<ruby>漢<rt>かん</rt></ruby>字です";
+    const expected = "これは<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>{{required_ruby}}</rt></ruby>です";
+    expect(addPlaceholderRubyToKanji(input)).toBe(expected);
+  });
+
+  it("should handle nested tags with ruby tags", () => {
+    const input = "<div>これは<ruby>漢<rt>かん</rt></ruby>字と<span><ruby>日<rt>に</rt></ruby>本</span>語です</div>";
+    const expected = "<div>これは<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>{{required_ruby}}</rt></ruby>と<span><ruby>日<rt>に</rt></ruby><ruby>本<rt>{{required_ruby}}</rt></ruby></span><ruby>語<rt>{{required_ruby}}</rt></ruby>です</div>";
+    expect(addPlaceholderRubyToKanji(input)).toBe(expected);
+  });
 });
 
 describe("addRubyTagsToMdx", () => {

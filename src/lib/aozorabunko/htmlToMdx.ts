@@ -19,6 +19,7 @@ export function extractMainText(html: string): cheerio.Cheerio {
 
 /**
  * テキスト内の漢字にプレースホルダー付きのrubyタグを追加する
+ * 既存のrubyタグは保持する
  * @param text 処理するテキスト
  * @returns rubyタグが追加されたテキスト
  */
@@ -28,88 +29,34 @@ export function addPlaceholderRubyToKanji(text: string): string {
     return "";
   }
 
+  // まず既存のrubyタグを一時的に置換して保護する
+  // これには従来の<ruby>タグに加えて、複雑な<rb>や<rp>を含むタグも対象とする
+  const rubyTags: string[] = [];
+  
+  // 従来のrubyタグ（<ruby>漢字<rt>かんじ</rt></ruby>形式）と複雑なrubyタグ（<ruby><rb>漢</rb><rp>形式）の両方を対象とした正規表現
+  const rubyTagRegex = /<ruby>(?:[^<]*|<(?!\/ruby>)[^>]*>)*<\/ruby>/gs;
+  
+  // 既存のrubyタグを見つけて配列に保存し、プレースホルダーに置き換える
+  let protectedText = text.replace(rubyTagRegex, (match) => {
+    const placeholder = `__RUBY_TAG_${rubyTags.length}__`;
+    rubyTags.push(match);
+    return placeholder;
+  });
+
   // 漢字に対する正規表現（連続した漢字をグループとして処理）
   const kanjiRegex = /[\p{Script=Han}々]+/gu;
 
-  // HTMLタグを見つける正規表現
-  const tagRegex = /<[^>]+>/g;
+  // 漢字をrubyタグで囲む
+  protectedText = protectedText.replace(kanjiRegex, (kanji) => {
+    return `<ruby>${kanji}<rt>{{required_ruby}}</rt></ruby>`;
+  });
 
-  // タグをトークン化してタグとテキストを分ける
-  const tokens: Array<{ isTag: boolean; content: string }> = [];
-  let lastIdx = 0;
-  let match: RegExpExecArray | null = null;
+  // プレースホルダーを元のrubyタグに戻す
+  const finalText = protectedText.replace(/__RUBY_TAG_(\d+)__/g, (_, index) => {
+    return rubyTags[parseInt(index)];
+  });
 
-  // タグをトークン化
-  match = tagRegex.exec(text);
-  while (match !== null) {
-    // タグの前にテキストがあれば追加
-    if (match.index > lastIdx) {
-      tokens.push({
-        isTag: false,
-        content: text.substring(lastIdx, match.index),
-      });
-    }
-
-    // タグを追加
-    tokens.push({
-      isTag: true,
-      content: match[0],
-    });
-
-    lastIdx = match.index + match[0].length;
-
-    // 次のマッチングを取得
-    match = tagRegex.exec(text);
-  }
-
-  // 最後のテキスト部分を追加
-  if (lastIdx < text.length) {
-    tokens.push({
-      isTag: false,
-      content: text.substring(lastIdx),
-    });
-  }
-
-  // タグの中にいるかどうかを追跡する変数
-  let insideRubyTag = false;
-
-  // 処理結果
-  const result: string[] = [];
-
-  // 各トークンを処理
-  for (const token of tokens) {
-    if (token.isTag) {
-      // タグの場合
-      const lowerContent = token.content.toLowerCase();
-
-      // <ruby>タグを検出
-      if (lowerContent.startsWith("<ruby")) {
-        insideRubyTag = true;
-      }
-      // </ruby>タグを検出
-      else if (lowerContent === "</ruby>") {
-        insideRubyTag = false;
-      }
-
-      // タグはそのまま追加
-      result.push(token.content);
-    } else {
-      // テキストの場合
-      if (insideRubyTag) {
-        // rubyタグ内のテキストはそのまま
-        result.push(token.content);
-      } else {
-        // rubyタグ外のテキストは漢字を処理
-        result.push(
-          token.content.replace(kanjiRegex, (kanji) => {
-            return `<ruby>${kanji}<rt>{{required_ruby}}</rt></ruby>`;
-          }),
-        );
-      }
-    }
-  }
-
-  return result.join("");
+  return finalText;
 }
 
 /**

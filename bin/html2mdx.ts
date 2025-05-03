@@ -1,9 +1,10 @@
 #!/usr/bin/env bun
-import { readFile, writeFile } from "fs/promises";
+import { readFile, writeFile, access } from "fs/promises";
+import { constants } from "fs";
 import * as process from "process";
 import { extractBookMeta } from "../src/lib/aozorabunko/bookMeta";
 import { detectAndDecode } from "../src/lib/aozorabunko/encoding";
-import { addRubyTagsToMdx, htmlToMdx } from "../src/lib/aozorabunko/htmlToMdx";
+import { addPlaceholderRubyToKanji, addRubyTagsToMdx, htmlToMdx } from "../src/lib/aozorabunko/htmlToMdx";
 import { getMdxOutputPath } from "../src/lib/aozorabunko/path";
 
 async function main() {
@@ -13,6 +14,7 @@ async function main() {
   let outputMdx = "";
   let addRuby = true; // デフォルトでルビを追加する
   let keepSpace = false; // デフォルトで全角スペースを削除する
+  let forceOverwrite = false; // デフォルトで既存のルビを保護する
 
   // 引数を解析
   for (let i = 0; i < args.length; i++) {
@@ -20,6 +22,8 @@ async function main() {
       addRuby = false;
     } else if (args[i] === "--keep-space" || args[i] === "-k") {
       keepSpace = true;
+    } else if (args[i] === "--force" || args[i] === "-f") {
+      forceOverwrite = true;
     } else if (!inputHtml) {
       inputHtml = args[i];
     } else if (!outputMdx) {
@@ -28,13 +32,16 @@ async function main() {
   }
 
   if (!inputHtml) {
-    console.error("Usage: bun run ./bin/html2mdx.ts [--no-ruby|-n] [--keep-space|-k] <input.html> [output.mdx]");
+    console.error("Usage: bun run ./bin/html2mdx.ts [--no-ruby|-n] [--keep-space|-k] [--force|-f] <input.html> [output.mdx]");
     console.error("Options:");
     console.error(
       "  --no-ruby, -n       Disable adding ruby placeholder tags to kanji characters",
     );
     console.error(
       "  --keep-space, -k    Keep leading full-width spaces in paragraphs (default: remove)",
+    );
+    console.error(
+      "  --force, -f         Force overwrite existing ruby tags (default: preserve)",
     );
     process.exit(1);
   }
@@ -44,6 +51,33 @@ async function main() {
   // バイナリで読み込み、encoding-japaneseで自動判定＆デコード
   const buffer = await readFile(inputHtml);
   const { text: html, encoding } = detectAndDecode(buffer);
+
+  // 既存のMDXファイルの確認
+  let existingMdx = "";
+  let existingRubyTags = new Map<string, string>();
+  try {
+    // ファイルが存在するかをチェック
+    await access(outPath, constants.F_OK);
+    if (!forceOverwrite) {
+      // 既存ファイルがあり、強制上書きでない場合は読み込む
+      existingMdx = await readFile(outPath, "utf-8");
+      
+      // 既存のルビタグを抽出
+      const rubyTagRegex = /<ruby>([^<]+)<rt>([^<]+)<\/rt><\/ruby>/g;
+      let match;
+      while ((match = rubyTagRegex.exec(existingMdx)) !== null) {
+        const kanjiText = match[1];
+        const rubyText = match[2];
+        // プレースホルダー以外の有効なルビタグを保存
+        if (rubyText !== "{{required_ruby}}") {
+          existingRubyTags.set(kanjiText, rubyText);
+        }
+      }
+      console.log(`Found ${existingRubyTags.size} existing ruby tags`);
+    }
+  } catch (error) {
+    // ファイルが存在しない場合は無視
+  }
 
   let mdx: string;
   try {
@@ -59,8 +93,41 @@ async function main() {
 
     // ルビプレースホルダーの追加（デフォルト有効）
     if (addRuby) {
-      mdx = addRubyTagsToMdx(mdx);
-      console.log("Ruby placeholder tags added to kanji characters");
+      if (existingRubyTags.size > 0 && !forceOverwrite) {
+        // 既存のルビタグがある場合は、それを保持しつつ新しいプレースホルダーを追加
+        // まず既存のrubyタグを一時的に置換して保護
+        const rubyTags: string[] = [];
+        const rubyTagRegex = /<ruby>(?:[^<]*|<(?!\/ruby>)[^>]*>)*<\/ruby>/gs;
+        
+        let protectedText = mdx.replace(rubyTagRegex, (match) => {
+          const placeholder = `__RUBY_TAG_${rubyTags.length}__`;
+          rubyTags.push(match);
+          return placeholder;
+        });
+        
+        // 漢字に対する正規表現
+        const kanjiRegex = /[\p{Script=Han}々]+/gu;
+        
+        // 漢字をrubyタグで囲む
+        protectedText = protectedText.replace(kanjiRegex, (kanji) => {
+          // 既存のルビタグがあればそれを使う
+          if (existingRubyTags.has(kanji)) {
+            return `<ruby>${kanji}<rt>${existingRubyTags.get(kanji)}</rt></ruby>`;
+          }
+          return `<ruby>${kanji}<rt>{{required_ruby}}</rt></ruby>`;
+        });
+        
+        // プレースホルダーを元のrubyタグに戻す
+        mdx = protectedText.replace(/__RUBY_TAG_(\d+)__/g, (_, index) => {
+          return rubyTags[parseInt(index)];
+        });
+        
+        console.log("Ruby placeholder tags added with existing ruby preserved");
+      } else {
+        // 既存のルビがない、または強制上書きの場合は通常処理
+        mdx = addRubyTagsToMdx(mdx);
+        console.log("Ruby placeholder tags added to kanji characters");
+      }
     } else {
       console.log("Ruby placeholder tags disabled");
     }
