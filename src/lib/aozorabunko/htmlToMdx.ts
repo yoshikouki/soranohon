@@ -37,10 +37,11 @@ export function addPlaceholderRubyToKanji(text: string): string {
   // タグをトークン化してタグとテキストを分ける
   const tokens: Array<{ isTag: boolean; content: string }> = [];
   let lastIdx = 0;
-  let match;
+  let match: RegExpExecArray | null = null;
 
   // タグをトークン化
-  while ((match = tagRegex.exec(text)) !== null) {
+  match = tagRegex.exec(text);
+  while (match !== null) {
     // タグの前にテキストがあれば追加
     if (match.index > lastIdx) {
       tokens.push({
@@ -56,6 +57,9 @@ export function addPlaceholderRubyToKanji(text: string): string {
     });
 
     lastIdx = match.index + match[0].length;
+
+    // 次のマッチングを取得
+    match = tagRegex.exec(text);
   }
 
   // 最後のテキスト部分を追加
