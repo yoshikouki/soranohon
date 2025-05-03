@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   addPlaceholderRubyToKanji,
+  addRubyTagsToMdx,
   extractLines,
   extractMainText,
   formParagraphs,
   htmlToMdx,
+  convertHtmlToMdxWithRuby,
   removeTrailingBreaks,
 } from "./htmlToMdx";
 
@@ -178,17 +180,6 @@ describe("htmlToMdx", () => {
     expect(htmlToMdx(html)).toBe(expected);
   });
 
-  it("should add placeholder ruby tags to kanji without ruby", () => {
-    const html = `<div class="main_text">漢字</div>`;
-    const expected = "<ruby>漢字<rt>{{required_ruby}}</rt></ruby>";
-    expect(htmlToMdx(html, true)).toBe(expected);
-  });
-
-  it("should not add placeholder ruby tags to kanji already in ruby tags", () => {
-    const html = `<div class="main_text"><ruby>漢<rt>かん</rt></ruby>字</div>`;
-    const expected = "<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>{{required_ruby}}</rt></ruby>";
-    expect(htmlToMdx(html, true)).toBe(expected);
-  });
 });
 
 describe("extractLines", () => {
@@ -329,91 +320,93 @@ describe("removeTrailingBreaks", () => {
 });
 
 describe("addPlaceholderRubyToKanji", () => {
-  it("should add placeholder ruby tags to kanji characters when enabled", () => {
+  it("should add placeholder ruby tags to kanji characters", () => {
     const input = "漢字";
     const expected = "<ruby>漢字<rt>{{required_ruby}}</rt></ruby>";
-    expect(addPlaceholderRubyToKanji(input, true)).toBe(expected);
-  });
-
-  it("should not add placeholder ruby tags when disabled", () => {
-    const input = "漢字";
-    expect(addPlaceholderRubyToKanji(input, false)).toBe(input);
-    expect(addPlaceholderRubyToKanji(input)).toBe(input); // デフォルトはfalse
+    expect(addPlaceholderRubyToKanji(input)).toBe(expected);
   });
 
   it("should not modify non-kanji characters", () => {
     const input = "こんにちは123abc";
-    expect(addPlaceholderRubyToKanji(input, true)).toBe(input);
+    expect(addPlaceholderRubyToKanji(input)).toBe(input);
   });
 
   it("should not modify content inside tags", () => {
     const input = "<span>漢字</span>";
     const expected = "<span><ruby>漢字<rt>{{required_ruby}}</rt></ruby></span>";
-    expect(addPlaceholderRubyToKanji(input, true)).toBe(expected);
+    expect(addPlaceholderRubyToKanji(input)).toBe(expected);
   });
 
   it("should handle mixed content correctly", () => {
     const input = "これは漢字と<ruby>日本<rt>にほん</rt></ruby>語です";
     const expected =
       "これは<ruby>漢字<rt>{{required_ruby}}</rt></ruby>と<ruby>日本<rt>にほん</rt></ruby><ruby>語<rt>{{required_ruby}}</rt></ruby>です";
-    expect(addPlaceholderRubyToKanji(input, true)).toBe(expected);
+    expect(addPlaceholderRubyToKanji(input)).toBe(expected);
   });
 
   it("should handle text with multiple tags", () => {
     const input = "<span>漢字</span>と<em>日本</em>語";
     const expected =
       "<span><ruby>漢字<rt>{{required_ruby}}</rt></ruby></span>と<em><ruby>日本<rt>{{required_ruby}}</rt></ruby></em><ruby>語<rt>{{required_ruby}}</rt></ruby>";
-    expect(addPlaceholderRubyToKanji(input, true)).toBe(expected);
-  });
-
-  it("should not modify text when disabled regardless of content", () => {
-    const input = "これは漢字と<ruby>日本<rt>にほん</rt></ruby>語です";
-    expect(addPlaceholderRubyToKanji(input, false)).toBe(input);
+    expect(addPlaceholderRubyToKanji(input)).toBe(expected);
   });
 });
 
-describe("htmlToMdx with ruby placeholders", () => {
-  it("should add placeholder ruby tags to kanji when enabled", () => {
-    const html = `<div class="main_text">漢字</div>`;
+describe("addRubyTagsToMdx", () => {
+  it("should add placeholder ruby tags to kanji in MDX text", () => {
+    const mdx = "漢字";
     const expected = "<ruby>漢字<rt>{{required_ruby}}</rt></ruby>";
-    expect(htmlToMdx(html, true)).toBe(expected);
+    expect(addRubyTagsToMdx(mdx)).toBe(expected);
   });
 
-  it("should not add placeholder ruby tags when disabled", () => {
+  it("should preserve existing ruby tags", () => {
+    const mdx = "<ruby>漢<rt>かん</rt></ruby>字";
+    const expected = "<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>{{required_ruby}}</rt></ruby>";
+    expect(addRubyTagsToMdx(mdx)).toBe(expected);
+  });
+
+  it("should handle paragraphs with full-width space", () => {
+    const mdx = "　漢字";
+    const expected = "　<ruby>漢字<rt>{{required_ruby}}</rt></ruby>";
+    expect(addRubyTagsToMdx(mdx)).toBe(expected);
+  });
+
+  it("should handle quoted text", () => {
+    const mdx = "「漢字」";
+    const expected = "「<ruby>漢字<rt>{{required_ruby}}</rt></ruby>」";
+    expect(addRubyTagsToMdx(mdx)).toBe(expected);
+  });
+
+  it("should process a realistic example from a book", () => {
+    const mdx = "まえかけの下にもっているのは、なあに。";
+    const expected = "まえかけの<ruby>下<rt>{{required_ruby}}</rt></ruby>にもっているのは、なあに。";
+    expect(addRubyTagsToMdx(mdx)).toBe(expected);
+  });
+});
+
+describe("convertHtmlToMdxWithRuby", () => {
+  it("should convert HTML to MDX with ruby tags when enabled", () => {
+    const html = `<div class="main_text">漢字</div>`;
+    const expected = "<ruby>漢字<rt>{{required_ruby}}</rt></ruby>";
+    expect(convertHtmlToMdxWithRuby(html, true)).toBe(expected);
+  });
+
+  it("should convert HTML to MDX without ruby tags when disabled", () => {
     const html = `<div class="main_text">漢字</div>`;
     const expected = "漢字";
-    expect(htmlToMdx(html, false)).toBe(expected);
-    expect(htmlToMdx(html)).toBe(expected); // デフォルトはfalse
+    expect(convertHtmlToMdxWithRuby(html, false)).toBe(expected);
+    expect(convertHtmlToMdxWithRuby(html)).toBe(expected); // デフォルトはfalse
   });
 
   it("should add placeholder ruby tags to kanji but not to existing ruby tags", () => {
     const html = `<div class="main_text"><ruby>漢<rt>かん</rt></ruby>字</div>`;
     const expected = "<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>{{required_ruby}}</rt></ruby>";
-    expect(htmlToMdx(html, true)).toBe(expected);
+    expect(convertHtmlToMdxWithRuby(html, true)).toBe(expected);
   });
 
   it("should handle complex ruby tags along with placeholder ruby tags", () => {
     const html = `<div class="main_text"><ruby><rb>漢</rb><rp>（</rp><rt>かん</rt><rp>）</rp></ruby>字</div>`;
     const expected = "<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>{{required_ruby}}</rt></ruby>";
-    expect(htmlToMdx(html, true)).toBe(expected);
-  });
-
-  it("should add placeholder ruby tags in paragraphs with full-width space", () => {
-    const html = `<div class="main_text">　漢字</div>`;
-    const expected = "　<ruby>漢字<rt>{{required_ruby}}</rt></ruby>";
-    expect(htmlToMdx(html, true)).toBe(expected);
-  });
-
-  it("should add placeholder ruby tags in quoted text", () => {
-    const html = `<div class="main_text">「漢字」</div>`;
-    const expected = "「<ruby>漢字<rt>{{required_ruby}}</rt></ruby>」";
-    expect(htmlToMdx(html, true)).toBe(expected);
-  });
-
-  it("should process a realistic example from a book", () => {
-    const html = `<div class="main_text">まえかけの下にもっているのは、なあに。</div>`;
-    const expected =
-      "まえかけの<ruby>下<rt>{{required_ruby}}</rt></ruby>にもっているのは、なあに。";
-    expect(htmlToMdx(html, true)).toBe(expected);
+    expect(convertHtmlToMdxWithRuby(html, true)).toBe(expected);
   });
 });

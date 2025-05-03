@@ -20,18 +20,9 @@ export function extractMainText(html: string): cheerio.Cheerio {
 /**
  * テキスト内の漢字にプレースホルダー付きのrubyタグを追加する
  * @param text 処理するテキスト
- * @param addPlaceholder プレースホルダーを追加するかどうか
  * @returns rubyタグが追加されたテキスト
  */
-export function addPlaceholderRubyToKanji(
-  text: string,
-  addPlaceholder: boolean = false,
-): string {
-  // プレースホルダーを追加しない場合は、テキストをそのまま返す
-  if (!addPlaceholder) {
-    return text;
-  }
-
+export function addPlaceholderRubyToKanji(text: string): string {
   // テキストがなければ空文字を返す
   if (!text) {
     return "";
@@ -120,13 +111,9 @@ export function addPlaceholderRubyToKanji(
 /**
  * main_text要素から行を抽出する
  * @param main .main_text要素
- * @param addRubyPlaceholder 漢字にプレースホルダー付きrubyタグを追加するかどうか
  * @returns 行の配列
  */
-export function extractLines(
-  main: cheerio.Cheerio,
-  addRubyPlaceholder: boolean = false,
-): string[] {
+export function extractLines(main: cheerio.Cheerio): string[] {
   const $ = cheerio.load("");
   const lines: string[] = [];
   let prevIsBr = false;
@@ -139,9 +126,7 @@ export function extractLines(
         .replace(/^[ \t\n\r]+|[ \t\n\r]+$/g, "");
       if (text.length === 0) return;
 
-      // テキスト内の漢字にプレースホルダー付きのrubyタグを追加
-      const textWithRuby = addPlaceholderRubyToKanji(text, addRubyPlaceholder);
-      lines.push(textWithRuby);
+      lines.push(text);
       prevIsBr = false;
       return;
     }
@@ -227,13 +212,34 @@ export function removeTrailingBreaks(lines: string[]): void {
 /**
  * 青空文庫HTMLの.main_text部分をMDXに変換する
  * @param html 青空文庫HTML文字列
- * @param addRubyPlaceholder 漢字にプレースホルダー付きrubyタグを追加するかどうか
  * @returns MDX文字列
  * @throws main_textが見つからない場合
  */
-export function htmlToMdx(html: string, addRubyPlaceholder: boolean = false): string {
+export function htmlToMdx(html: string): string {
   const main = extractMainText(html);
-  const lines = extractLines(main, addRubyPlaceholder);
+  const lines = extractLines(main);
   const paragraphs = formParagraphs(lines);
   return paragraphs.join("\n\n");
+}
+
+/**
+ * MDXテキストに漢字へのルビプレースホルダータグを追加する
+ * @param mdx MDXテキスト
+ * @returns ルビプレースホルダータグが追加されたMDXテキスト
+ */
+export function addRubyTagsToMdx(mdx: string): string {
+  return addPlaceholderRubyToKanji(mdx);
+}
+
+/**
+ * 青空文庫HTMLをMDXに変換し、オプションでルビプレースホルダーを追加する（後方互換性のため）
+ * @param html 青空文庫HTML文字列
+ * @param addRubyPlaceholder 漢字にプレースホルダー付きrubyタグを追加するかどうか
+ * @returns MDX文字列
+ * @throws main_textが見つからない場合
+ * @deprecated 代わりに htmlToMdx() と addRubyTagsToMdx() を組み合わせて使用してください
+ */
+export function convertHtmlToMdxWithRuby(html: string, addRubyPlaceholder: boolean = false): string {
+  const mdx = htmlToMdx(html);
+  return addRubyPlaceholder ? addRubyTagsToMdx(mdx) : mdx;
 }
