@@ -18,11 +18,115 @@ export function extractMainText(html: string): cheerio.Cheerio {
 }
 
 /**
+ * テキスト内の漢字にプレースホルダー付きのrubyタグを追加する
+ * @param text 処理するテキスト
+ * @param addPlaceholder プレースホルダーを追加するかどうか
+ * @returns rubyタグが追加されたテキスト
+ */
+export function addPlaceholderRubyToKanji(
+  text: string,
+  addPlaceholder: boolean = false,
+): string {
+  // プレースホルダーを追加しない場合は、テキストをそのまま返す
+  if (!addPlaceholder) {
+    return text;
+  }
+
+  // テキストがなければ空文字を返す
+  if (!text) {
+    return "";
+  }
+
+  // 漢字に対する正規表現（連続した漢字をグループとして処理）
+  const kanjiRegex = /[\p{Script=Han}々]+/gu;
+
+  // HTMLタグを見つける正規表現
+  const tagRegex = /<[^>]+>/g;
+
+  // タグをトークン化してタグとテキストを分ける
+  const tokens: Array<{ isTag: boolean; content: string }> = [];
+  let lastIdx = 0;
+  let match;
+
+  // タグをトークン化
+  while ((match = tagRegex.exec(text)) !== null) {
+    // タグの前にテキストがあれば追加
+    if (match.index > lastIdx) {
+      tokens.push({
+        isTag: false,
+        content: text.substring(lastIdx, match.index),
+      });
+    }
+
+    // タグを追加
+    tokens.push({
+      isTag: true,
+      content: match[0],
+    });
+
+    lastIdx = match.index + match[0].length;
+  }
+
+  // 最後のテキスト部分を追加
+  if (lastIdx < text.length) {
+    tokens.push({
+      isTag: false,
+      content: text.substring(lastIdx),
+    });
+  }
+
+  // タグの中にいるかどうかを追跡する変数
+  let insideRubyTag = false;
+
+  // 処理結果
+  const result: string[] = [];
+
+  // 各トークンを処理
+  for (const token of tokens) {
+    if (token.isTag) {
+      // タグの場合
+      const lowerContent = token.content.toLowerCase();
+
+      // <ruby>タグを検出
+      if (lowerContent.startsWith("<ruby")) {
+        insideRubyTag = true;
+      }
+      // </ruby>タグを検出
+      else if (lowerContent === "</ruby>") {
+        insideRubyTag = false;
+      }
+
+      // タグはそのまま追加
+      result.push(token.content);
+    } else {
+      // テキストの場合
+      if (insideRubyTag) {
+        // rubyタグ内のテキストはそのまま
+        result.push(token.content);
+      } else {
+        // rubyタグ外のテキストは漢字を処理
+        result.push(
+          token.content.replace(kanjiRegex, (kanji) => {
+            return `<ruby>${kanji}<rt>{{required_ruby}}</rt></ruby>`;
+          }),
+        );
+      }
+    }
+  }
+
+  return result.join("");
+}
+
+/**
  * main_text要素から行を抽出する
  * @param main .main_text要素
+ * @param addRubyPlaceholder 漢字にプレースホルダー付きrubyタグを追加するかどうか
  * @returns 行の配列
  */
-export function extractLines(main: cheerio.Cheerio): string[] {
+export function extractLines(
+  main: cheerio.Cheerio,
+  addRubyPlaceholder: boolean = false,
+): string[] {
   const $ = cheerio.load("");
   const lines: string[] = [];
   let prevIsBr = false;
@@ -35,7 +139,9 @@ export function extractLines(main: cheerio.Cheerio): string[] {
         .replace(/^[ \t\n\r]+|[ \t\n\r]+$/g, "");
       if (text.length === 0) return;
 
-      lines.push(text);
+      // テキスト内の漢字にプレースホルダー付きのrubyタグを追加
+      const textWithRuby = addPlaceholderRubyToKanji(text, addRubyPlaceholder);
+      lines.push(textWithRuby);
       prevIsBr = false;
       return;
     }
@@ -121,12 +227,13 @@ export function removeTrailingBreaks(lines: string[]): void {
 /**
  * 青空文庫HTMLの.main_text部分をMDXに変換する
  * @param html 青空文庫HTML文字列
+ * @param addRubyPlaceholder 漢字にプレースホルダー付きrubyタグを追加するかどうか
  * @returns MDX文字列
  * @throws main_textが見つからない場合
  */
-export function htmlToMdx(html: string): string {
+export function htmlToMdx(html: string, addRubyPlaceholder: boolean = false): string {
   const main = extractMainText(html);
-  const lines = extractLines(main);
+  const lines = extractLines(main, addRubyPlaceholder);
   const paragraphs = formParagraphs(lines);
   return paragraphs.join("\n\n");
 }
