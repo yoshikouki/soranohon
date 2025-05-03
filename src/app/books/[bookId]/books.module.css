@@ -1,0 +1,4 @@
+.booksLineBreak {
+  word-break: auto-phrase;
+  line-break: strict; /* 禁則処理を厳格に適用 */
+}

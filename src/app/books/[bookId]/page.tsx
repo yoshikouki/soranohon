@@ -1,6 +1,8 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { books } from "@/books";
+import { cn } from "@/lib/utils";
+import styles from "./books.module.css";
 
 export async function generateMetadata({
   params,
@@ -38,13 +40,21 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
   const title = book.title;
 
   return (
-    <div className="mx-auto mt-8 mb-16 max-w-2xl rounded-lg p-6 shadow sm:p-10">
-      <h1 className="sticky top-0 z-10 mb-6 bg-background/60 py-4 text-center font-bold text-3xl backdrop-blur-sm sm:text-4xl">
-        {title}
-      </h1>
-      <div className="prose prose-lg sm:prose-xl max-w-none text-lg leading-loose sm:text-xl">
-        <BookContent />
+    <main className="flex h-full w-full flex-col items-center justify-center">
+      <div className="max-w-2xl sm:rounded-lg sm:p-10 sm:shadow">
+        <h1 className="sticky top-0 z-10 bg-background/60 p-4 font-bold text-3xl backdrop-blur-sm sm:text-4xl">
+          {title}
+        </h1>
+        <div
+          className={cn(
+            "prose prose-lg p-4 text-xl leading-12 [&_rt]:text-sm [&_rt]:leading-none",
+            "sm:prose-xl sm:text-2xl sm:leading-13 sm:[&_rt]:text-base",
+            styles.booksLineBreak,
+          )}
+        >
+          <BookContent />
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
