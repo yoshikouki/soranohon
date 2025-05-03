@@ -6,9 +6,14 @@ import * as cheerio from "cheerio";
  * @returns cheerio.Cheerio .main_text要素
  * @throws main_textが見つからない場合
  */
-function extractMainText(html: string): cheerio.Cheerio {
+export function extractMainText(html: string): cheerio.Cheerio {
   const $ = cheerio.load(html);
   const main = $(".main_text");
+
+  if (!main.length) {
+    throw new Error("main_text div not found");
+  }
+
   return main;
 }
 
@@ -17,37 +22,48 @@ function extractMainText(html: string): cheerio.Cheerio {
  * @param main .main_text要素
  * @returns 行の配列
  */
-function extractLines(main: cheerio.Cheerio): string[] {
+export function extractLines(main: cheerio.Cheerio): string[] {
   const $ = cheerio.load("");
   const lines: string[] = [];
   let prevIsBr = false;
+
   main.contents().each((_, el) => {
+    // テキストノードの処理
     if (el.type === "text") {
       const text = $(el)
         .text()
         .replace(/^[ \t\n\r]+|[ \t\n\r]+$/g, "");
-      if (text.length > 0) {
-        lines.push(text);
-        prevIsBr = false;
-      }
-    } else if (el.type === "tag" && el.name === "br") {
-      // 直前が<br />ならスキップ
-      if (!prevIsBr) {
-        lines.push("<br />");
-        prevIsBr = true;
-      }
-    } else if (el.type === "tag") {
-      // ルビやemなどのタグはHTMLとして出力
-      const html = $.html(el).replace(/class=/g, "className=");
-      if (html.trim().length > 0) {
-        lines.push(html.trim());
-        prevIsBr = false;
-      }
+      if (text.length === 0) return;
+
+      lines.push(text);
+      prevIsBr = false;
+      return;
     }
+
+    // タグでない要素はスキップ
+    if (el.type !== "tag") return;
+
+    // brタグの処理
+    if (el.name === "br") {
+      if (prevIsBr) return; // 直前が<br />ならスキップ
+
+      lines.push("<br />");
+      prevIsBr = true;
+      return;
+    }
+
+    // その他のタグ（ルビやemなど）の処理
+    const html = $.html(el).replace(/class=/g, "className=");
+    if (html.trim().length === 0) return;
+
+    lines.push(html.trim());
+    prevIsBr = false;
   });
+
   // 先頭・末尾の<br />や空白行を除去
   while (lines.length && lines[0] === "<br />") lines.shift();
   while (lines.length && lines[lines.length - 1] === "<br />") lines.pop();
+
   return lines;
 }
 
@@ -56,32 +72,41 @@ function extractLines(main: cheerio.Cheerio): string[] {
  * @param lines 行の配列
  * @returns 段落の配列
  */
-function formParagraphs(lines: string[]): string[] {
+export function formParagraphs(lines: string[]): string[] {
   const paragraphs: string[] = [];
   let current: string[] = [];
+
   for (const line of lines) {
-    if (/^　|^「|^（/.test(line)) {
-      // 全角スペース or 「 or （で始まる
-      if (current.length > 0) {
-        // 段落の最後が <br /> なら削除
-        while (current.length > 0 && current[current.length - 1] === "<br />") {
-          current.pop();
-        }
-        paragraphs.push(current.join(""));
-        current = [];
-      }
-      current.push(line);
-    } else {
-      current.push(line);
+    const isNewParagraphStart = /^　|^「|^（/.test(line);
+
+    // 新しい段落の開始と、現在の段落が存在する場合
+    if (isNewParagraphStart && current.length > 0) {
+      // 段落の最後の<br />を削除
+      removeTrailingBreaks(current);
+      paragraphs.push(current.join(""));
+      current = [];
     }
+
+    current.push(line);
   }
+
+  // 最後の段落を処理
   if (current.length > 0) {
-    while (current.length > 0 && current[current.length - 1] === "<br />") {
-      current.pop();
-    }
+    removeTrailingBreaks(current);
     paragraphs.push(current.join(""));
   }
+
   return paragraphs;
+}
+
+/**
+ * 配列から末尾の<br />を削除する
+ * @param lines 行の配列
+ */
+export function removeTrailingBreaks(lines: string[]): void {
+  while (lines.length > 0 && lines[lines.length - 1] === "<br />") {
+    lines.pop();
+  }
 }
 
 /**
@@ -92,9 +117,6 @@ function formParagraphs(lines: string[]): string[] {
  */
 export function htmlToMdx(html: string): string {
   const main = extractMainText(html);
-  if (!main.length) {
-    throw new Error("main_text div not found");
-  }
   const lines = extractLines(main);
   const paragraphs = formParagraphs(lines);
   return paragraphs.join("\n\n");
