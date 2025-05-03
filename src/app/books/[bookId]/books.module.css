@@ -1,4 +1,5 @@
 .booksLineBreak {
+  overflow-wrap: anywhere; /* 収まらない場合に折り返す */
   word-break: auto-phrase;
   line-break: strict; /* 禁則処理を厳格に適用 */
 }
