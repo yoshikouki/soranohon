@@ -12,11 +12,14 @@ async function main() {
   let inputHtml = "";
   let outputMdx = "";
   let addRuby = true; // デフォルトでルビを追加する
+  let keepSpace = false; // デフォルトで全角スペースを削除する
 
   // 引数を解析
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--no-ruby" || args[i] === "-n") {
       addRuby = false;
+    } else if (args[i] === "--keep-space" || args[i] === "-k") {
+      keepSpace = true;
     } else if (!inputHtml) {
       inputHtml = args[i];
     } else if (!outputMdx) {
@@ -25,10 +28,13 @@ async function main() {
   }
 
   if (!inputHtml) {
-    console.error("Usage: bun run ./bin/html2mdx.ts [--no-ruby|-n] <input.html> [output.mdx]");
+    console.error("Usage: bun run ./bin/html2mdx.ts [--no-ruby|-n] [--keep-space|-k] <input.html> [output.mdx]");
     console.error("Options:");
     console.error(
-      "  --no-ruby, -n    Disable adding ruby placeholder tags to kanji characters",
+      "  --no-ruby, -n       Disable adding ruby placeholder tags to kanji characters",
+    );
+    console.error(
+      "  --keep-space, -k    Keep leading full-width spaces in paragraphs (default: remove)",
     );
     process.exit(1);
   }
@@ -41,8 +47,15 @@ async function main() {
 
   let mdx: string;
   try {
-    // HTML→MDX変換
-    mdx = htmlToMdx(html);
+    // HTML→MDX変換（全角スペースの扱いを設定）
+    mdx = htmlToMdx(html, !keepSpace);
+
+    // 全角スペース処理のログ
+    if (keepSpace) {
+      console.log("Kept leading full-width spaces in paragraphs");
+    } else {
+      console.log("Removed leading full-width spaces from paragraphs");
+    }
 
     // ルビプレースホルダーの追加（デフォルト有効）
     if (addRuby) {

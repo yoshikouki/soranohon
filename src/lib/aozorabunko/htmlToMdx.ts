@@ -214,15 +214,44 @@ export function removeTrailingBreaks(lines: string[]): void {
 }
 
 /**
+ * テキスト内の先頭の全角スペースを削除する
+ * @param text 処理するテキスト
+ * @returns 全角スペースが削除されたテキスト
+ */
+export function removeLeadingFullWidthSpace(text: string): string {
+  // テキストがなければ空文字を返す
+  if (!text) {
+    return "";
+  }
+
+  // 行頭の全角スペース「　」を削除
+  return text.replace(/^　+/g, "");
+}
+
+/**
  * 青空文庫HTMLの.main_text部分をMDXに変換する
  * @param html 青空文庫HTML文字列
+ * @param removeFullWidthSpace 先頭の全角スペースを削除するかどうか（デフォルト: true）
  * @returns MDX文字列
  * @throws main_textが見つからない場合
  */
-export function htmlToMdx(html: string): string {
+export function htmlToMdx(html: string, removeFullWidthSpace: boolean = true): string {
   const main = extractMainText(html);
   const lines = extractLines(main);
   const paragraphs = formParagraphs(lines);
+  
+  // 全角スペースを削除する場合は処理を追加
+  if (removeFullWidthSpace) {
+    for (let i = 0; i < paragraphs.length; i++) {
+      paragraphs[i] = removeLeadingFullWidthSpace(paragraphs[i]);
+    }
+  }
+  
+  // 段落がない場合は空文字列を返す
+  if (paragraphs.length === 0) {
+    return "";
+  }
+  
   return paragraphs.join("\n\n") + "\n";
 }
 
@@ -239,6 +268,7 @@ export function addRubyTagsToMdx(mdx: string): string {
  * 青空文庫HTMLをMDXに変換し、オプションでルビプレースホルダーを追加する（後方互換性のため）
  * @param html 青空文庫HTML文字列
  * @param addRubyPlaceholder 漢字にプレースホルダー付きrubyタグを追加するかどうか
+ * @param keepFullWidthSpace 先頭の全角スペースを保持するかどうか（デフォルト: 削除する）
  * @returns MDX文字列
  * @throws main_textが見つからない場合
  * @deprecated 代わりに htmlToMdx() と addRubyTagsToMdx() を組み合わせて使用してください
@@ -246,7 +276,8 @@ export function addRubyTagsToMdx(mdx: string): string {
 export function convertHtmlToMdxWithRuby(
   html: string,
   addRubyPlaceholder: boolean = false,
+  keepFullWidthSpace: boolean = false,
 ): string {
-  const mdx = htmlToMdx(html);
+  const mdx = htmlToMdx(html, !keepFullWidthSpace);
   return addRubyPlaceholder ? addRubyTagsToMdx(mdx) : mdx;
 }

@@ -7,6 +7,7 @@ import {
   extractMainText,
   formParagraphs,
   htmlToMdx,
+  removeLeadingFullWidthSpace,
   removeTrailingBreaks,
 } from "./htmlToMdx";
 
@@ -39,49 +40,49 @@ describe("extractMainText", () => {
 describe("htmlToMdx", () => {
   it("should convert plain text", () => {
     const html = `<div class="main_text">これはテストです。</div>`;
-    const expected = "これはテストです。";
+    const expected = "これはテストです。\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
   it("should handle <br> tags", () => {
     const html = `<div class="main_text">行1<br>行2</div>`;
-    const expected = "行1<br />行2";
+    const expected = "行1<br />行2\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
   it("should handle ruby tags", () => {
     const html = `<div class="main_text">漢<ruby>字<rt>じ</rt></ruby></div>`;
-    const expected = "漢<ruby>字<rt>じ</rt></ruby>";
+    const expected = "漢<ruby>字<rt>じ</rt></ruby>\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
   it("should handle em tags", () => {
     const html = `<div class="main_text">強調<em>テキスト</em></div>`;
-    const expected = "強調<em>テキスト</em>";
+    const expected = "強調<em>テキスト</em>\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
-  it("should split paragraphs by full-width space", () => {
+  it("should split paragraphs by full-width space and remove it by default", () => {
     const html = `<div class="main_text">行1<br>　行2</div>`;
-    const expected = "行1\n\n　行2";
+    const expected = "行1\n\n行2\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
   it("should split paragraphs by '「' or '（' at line start", () => {
     const html = `<div class="main_text">行1<br>「会話」<br>（注釈）</div>`;
-    const expected = "行1\n\n「会話」\n\n（注釈）";
+    const expected = "行1\n\n「会話」\n\n（注釈）\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
   it("should remove leading and trailing <br />", () => {
     const html = `<div class="main_text"><br>行1<br>行2<br></div>`;
-    const expected = "行1<br />行2";
+    const expected = "行1<br />行2\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
   it("should ignore empty and whitespace-only lines", () => {
     const html = `<div class="main_text">行1<br>   <br>行2</div>`;
-    const expected = "行1<br />行2";
+    const expected = "行1<br />行2\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
@@ -92,13 +93,13 @@ describe("htmlToMdx", () => {
 
   it("should convert class attribute to className", () => {
     const html = `<div class="main_text"><span class='foo'>bar</span></div>`;
-    const expected = '<span className="foo">bar</span>';
+    const expected = '<span className="foo">bar</span>\n';
     expect(htmlToMdx(html)).toBe(expected);
   });
 
   it("should handle mixed ruby and em tags", () => {
     const html = `<div class="main_text">テスト<ruby>漢<rt>かん</rt></ruby><em>強調</em></div>`;
-    const expected = "テスト<ruby>漢<rt>かん</rt></ruby><em>強調</em>";
+    const expected = "テスト<ruby>漢<rt>かん</rt></ruby><em>強調</em>\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
@@ -110,19 +111,19 @@ describe("htmlToMdx", () => {
 
   it("should ignore whitespace between consecutive <br>", () => {
     const html = `<div class="main_text">行1<br> <br>行2</div>`;
-    const expected = "行1<br />行2";
+    const expected = "行1<br />行2\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
-  it("should remove multiple <br> before paragraph split", () => {
+  it("should remove multiple <br> before paragraph split and remove full-width space", () => {
     const html = `<div class="main_text">行1<br><br>　行2</div>`;
-    const expected = "行1\n\n　行2";
+    const expected = "行1\n\n行2\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
   it("should handle nested tags", () => {
     const html = `<div class="main_text">テスト<em><ruby>漢<rt>かん</rt></ruby></em>終わり</div>`;
-    const expected = "テスト<em><ruby>漢<rt>かん</rt></ruby></em>終わり";
+    const expected = "テスト<em><ruby>漢<rt>かん</rt></ruby></em>終わり\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
@@ -134,19 +135,19 @@ describe("htmlToMdx", () => {
 
   it("should handle tag with multiple attributes", () => {
     const html = `<div class="main_text"><span class='foo' id='bar'>baz</span></div>`;
-    const expected = '<span className="foo" id="bar">baz</span>';
+    const expected = '<span className="foo" id="bar">baz</span>\n';
     expect(htmlToMdx(html)).toBe(expected);
   });
 
   it("should handle unexpected tags in main_text", () => {
     const html = `<div class="main_text">テスト<div>中身</div>終わり</div>`;
-    const expected = "テスト<div>中身</div>終わり";
+    const expected = "テスト<div>中身</div>終わり\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
   it("should handle alternating text and tags", () => {
     const html = `<div class="main_text">foo<em>bar</em>baz<ruby>字<rt>じ</rt></ruby></div>`;
-    const expected = "foo<em>bar</em>baz<ruby>字<rt>じ</rt></ruby>";
+    const expected = "foo<em>bar</em>baz<ruby>字<rt>じ</rt></ruby>\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
@@ -156,27 +157,27 @@ describe("htmlToMdx", () => {
     expect(htmlToMdx(html)).toBe(expected);
   });
 
-  it("should treat single full-width space line as paragraph", () => {
+  it("should remove full-width space from paragraph by default", () => {
     const html = `<div class="main_text">　全角スペース</div>`;
-    const expected = "　全角スペース";
+    const expected = "全角スペース\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
   it("should simplify complex ruby tags", () => {
     const html = `<div class="main_text"><ruby><rb>酒</rb><rp>（</rp><rt>しゅ</rt><rp>）</rp></ruby></div>`;
-    const expected = "<ruby>酒<rt>しゅ</rt></ruby>";
+    const expected = "<ruby>酒<rt>しゅ</rt></ruby>\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
   it("should simplify complex ruby tags within other content", () => {
     const html = `<div class="main_text">これは<ruby><rb>漢</rb><rp>（</rp><rt>かん</rt><rp>）</rp></ruby><ruby><rb>字</rb><rp>（</rp><rt>じ</rt><rp>）</rp></ruby>です。</div>`;
-    const expected = "これは<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>じ</rt></ruby>です。";
+    const expected = "これは<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>じ</rt></ruby>です。\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 
   it("should handle a mix of simple and complex ruby tags", () => {
     const html = `<div class="main_text"><ruby>簡<rt>かん</rt></ruby>単と<ruby><rb>複</rb><rp>（</rp><rt>ふく</rt><rp>）</rp></ruby>雑</div>`;
-    const expected = "<ruby>簡<rt>かん</rt></ruby>単と<ruby>複<rt>ふく</rt></ruby>雑";
+    const expected = "<ruby>簡<rt>かん</rt></ruby>単と<ruby>複<rt>ふく</rt></ruby>雑\n";
     expect(htmlToMdx(html)).toBe(expected);
   });
 });
@@ -384,29 +385,100 @@ describe("addRubyTagsToMdx", () => {
   });
 });
 
+describe("removeLeadingFullWidthSpace", () => {
+  it("should remove leading full-width space", () => {
+    const text = "　これはテストです。";
+    const expected = "これはテストです。";
+    expect(removeLeadingFullWidthSpace(text)).toBe(expected);
+  });
+
+  it("should remove multiple leading full-width spaces", () => {
+    const text = "　　　これはテストです。";
+    const expected = "これはテストです。";
+    expect(removeLeadingFullWidthSpace(text)).toBe(expected);
+  });
+
+  it("should not modify text without leading full-width space", () => {
+    const text = "これはテストです。";
+    expect(removeLeadingFullWidthSpace(text)).toBe(text);
+  });
+
+  it("should not remove full-width spaces in the middle of text", () => {
+    const text = "これは　テストです。";
+    expect(removeLeadingFullWidthSpace(text)).toBe(text);
+  });
+
+  it("should handle empty string", () => {
+    expect(removeLeadingFullWidthSpace("")).toBe("");
+  });
+
+  it("should handle null or undefined", () => {
+    expect(removeLeadingFullWidthSpace(null as any)).toBe("");
+    expect(removeLeadingFullWidthSpace(undefined as any)).toBe("");
+  });
+});
+
+describe("htmlToMdx with removeFullWidthSpace option", () => {
+  it("should convert HTML to MDX and remove full-width spaces by default", () => {
+    const html = `<div class="main_text">　これはテストです。<br>　これも段落です。</div>`;
+    const expected = "これはテストです。\n\nこれも段落です。\n";
+    expect(htmlToMdx(html)).toBe(expected);
+  });
+
+  it("should convert HTML to MDX without removing full-width spaces when specified", () => {
+    const html = `<div class="main_text">　これはテストです。<br>　これも段落です。</div>`;
+    const expected = "　これはテストです。\n\n　これも段落です。\n";
+    expect(htmlToMdx(html, false)).toBe(expected);
+  });
+
+  it("should handle HTML without full-width spaces", () => {
+    const html = `<div class="main_text">これはテストです。<br>これも段落です。</div>`;
+    const expected = "これはテストです。<br />これも段落です。\n";
+    expect(htmlToMdx(html)).toBe(expected);
+  });
+});
+
 describe("convertHtmlToMdxWithRuby", () => {
   it("should convert HTML to MDX with ruby tags when enabled", () => {
     const html = `<div class="main_text">漢字</div>`;
-    const expected = "<ruby>漢字<rt>{{required_ruby}}</rt></ruby>";
+    const expected = "<ruby>漢字<rt>{{required_ruby}}</rt></ruby>\n";
     expect(convertHtmlToMdxWithRuby(html, true)).toBe(expected);
   });
 
   it("should convert HTML to MDX without ruby tags when disabled", () => {
     const html = `<div class="main_text">漢字</div>`;
-    const expected = "漢字";
+    const expected = "漢字\n";
     expect(convertHtmlToMdxWithRuby(html, false)).toBe(expected);
     expect(convertHtmlToMdxWithRuby(html)).toBe(expected); // デフォルトはfalse
   });
 
   it("should add placeholder ruby tags to kanji but not to existing ruby tags", () => {
     const html = `<div class="main_text"><ruby>漢<rt>かん</rt></ruby>字</div>`;
-    const expected = "<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>{{required_ruby}}</rt></ruby>";
+    const expected = "<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>{{required_ruby}}</rt></ruby>\n";
     expect(convertHtmlToMdxWithRuby(html, true)).toBe(expected);
   });
 
   it("should handle complex ruby tags along with placeholder ruby tags", () => {
     const html = `<div class="main_text"><ruby><rb>漢</rb><rp>（</rp><rt>かん</rt><rp>）</rp></ruby>字</div>`;
-    const expected = "<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>{{required_ruby}}</rt></ruby>";
+    const expected = "<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>{{required_ruby}}</rt></ruby>\n";
+    expect(convertHtmlToMdxWithRuby(html, true)).toBe(expected);
+  });
+
+  it("should keep leading full-width spaces when specified true", () => {
+    const html = `<div class="main_text">　テスト</div>`;
+    const expected = "　テスト\n";
+    expect(convertHtmlToMdxWithRuby(html, false, true)).toBe(expected);
+  });
+
+  it("should remove leading full-width spaces by default", () => {
+    const html = `<div class="main_text">　テスト</div>`;
+    const expected = "テスト\n";
+    expect(convertHtmlToMdxWithRuby(html, false)).toBe(expected);
+  });
+
+  it("should handle both ruby tags and full-width space removal", () => {
+    const html = `<div class="main_text">　漢字</div>`;
+    const expected = "<ruby>漢字<rt>{{required_ruby}}</rt></ruby>\n";
     expect(convertHtmlToMdxWithRuby(html, true)).toBe(expected);
   });
 });
