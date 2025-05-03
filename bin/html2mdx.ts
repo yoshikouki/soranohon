@@ -3,13 +3,31 @@ import { readFile, writeFile } from "fs/promises";
 import * as process from "process";
 import { extractBookMeta } from "../src/lib/aozorabunko/bookMeta";
 import { detectAndDecode } from "../src/lib/aozorabunko/encoding";
-import { htmlToMdx } from "../src/lib/aozorabunko/htmlToMdx";
+import { addRubyTagsToMdx, htmlToMdx } from "../src/lib/aozorabunko/htmlToMdx";
 import { getMdxOutputPath } from "../src/lib/aozorabunko/path";
 
 async function main() {
-  const [, , inputHtml, outputMdx] = process.argv;
+  // コマンドライン引数の解析
+  const args = process.argv.slice(2);
+  let inputHtml = "";
+  let outputMdx = "";
+  let addRuby = false;
+
+  // 引数を解析
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--ruby" || args[i] === "-r") {
+      addRuby = true;
+    } else if (!inputHtml) {
+      inputHtml = args[i];
+    } else if (!outputMdx) {
+      outputMdx = args[i];
+    }
+  }
+
   if (!inputHtml) {
-    console.error("Usage: bun run ./bin/html2mdx.ts <input.html> [output.mdx]");
+    console.error("Usage: bun run ./bin/html2mdx.ts [--ruby|-r] <input.html> [output.mdx]");
+    console.error("Options:");
+    console.error("  --ruby, -r    Add ruby placeholder tags to kanji characters");
     process.exit(1);
   }
 
@@ -21,7 +39,14 @@ async function main() {
 
   let mdx: string;
   try {
+    // HTML→MDX変換
     mdx = htmlToMdx(html);
+    
+    // ルビプレースホルダー追加オプションが有効な場合
+    if (addRuby) {
+      mdx = addRubyTagsToMdx(mdx);
+      console.log("Ruby placeholder tags added to kanji characters");
+    }
   } catch (e) {
     console.error(e instanceof Error ? e.message : e);
     process.exit(1);
@@ -36,5 +61,8 @@ async function main() {
 }
 
 if (require.main === module) {
-  main();
+  main().catch((err) => {
+    console.error("Error:", err.message);
+    process.exit(1);
+  });
 }
