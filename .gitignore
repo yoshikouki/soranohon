@@ -47,3 +47,5 @@ coverage
 .next
 out
 build
+
+**/.claude/settings.local.json
