@@ -7,7 +7,9 @@ export async function generateMetadata({
 }: {
   params: Promise<{ bookId: string }>;
 }): Promise<Metadata> {
-  const { bookId } = await params;
+  // paramsが確実に存在することを確認
+  const resolvedParams = await params;
+  const bookId = resolvedParams?.bookId || "";
   const book = books[bookId as keyof typeof books];
   if (!book) return {};
   return {
@@ -17,7 +19,9 @@ export async function generateMetadata({
 }
 
 export default async function BookPage({ params }: { params: Promise<{ bookId: string }> }) {
-  const { bookId } = await params;
+  // paramsが確実に存在することを確認
+  const resolvedParams = await params;
+  const bookId = resolvedParams?.bookId || "";
 
   // bookIdが存在するか確認
   if (!(bookId in books)) {
