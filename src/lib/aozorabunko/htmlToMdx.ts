@@ -1,19 +1,25 @@
 import * as cheerio from "cheerio";
 
 /**
- * 青空文庫HTMLの.main_text部分をMDXに変換する
+ * 青空文庫HTMLから.main_text要素を抽出する
  * @param html 青空文庫HTML文字列
- * @returns MDX文字列
+ * @returns cheerio.Cheerio .main_text要素
  * @throws main_textが見つからない場合
  */
-export function htmlToMdx(html: string): string {
+function extractMainText(html: string): cheerio.Cheerio {
   const $ = cheerio.load(html);
   const main = $(".main_text");
-  if (!main.length) {
-    throw new Error("main_text div not found");
-  }
-  // 子要素を順にたどり、<br>だけの行や空白行を除去しつつ連結
-  let lines: string[] = [];
+  return main;
+}
+
+/**
+ * main_text要素から行を抽出する
+ * @param main .main_text要素
+ * @returns 行の配列
+ */
+function extractLines(main: cheerio.Cheerio): string[] {
+  const $ = cheerio.load("");
+  const lines: string[] = [];
   let prevIsBr = false;
   main.contents().each((_, el) => {
     if (el.type === "text") {
@@ -42,8 +48,16 @@ export function htmlToMdx(html: string): string {
   // 先頭・末尾の<br />や空白行を除去
   while (lines.length && lines[0] === "<br />") lines.shift();
   while (lines.length && lines[lines.length - 1] === "<br />") lines.pop();
-  // <br /> で分割した各行のうち、全角スペース（U+3000）、（、または「ではじまる行を新しい段落の起点とし、段落ごとに空行で区切る
-  let paragraphs: string[] = [];
+  return lines;
+}
+
+/**
+ * 行から段落を構成する
+ * @param lines 行の配列
+ * @returns 段落の配列
+ */
+function formParagraphs(lines: string[]): string[] {
+  const paragraphs: string[] = [];
   let current: string[] = [];
   for (const line of lines) {
     if (/^　|^「|^（/.test(line)) {
@@ -67,5 +81,21 @@ export function htmlToMdx(html: string): string {
     }
     paragraphs.push(current.join(""));
   }
+  return paragraphs;
+}
+
+/**
+ * 青空文庫HTMLの.main_text部分をMDXに変換する
+ * @param html 青空文庫HTML文字列
+ * @returns MDX文字列
+ * @throws main_textが見つからない場合
+ */
+export function htmlToMdx(html: string): string {
+  const main = extractMainText(html);
+  if (!main.length) {
+    throw new Error("main_text div not found");
+  }
+  const lines = extractLines(main);
+  const paragraphs = formParagraphs(lines);
   return paragraphs.join("\n\n");
 }
