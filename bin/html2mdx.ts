@@ -11,12 +11,12 @@ async function main() {
   const args = process.argv.slice(2);
   let inputHtml = "";
   let outputMdx = "";
-  let addRuby = false;
+  let addRuby = true; // デフォルトでルビを追加する
 
   // 引数を解析
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === "--ruby" || args[i] === "-r") {
-      addRuby = true;
+    if (args[i] === "--no-ruby" || args[i] === "-n") {
+      addRuby = false;
     } else if (!inputHtml) {
       inputHtml = args[i];
     } else if (!outputMdx) {
@@ -25,9 +25,9 @@ async function main() {
   }
 
   if (!inputHtml) {
-    console.error("Usage: bun run ./bin/html2mdx.ts [--ruby|-r] <input.html> [output.mdx]");
+    console.error("Usage: bun run ./bin/html2mdx.ts [--no-ruby|-n] <input.html> [output.mdx]");
     console.error("Options:");
-    console.error("  --ruby, -r    Add ruby placeholder tags to kanji characters");
+    console.error("  --no-ruby, -n    Disable adding ruby placeholder tags to kanji characters");
     process.exit(1);
   }
 
@@ -42,10 +42,12 @@ async function main() {
     // HTML→MDX変換
     mdx = htmlToMdx(html);
     
-    // ルビプレースホルダー追加オプションが有効な場合
+    // ルビプレースホルダーの追加（デフォルト有効）
     if (addRuby) {
       mdx = addRubyTagsToMdx(mdx);
       console.log("Ruby placeholder tags added to kanji characters");
+    } else {
+      console.log("Ruby placeholder tags disabled");
     }
   } catch (e) {
     console.error(e instanceof Error ? e.message : e);
