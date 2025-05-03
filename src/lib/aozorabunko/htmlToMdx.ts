@@ -53,7 +53,16 @@ export function extractLines(main: cheerio.Cheerio): string[] {
     }
 
     // その他のタグ（ルビやemなど）の処理
-    const html = $.html(el).replace(/class=/g, "className=");
+    let html = $.html(el).replace(/class=/g, "className=");
+
+    if (el.name === "ruby") {
+      const rbContent = $(el).find("rb").text();
+      const rtContent = $(el).find("rt").text();
+      if (rbContent && rtContent) {
+        html = `<ruby>${rbContent}<rt>${rtContent}</rt></ruby>`;
+      }
+    }
+
     if (html.trim().length === 0) return;
 
     lines.push(html.trim());

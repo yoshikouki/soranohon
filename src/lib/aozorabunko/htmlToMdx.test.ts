@@ -158,6 +158,24 @@ describe("htmlToMdx", () => {
     const expected = "　全角スペース";
     expect(htmlToMdx(html)).toBe(expected);
   });
+
+  it("should simplify complex ruby tags", () => {
+    const html = `<div class="main_text"><ruby><rb>酒</rb><rp>（</rp><rt>しゅ</rt><rp>）</rp></ruby></div>`;
+    const expected = "<ruby>酒<rt>しゅ</rt></ruby>";
+    expect(htmlToMdx(html)).toBe(expected);
+  });
+
+  it("should simplify complex ruby tags within other content", () => {
+    const html = `<div class="main_text">これは<ruby><rb>漢</rb><rp>（</rp><rt>かん</rt><rp>）</rp></ruby><ruby><rb>字</rb><rp>（</rp><rt>じ</rt><rp>）</rp></ruby>です。</div>`;
+    const expected = "これは<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>じ</rt></ruby>です。";
+    expect(htmlToMdx(html)).toBe(expected);
+  });
+
+  it("should handle a mix of simple and complex ruby tags", () => {
+    const html = `<div class="main_text"><ruby>簡<rt>かん</rt></ruby>単と<ruby><rb>複</rb><rp>（</rp><rt>ふく</rt><rp>）</rp></ruby>雑</div>`;
+    const expected = "<ruby>簡<rt>かん</rt></ruby>単と<ruby>複<rt>ふく</rt></ruby>雑";
+    expect(htmlToMdx(html)).toBe(expected);
+  });
 });
 
 describe("extractLines", () => {
