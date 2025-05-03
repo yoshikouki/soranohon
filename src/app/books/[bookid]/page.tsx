@@ -19,21 +19,11 @@ export async function generateMetadata({
 }
 
 export default async function BookPage({ params }: { params: Promise<{ bookId: string }> }) {
-  // デバッグ情報を出力
-  console.log("Books page params:", params);
-  console.log("Available books:", Object.keys(books));
-  
   // paramsが確実に存在することを確認
   const resolvedParams = await params;
-  console.log("Resolved params:", resolvedParams);
-  
   const bookId = resolvedParams?.bookId || "";
-  console.log("Extracted bookId:", bookId, "Type:", typeof bookId);
-  
+
   // bookIdが存在するか確認
-  console.log("bookId exists in books?", bookId in books);
-  console.log("books[bookId]:", books[bookId as keyof typeof books]);
-  
   if (!(bookId in books)) {
     console.error(`Book not found with ID: ${bookId}`);
     return notFound();
@@ -48,30 +38,16 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
   }
 
   // MDXモジュールのインポート
-  console.log("Book object:", book);
-  console.log("Book MDX function type:", typeof book.mdx);
-  
   const importMdx = book.mdx;
   type MdxModule = { default: React.ComponentType };
   function isMdxModule(mod: unknown): mod is MdxModule {
     return typeof mod === "object" && mod !== null && "default" in mod;
   }
-  
-  console.log("Attempting to import MDX...");
-  let mod;
-  try {
-    mod = await importMdx();
-    console.log("MDX module imported:", mod);
-    
-    if (!isMdxModule(mod)) {
-      console.error(`Invalid MDX module for book: ${bookId}`);
-      console.log("Module content:", mod);
-      return notFound();
-    }
-    
-    console.log("MDX module is valid");
-  } catch (error) {
-    console.error("Error importing MDX:", error);
+
+  const mod = await importMdx();
+
+  if (!isMdxModule(mod)) {
+    console.error(`Invalid MDX module for book: ${bookId}`);
     return notFound();
   }
 

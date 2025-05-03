@@ -220,20 +220,10 @@ export function removeTrailingBreaks(lines: string[]): void {
  * @throws main_textが見つからない場合
  */
 export function htmlToMdx(html: string): string {
-  // デバッグ情報
-  console.log("Converting HTML to MDX, input length:", html.length);
-  try {
-    const main = extractMainText(html);
-    const lines = extractLines(main);
-    console.log("Extracted lines count:", lines.length);
-    const paragraphs = formParagraphs(lines);
-    console.log("Formed paragraphs count:", paragraphs.length);
-    // 余分な改行を追加しない
-    return paragraphs.join("\n\n");
-  } catch (error) {
-    console.error("Error in htmlToMdx:", error);
-    throw error;
-  }
+  const main = extractMainText(html);
+  const lines = extractLines(main);
+  const paragraphs = formParagraphs(lines);
+  return paragraphs.join("\n\n") + "\n";
 }
 
 /**
@@ -257,16 +247,6 @@ export function convertHtmlToMdxWithRuby(
   html: string,
   addRubyPlaceholder: boolean = false,
 ): string {
-  console.log("convertHtmlToMdxWithRuby called, input length:", html.length);
-  console.log("addRubyPlaceholder:", addRubyPlaceholder);
-  try {
-    const mdx = htmlToMdx(html);
-    console.log("MDX conversion successful, output length:", mdx.length);
-    const result = addRubyPlaceholder ? addRubyTagsToMdx(mdx) : mdx;
-    console.log("Final output length:", result.length);
-    return result;
-  } catch (error) {
-    console.error("Error in convertHtmlToMdxWithRuby:", error);
-    throw error;
-  }
+  const mdx = htmlToMdx(html);
+  return addRubyPlaceholder ? addRubyTagsToMdx(mdx) : mdx;
 }
