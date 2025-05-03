@@ -7,9 +7,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ bookId: string }>;
 }): Promise<Metadata> {
-  // paramsが確実に存在することを確認
-  const resolvedParams = await params;
-  const bookId = resolvedParams?.bookId || "";
+  const { bookId } = await params;
   const book = books[bookId as keyof typeof books];
   if (!book) return {};
   return {
@@ -18,34 +16,19 @@ export async function generateMetadata({
   };
 }
 
+type MdxModule = { default: React.ComponentType };
+function isMdxModule(mod: unknown): mod is MdxModule {
+  return typeof mod === "object" && mod !== null && "default" in mod;
+}
+
 export default async function BookPage({ params }: { params: Promise<{ bookId: string }> }) {
-  // paramsが確実に存在することを確認
-  const resolvedParams = await params;
-  const bookId = resolvedParams?.bookId || "";
-
-  // bookIdが存在するか確認
-  if (!(bookId in books)) {
-    console.error(`Book not found with ID: ${bookId}`);
-    return notFound();
-  }
-
+  const { bookId } = await params;
   const book = books[bookId as keyof typeof books];
-
-  // bookオブジェクトの存在確認
-  if (!book || !book.mdx) {
+  if (!book?.mdx) {
     console.error(`Invalid book data for ID: ${bookId}`);
     return notFound();
   }
-
-  // MDXモジュールのインポート
-  const importMdx = book.mdx;
-  type MdxModule = { default: React.ComponentType };
-  function isMdxModule(mod: unknown): mod is MdxModule {
-    return typeof mod === "object" && mod !== null && "default" in mod;
-  }
-
-  const mod = await importMdx();
-
+  const mod = await book.mdx();
   if (!isMdxModule(mod)) {
     console.error(`Invalid MDX module for book: ${bookId}`);
     return notFound();
@@ -59,10 +42,7 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
       <h1 className="sticky top-0 z-10 mb-6 bg-background/60 py-4 text-center font-bold text-3xl backdrop-blur-sm sm:text-4xl">
         {title}
       </h1>
-      <div
-        className="prose prose-lg sm:prose-xl max-w-none text-lg leading-loose sm:text-xl"
-        style={{ lineHeight: 2, fontSize: "1.25rem" }}
-      >
+      <div className="prose prose-lg sm:prose-xl max-w-none text-lg leading-loose sm:text-xl">
         <BookContent />
       </div>
     </div>
