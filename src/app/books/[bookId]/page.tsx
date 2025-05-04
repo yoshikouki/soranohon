@@ -49,8 +49,7 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
       </div>
       <div
         className={cn(
-          "prose prose-lg max-w-3xl text-xl leading-loose [&>p]:py-4",
-          "sm:prose-xl sm:text-2xl",
+          "prose prose-xl max-w-3xl leading-loose [&>p]:py-4",
           "[&_rt]:text-center [&_rt]:font-normal [&_rt]:text-foreground/60 [&_rt]:text-sm",
           styles.booksLineBreak,
         )}
