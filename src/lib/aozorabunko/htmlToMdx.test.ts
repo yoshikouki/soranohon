@@ -357,20 +357,25 @@ describe("addPlaceholderRubyToKanji", () => {
   });
 
   it("should handle complex content with multiple existing ruby tags", () => {
-    const input = "むかしむかし、あるところにちっちゃな、かわいい<ruby>女<rt>おんな</rt></ruby>の<ruby>子<rt>こ</rt></ruby>がおりました。";
-    const expected = "むかしむかし、あるところにちっちゃな、かわいい<ruby>女<rt>おんな</rt></ruby>の<ruby>子<rt>こ</rt></ruby>がおりました。";
+    const input =
+      "むかしむかし、あるところにちっちゃな、かわいい<ruby>女<rt>おんな</rt></ruby>の<ruby>子<rt>こ</rt></ruby>がおりました。";
+    const expected =
+      "むかしむかし、あるところにちっちゃな、かわいい<ruby>女<rt>おんな</rt></ruby>の<ruby>子<rt>こ</rt></ruby>がおりました。";
     expect(addPlaceholderRubyToKanji(input)).toBe(expected);
   });
 
   it("should add ruby tags to kanji outside existing ruby tags", () => {
     const input = "これは<ruby>漢<rt>かん</rt></ruby>字です";
-    const expected = "これは<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>{{required_ruby}}</rt></ruby>です";
+    const expected =
+      "これは<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>{{required_ruby}}</rt></ruby>です";
     expect(addPlaceholderRubyToKanji(input)).toBe(expected);
   });
 
   it("should handle nested tags with ruby tags", () => {
-    const input = "<div>これは<ruby>漢<rt>かん</rt></ruby>字と<span><ruby>日<rt>に</rt></ruby>本</span>語です</div>";
-    const expected = "<div>これは<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>{{required_ruby}}</rt></ruby>と<span><ruby>日<rt>に</rt></ruby><ruby>本<rt>{{required_ruby}}</rt></ruby></span><ruby>語<rt>{{required_ruby}}</rt></ruby>です</div>";
+    const input =
+      "<div>これは<ruby>漢<rt>かん</rt></ruby>字と<span><ruby>日<rt>に</rt></ruby>本</span>語です</div>";
+    const expected =
+      "<div>これは<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>{{required_ruby}}</rt></ruby>と<span><ruby>日<rt>に</rt></ruby><ruby>本<rt>{{required_ruby}}</rt></ruby></span><ruby>語<rt>{{required_ruby}}</rt></ruby>です</div>";
     expect(addPlaceholderRubyToKanji(input)).toBe(expected);
   });
 });
@@ -436,8 +441,8 @@ describe("removeLeadingFullWidthSpace", () => {
   });
 
   it("should handle null or undefined", () => {
-    expect(removeLeadingFullWidthSpace(null as any)).toBe("");
-    expect(removeLeadingFullWidthSpace(undefined as any)).toBe("");
+    expect(removeLeadingFullWidthSpace(null as unknown as string)).toBe("");
+    expect(removeLeadingFullWidthSpace(undefined as unknown as string)).toBe("");
   });
 });
 

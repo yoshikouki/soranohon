@@ -32,10 +32,10 @@ export function addPlaceholderRubyToKanji(text: string): string {
   // まず既存のrubyタグを一時的に置換して保護する
   // これには従来の<ruby>タグに加えて、複雑な<rb>や<rp>を含むタグも対象とする
   const rubyTags: string[] = [];
-  
+
   // 従来のrubyタグ（<ruby>漢字<rt>かんじ</rt></ruby>形式）と複雑なrubyタグ（<ruby><rb>漢</rb><rp>形式）の両方を対象とした正規表現
   const rubyTagRegex = /<ruby>(?:[^<]*|<(?!\/ruby>)[^>]*>)*<\/ruby>/gs;
-  
+
   // 既存のrubyタグを見つけて配列に保存し、プレースホルダーに置き換える
   let protectedText = text.replace(rubyTagRegex, (match) => {
     const placeholder = `__RUBY_TAG_${rubyTags.length}__`;
@@ -186,19 +186,19 @@ export function htmlToMdx(html: string, removeFullWidthSpace: boolean = true): s
   const main = extractMainText(html);
   const lines = extractLines(main);
   const paragraphs = formParagraphs(lines);
-  
+
   // 全角スペースを削除する場合は処理を追加
   if (removeFullWidthSpace) {
     for (let i = 0; i < paragraphs.length; i++) {
       paragraphs[i] = removeLeadingFullWidthSpace(paragraphs[i]);
     }
   }
-  
+
   // 段落がない場合は空文字列を返す
   if (paragraphs.length === 0) {
     return "";
   }
-  
+
   return paragraphs.join("\n\n") + "\n";
 }
 
