@@ -41,16 +41,14 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
   const title = book.title;
 
   return (
-    <main className="flex h-full w-full flex-col items-center justify-center px-4 py-6">
-      <div className="w-full max-w-3xl">
-        <h1 className="sticky top-0 z-10 bg-background/60 py-4 text-center font-bold text-3xl backdrop-blur-sm sm:text-4xl">
-          {title}
-        </h1>
-      </div>
+    <main className="relative flex h-full w-full flex-col items-center justify-center py-6">
+      <h1 className="sticky top-0 z-10 w-full bg-background/60 p-4 text-center font-bold text-3xl backdrop-blur-sm sm:text-4xl">
+        {title}
+      </h1>
       <div
         className={cn(
-          "prose prose-xl max-w-3xl leading-loose [&>p]:py-4",
-          "[&_rt]:text-center [&_rt]:font-normal [&_rt]:text-foreground/60 [&_rt]:text-sm",
+          "prose prose-xl max-w-3xl px-4 font-semibold leading-loose",
+          "[&_rt]:font-normal [&_rt]:text-foreground/60 [&_rt]:text-sm",
           styles.booksLineBreak,
         )}
       >
