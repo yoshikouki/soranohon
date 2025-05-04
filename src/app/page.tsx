@@ -1,17 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import { books } from "@/books";
 
 export default function Home() {
-  // 本のリストデータ（将来的にはAPIから取得など拡張可能）
-  const bookList = [
-    {
-      id: "59835_72466",
-      title: "赤ずきん",
-      description: "おばあさんのところへ行くために森を抜ける少女のお話",
-      imageSrc: "/assets/books/red-riding-hood.png", // 仮の画像パス
-    },
-    // 将来的に追加される本のデータ
-  ];
+  const bookList = Object.values(books);
 
   return (
     <main className="flex w-full flex-col items-center justify-center p-6">
