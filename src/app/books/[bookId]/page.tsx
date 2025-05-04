@@ -46,23 +46,24 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
         <h1 className="sticky top-0 z-10 bg-background/60 py-4 text-center font-bold text-3xl backdrop-blur-sm sm:text-4xl">
           {title}
         </h1>
-        <div
-          className={cn(
-            "prose prose-lg text-xl leading-loose [&>p]:py-4",
-            "sm:prose-xl sm:text-2xl sm:leading-relaxed",
-            styles.booksLineBreak,
-          )}
+      </div>
+      <div
+        className={cn(
+          "prose prose-lg max-w-3xl text-xl leading-loose [&>p]:py-4",
+          "sm:prose-xl sm:text-2xl",
+          "[&_rt]:text-center [&_rt]:font-normal [&_rt]:text-foreground/60 [&_rt]:text-sm",
+          styles.booksLineBreak,
+        )}
+      >
+        <BookContent />
+      </div>
+      <div className="py-10 text-center">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 py-2 font-bold text-primary transition-colors hover:text-primary/70"
         >
-          <BookContent />
-        </div>
-        <div className="py-10 text-center">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1 py-2 font-bold text-primary transition-colors hover:text-primary/70"
-          >
-            ← ほんのリストに もどる
-          </Link>
-        </div>
+          ← ほんのリストに もどる
+        </Link>
       </div>
     </main>
   );

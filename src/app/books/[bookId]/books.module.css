@@ -3,24 +3,3 @@
   word-break: auto-phrase;
   line-break: strict; /* 禁則処理を厳格に適用 */
 }
-
-/* ルビのスタイル */
-.booksLineBreak rt {
-  color: var(--color-accent);
-  font-size: 0.65em;
-  line-height: 1.2;
-  letter-spacing: 0.05em;
-  text-align: center;
-  font-weight: 500;
-  transform: translateY(-0.1em);
-  display: block;
-  margin-bottom: 0.1em;
-}
-
-/* ルビ付き文字全体のスタイル */
-.booksLineBreak ruby {
-  display: inline-flex;
-  flex-direction: column-reverse;
-  vertical-align: bottom;
-  line-height: 1.7;
-}
