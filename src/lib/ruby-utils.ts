@@ -61,7 +61,7 @@ export function addRubyTagsWithPreservation(
 ): string {
   // まず既存のrubyタグを一時的に置換して保護
   const rubyTags: string[] = [];
-  const rubyTagRegex = /<ruby>(?:[^<]*|<(?!\/ruby>)[^>]*>)*<\/ruby>/gs;
+  const rubyTagRegex = /<ruby>(?:[^<]*|<(?!\/ruby>)[^>]*>)*?<\/ruby>/g;
 
   let protectedText = mdx.replace(rubyTagRegex, (match) => {
     const placeholder = `__RUBY_TAG_${rubyTags.length}__`;

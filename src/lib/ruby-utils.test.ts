@@ -133,4 +133,13 @@ describe("addRubyTagsWithPreservation", () => {
 
     expect(result).toBe("");
   });
+
+  it("should handle ruby tags with line breaks", () => {
+    const mdx = "<ruby>\n漢字\n<rt>\nかんじ\n</rt>\n</ruby>と改行";
+    const existingRubyTags = new Map<string, string>();
+
+    const result = addRubyTagsWithPreservation(mdx, existingRubyTags);
+
+    expect(result).toBe("<ruby>\n漢字\n<rt>\nかんじ\n</rt>\n</ruby>と<ruby>改行<rt>{{required_ruby}}</rt></ruby>");
+  });
 });

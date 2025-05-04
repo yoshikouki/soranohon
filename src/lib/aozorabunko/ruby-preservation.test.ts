@@ -53,4 +53,11 @@ describe("Ruby tag preservation tests", () => {
 
     expect(addPlaceholderRubyToKanji(input)).toBe(expected);
   });
+
+  it("should handle ruby tags with line breaks", () => {
+    const input = "<ruby>\n漢字\n<rt>\nかんじ\n</rt>\n</ruby>と<ruby>改行\n<rt>かいぎょう</rt></ruby>。";
+    const expected = "<ruby>\n漢字\n<rt>\nかんじ\n</rt>\n</ruby>と<ruby>改行\n<rt>かいぎょう</rt></ruby>。";
+
+    expect(addPlaceholderRubyToKanji(input)).toBe(expected);
+  });
 });

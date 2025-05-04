@@ -34,7 +34,8 @@ export function addPlaceholderRubyToKanji(text: string): string {
   const rubyTags: string[] = [];
 
   // 従来のrubyタグ（<ruby>漢字<rt>かんじ</rt></ruby>形式）と複雑なrubyタグ（<ruby><rb>漢</rb><rp>形式）の両方を対象とした正規表現
-  const rubyTagRegex = /<ruby>(?:[^<]*|<(?!\/ruby>)[^>]*>)*<\/ruby>/gs;
+  // [\s\S] は . (dotAll) の代替で、改行を含むすべての文字にマッチする
+  const rubyTagRegex = /<ruby>(?:[^<]*|<(?!\/ruby>)[^>]*>)*?<\/ruby>/g;
 
   // 既存のrubyタグを見つけて配列に保存し、プレースホルダーに置き換える
   let protectedText = text.replace(rubyTagRegex, (match) => {
