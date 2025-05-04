@@ -11,7 +11,7 @@ const withMDX = createMDX({
   // 必要に応じて remark/rehype プラグインを追加可能
   options: {
     remarkPlugins: [],
-    rehypePlugins: [],
+    rehypePlugins: [["rehype-unwrap-images"]],
   },
 });
 
