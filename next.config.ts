@@ -11,6 +11,7 @@ const withMDX = createMDX({
   // 必要に応じて remark/rehype プラグインを追加可能
   options: {
     remarkPlugins: [],
+    // @ts-expect-error: Turbopackでは文字列形式を使用
     rehypePlugins: [["rehype-unwrap-images"]],
   },
 });
