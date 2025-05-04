@@ -1,24 +1,60 @@
+"use client";
+
+import { User2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Header = () => {
   return (
-    <header className="flex w-full flex-col items-center justify-center py-6">
-      <div className="flex w-full max-w-3xl items-center justify-between px-4">
-        <Link
-          href={"/"}
-          className="flex items-center justify-center gap-3 transition-colors hover:text-primary"
-        >
-          <Image
-            src="/logo-no-padding.webp"
-            loading="eager"
-            alt="service logo"
-            width={40}
-            height={40}
-          />
-          <h1 className="font-bold text-4xl">そらのほん</h1>
-        </Link>
+    <>
+      {/* 通常ヘッダー - スクロールで隠れる */}
+      <header className="w-full">
+        <div className="container flex h-16 max-w-screen-xl items-center px-4">
+          <Link
+            href="/"
+            className="flex items-center gap-2 transition-colors hover:text-primary"
+          >
+            <Image
+              src="/logo.webp"
+              loading="eager"
+              alt="service logo"
+              width={24}
+              height={24}
+              className="rounded-sm"
+            />
+            <h1 className="font-bold text-lg">そらのほん</h1>
+          </Link>
+        </div>
+      </header>
+
+      {/* 固定ユーザーメニュー - 画面上部に固定表示 */}
+      <div className="fixed top-0 right-0 z-20 flex h-16 items-center justify-center pr-4">
+        <nav>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-10 w-10 rounded-full bg-background/80 shadow-sm backdrop-blur"
+              >
+                <User2Icon className="size-5" />
+                <span className="sr-only">ユーザーメニュー</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>よんだほん</DropdownMenuItem>
+              <DropdownMenuItem>おきに入り</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </nav>
       </div>
-    </header>
+    </>
   );
 };
