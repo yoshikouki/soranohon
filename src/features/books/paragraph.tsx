@@ -9,6 +9,7 @@ interface ParagraphProps extends HTMLAttributes<HTMLParagraphElement> {
  * 段落コンポーネント
  * 全角スペースのインデントを CSS で制御する
  * 「」や（）から始まる段落はインデントしない
+ * 子ども向けに読みやすいスタイリングを適用
  */
 export function Paragraph({ children, className, ...props }: ParagraphProps) {
   // 文字列に変換して最初の文字をチェック
@@ -18,8 +19,14 @@ export function Paragraph({ children, className, ...props }: ParagraphProps) {
   // 「」や（）から始まる場合はインデントしない
   const shouldIndent = !["「", "（", "("].includes(firstChar);
 
+  // 会話文かどうかの判定（「」で始まる文章）
+  const isDialogue = firstChar === "「";
+
   return (
-    <p className={cn(shouldIndent && "indent-4", className)} {...props}>
+    <p
+      className={cn(shouldIndent && "indent-6", isDialogue && "bg-secondary/5", className)}
+      {...props}
+    >
       {children}
     </p>
   );

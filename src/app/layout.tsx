@@ -1,15 +1,18 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Noto_Sans_JP } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { Footer } from "./footer";
 import { Header } from "./header";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// 子ども向けに読みやすいフォント
+const notoSansJP = Noto_Sans_JP({
   subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-geist-sans", // 互換性のため同じvariable名を使用
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -29,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body className={cn("antialiased", geistSans.variable, geistMono.variable)}>
+      <body className={cn("antialiased", notoSansJP.variable, geistMono.variable)}>
         <Header />
         {children}
         <Footer />

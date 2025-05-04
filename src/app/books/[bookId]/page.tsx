@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { books } from "@/books";
 import { cn } from "@/lib/utils";
@@ -40,19 +41,27 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
   const title = book.title;
 
   return (
-    <main className="flex h-full w-full flex-col items-center justify-center">
-      <div className="max-w-2xl sm:rounded-lg sm:p-10 sm:shadow">
-        <h1 className="sticky top-0 z-10 bg-background/60 p-4 font-bold text-3xl backdrop-blur-sm sm:text-4xl">
+    <main className="flex h-full w-full flex-col items-center justify-center px-4 py-6">
+      <div className="w-full max-w-3xl">
+        <h1 className="sticky top-0 z-10 bg-background/60 py-4 text-center font-bold text-3xl backdrop-blur-sm sm:text-4xl">
           {title}
         </h1>
         <div
           className={cn(
-            "prose prose-lg p-4 text-xl leading-12 [&_rt]:text-sm [&_rt]:leading-none",
-            "sm:prose-xl sm:text-2xl sm:leading-13 sm:[&_rt]:text-base",
+            "prose prose-lg text-xl leading-loose [&>p]:py-4",
+            "sm:prose-xl sm:text-2xl sm:leading-relaxed",
             styles.booksLineBreak,
           )}
         >
           <BookContent />
+        </div>
+        <div className="py-10 text-center">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1 py-2 font-bold text-primary transition-colors hover:text-primary/70"
+          >
+            ← ほんのリストに もどる
+          </Link>
         </div>
       </div>
     </main>
