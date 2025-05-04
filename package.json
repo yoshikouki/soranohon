@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "PORT=8888 next dev --turbopack",
     "build": "next build",
+    "build:test": "NEXT_DIST_DIR=.next-build next build",
     "start": "next start",
     "lint:next": "next lint",
     "lint": "biome check .",

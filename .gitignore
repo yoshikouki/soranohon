@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.next-build/
 /out/
 
 # production
@@ -45,6 +46,7 @@ node_modules
 .pnp
 coverage
 .next
+.next-build
 out
 build
 
