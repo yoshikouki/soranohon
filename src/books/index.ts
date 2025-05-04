@@ -17,7 +17,6 @@ export const books: Record<string, Book> = {
     translator: "矢崎源九郎",
     bibliographyRaw: `底本：「グリム童話集（1）」偕成社文庫、偕成社\n1980（昭和55）年6月1刷\n2009（平成21）年6月49刷\n入力：sogo\n校正：チエコ\n2020年12月27日作成\n青空文庫作成ファイル：\nこのファイルは、インターネットの図書館、青空文庫（https://www.aozora.gr.jp/）で作られました。入力、校正、制作にあたったのは、ボランティアの皆さんです。`,
     description: "おばあさんのところへ行くために森を抜ける少女のお話",
-    imageSrc: "/assets/books/red-riding-hood.png",
     mdx: () => import("./59835_72466.mdx"),
   },
 } as const;
