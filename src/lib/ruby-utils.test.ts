@@ -140,6 +140,8 @@ describe("addRubyTagsWithPreservation", () => {
 
     const result = addRubyTagsWithPreservation(mdx, existingRubyTags);
 
-    expect(result).toBe("<ruby>\n漢字\n<rt>\nかんじ\n</rt>\n</ruby>と<ruby>改行<rt>{{required_ruby}}</rt></ruby>");
+    expect(result).toBe(
+      "<ruby>\n漢字\n<rt>\nかんじ\n</rt>\n</ruby>と<ruby>改行<rt>{{required_ruby}}</rt></ruby>",
+    );
   });
 });
