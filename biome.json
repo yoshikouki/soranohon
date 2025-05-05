@@ -6,7 +6,12 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignoreUnknown": false
+    "ignoreUnknown": false,
+    "includes": [
+      "**/*.{ts,tsx,js,jsx,json,md,mdx,css}",
+      "!**/*.html",
+      "!src/features/aozorabunko-list/*.json"
+    ]
   },
   "formatter": {
     "enabled": true,

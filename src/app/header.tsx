@@ -10,27 +10,32 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useReadingHistoryDialog } from "@/features/reading-history";
 
 export const Header = () => {
+  const { openDialog: openReadingHistoryDialog } = useReadingHistoryDialog();
+
   return (
     <>
       {/* 通常ヘッダー - スクロールで隠れる */}
       <header className="w-full">
         <div className="container flex h-16 max-w-screen-xl items-center px-4">
-          <Link
-            href="/"
-            className="flex items-center gap-2 transition-colors hover:text-primary"
-          >
-            <Image
-              src="/logo.webp"
-              loading="eager"
-              alt="service logo"
-              width={24}
-              height={24}
-              className="rounded-sm"
-            />
-            <h1 className="font-bold text-lg">そらのほん</h1>
-          </Link>
+          <div className="flex items-center gap-6">
+            <Link
+              href="/"
+              className="flex items-center gap-2 transition-colors hover:text-primary"
+            >
+              <Image
+                src="/logo.webp"
+                loading="eager"
+                alt="service logo"
+                width={24}
+                height={24}
+                className="rounded-sm"
+              />
+              <h1 className="font-bold text-lg">そらのほん</h1>
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -49,7 +54,9 @@ export const Header = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>よんだほん</DropdownMenuItem>
+              <DropdownMenuItem onSelect={openReadingHistoryDialog}>
+                よんだほん
+              </DropdownMenuItem>
               <DropdownMenuItem>おきに入り</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

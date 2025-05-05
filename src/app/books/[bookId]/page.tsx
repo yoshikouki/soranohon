@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { books } from "@/books";
 import { cn } from "@/lib/utils";
 import styles from "./books.module.css";
+import { ReadHistoryButton } from "./read-history-button";
 
 export async function generateMetadata({
   params,
@@ -42,9 +43,19 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
 
   return (
     <main className="relative flex h-full w-full flex-col items-center justify-center py-6">
-      <h1 className="sticky top-0 z-10 flex h-16 w-full items-center justify-center bg-background/80 px-4 text-center font-bold text-3xl backdrop-blur-sm sm:text-4xl">
-        {title}
-      </h1>
+      <div className="sticky top-0 z-10 flex h-16 w-full items-center justify-between bg-background/80 px-4 backdrop-blur-sm">
+        <div className="flex-1"></div>
+        <h1 className="flex-2 text-center font-bold text-3xl sm:text-4xl">{title}</h1>
+        <div className="flex flex-1 justify-end">
+          <ReadHistoryButton
+            book={{
+              bookId: bookId,
+              title: title,
+              coverImage: book.coverImage,
+            }}
+          />
+        </div>
+      </div>
       <div
         className={cn(
           "prose prose-xl max-w-3xl font-semibold leading-loose",
