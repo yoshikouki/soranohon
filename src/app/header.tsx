@@ -35,7 +35,7 @@ export const Header = () => {
       </header>
 
       {/* 固定ユーザーメニュー - 画面上部に固定表示 */}
-      <div className="fixed top-0 right-0 z-20 flex h-16 items-center justify-center pr-4">
+      <div className="fixed top-0 right-0 z-20 flex items-center justify-center p-4">
         <nav>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

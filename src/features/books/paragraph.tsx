@@ -16,7 +16,7 @@ export function Paragraph({ children, className, ...props }: ParagraphProps) {
   const text = children?.toString() || "";
 
   return (
-    <p className={cn(shouldIndentParagraph(text) && "indent-6", className)} {...props}>
+    <p className={cn("px-4", shouldIndentParagraph(text) && "indent-6", className)} {...props}>
       {children}
     </p>
   );

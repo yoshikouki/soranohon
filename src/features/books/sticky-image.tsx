@@ -23,8 +23,8 @@ export function StickyImage({
   src: _src,
   alt = "",
   title,
-  width = 800,
-  height = 600,
+  width = 1024,
+  height = 1024,
   className,
   ...props
 }: StickyImageProps) {
@@ -36,23 +36,20 @@ export function StickyImage({
   if (!src) return null;
 
   return (
-    <span
+    <div
       id={id}
-      className={cn("sticky top-16 z-20 mx-auto mt-4 mb-8 block w-full max-w-md", className)}
-      {...props}
+      className={cn("prose-invert sticky top-0 z-10 w-full max-w-md p-4", className)}
     >
-      <span className="relative block">
-        <Image
-          src={src}
-          alt={alt}
-          title={title}
-          width={width}
-          height={height}
-          className="mx-auto rounded-lg object-contain shadow-lg"
-          priority
-        />
-        <span className="absolute inset-0 block rounded-lg shadow-[inset_0_0_20px_rgba(0,0,0,0.1)]" />
-      </span>
-    </span>
+      <Image
+        src={src}
+        alt={alt}
+        title={title}
+        width={width}
+        height={height}
+        className="not-prose rounded-lg object-contain outline-16 outline-background/60"
+        priority
+        {...props}
+      />
+    </div>
   );
 }
