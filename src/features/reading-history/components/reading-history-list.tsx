@@ -149,11 +149,54 @@ export function ReadingHistoryList({
                   )}
                 </div>
                 <p className="text-muted-foreground text-sm">
-                  初回: {formatDate(new Date(entry.readAt))}
-                  {entry.lastReadAt && entry.lastReadAt !== entry.readAt && (
+                  初回: {formatDate(new Date(entry.firstReadAt))}
+                  {entry.lastReadAt && entry.lastReadAt !== entry.firstReadAt && (
                     <> | 最終: {formatDate(new Date(entry.lastReadAt))}</>
                   )}
                 </p>
+                <div className="mt-1">
+                  <details className="text-xs">
+                    <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                      セッション履歴 ({entry.sessions.length}件)
+                    </summary>
+                    <div className="mt-1 space-y-1 border-muted border-l-2 pl-2">
+                      {entry.sessions.map((session) => (
+                        <div key={session.sessionId} className="text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <span>
+                              {formatDate(new Date(session.startedAt))}
+                              {session.endedAt && (
+                                <> 〜 {formatDate(new Date(session.endedAt))}</>
+                              )}
+                            </span>
+                            {session.completed && (
+                              <Badge
+                                variant="outline"
+                                className="h-4 border-green-200 bg-green-50 px-1 py-0 text-[10px] text-green-700"
+                              >
+                                読了
+                              </Badge>
+                            )}
+                          </div>
+                          {session.notes && (
+                            <p className="pl-2 text-xs italic">{session.notes}</p>
+                          )}
+                          {session.progress !== undefined && (
+                            <div className="flex items-center gap-1 pl-2">
+                              <div className="h-1 w-20 overflow-hidden rounded-full bg-muted">
+                                <div
+                                  className="h-full bg-primary"
+                                  style={{ width: `${session.progress}%` }}
+                                />
+                              </div>
+                              <span>{session.progress}%</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                </div>
               </div>
               {onRemove && (
                 <Button

@@ -8,8 +8,10 @@ import {
   getCurrentDate,
   getReadingHistory,
   removeReadingHistoryEntry,
+  removeReadingSession,
+  updateReadingSession,
 } from "../storage";
-import { ReadingHistoryEntry } from "../types";
+import { ReadingHistoryEntry, ReadingSession } from "../types";
 
 /**
  * 読書履歴を取得・操作するためのフック
@@ -42,9 +44,14 @@ export function useReadingHistory() {
     }
   }, [handleError]);
 
-  // 本を読書履歴に追加する
+  // 本を読書履歴に追加する（新しいセッションを開始する）
   const addToHistory = useCallback(
-    (book: { bookId: string; title: string; coverImage?: string }, completed = false) => {
+    (
+      book: { bookId: string; title: string; coverImage?: string },
+      completed = false,
+      notes?: string,
+      progress?: number,
+    ) => {
       try {
         if (!book.bookId || !book.title) {
           throw new Error("本のIDとタイトルは必須です");
@@ -52,10 +59,9 @@ export function useReadingHistory() {
 
         const entry = {
           ...book,
-          readAt: getCurrentDate().toISOString(),
         };
 
-        addReadingHistoryEntry(entry, completed);
+        addReadingHistoryEntry(entry, completed, notes, progress);
         fetchHistory(); // 履歴を再取得
         return true;
       } catch (err) {
@@ -76,7 +82,6 @@ export function useReadingHistory() {
 
         const entry = {
           ...book,
-          readAt: getCurrentDate().toISOString(),
         };
 
         // 既存の読了状態を保持して更新
@@ -90,6 +95,72 @@ export function useReadingHistory() {
       }
     },
     [fetchHistory],
+  );
+
+  // 特定の本のセッションを更新する
+  const updateSession = useCallback(
+    (
+      bookId: string,
+      sessionId: string,
+      updates: Partial<Omit<ReadingSession, "sessionId" | "startedAt">>,
+    ) => {
+      try {
+        const success = updateReadingSession(bookId, sessionId, updates);
+        if (success) {
+          fetchHistory(); // 履歴を再取得
+          return true;
+        }
+        throw new Error("セッションの更新に失敗しました");
+      } catch (err) {
+        handleError(err, "読書セッションの更新に失敗しました");
+        return false;
+      }
+    },
+    [fetchHistory, handleError],
+  );
+
+  // 特定の本のセッションを終了する
+  const completeSession = useCallback(
+    (bookId: string, sessionId: string, notes?: string, progress?: number) => {
+      try {
+        const updates: Partial<Omit<ReadingSession, "sessionId" | "startedAt">> = {
+          completed: true,
+          endedAt: getCurrentDate().toISOString(),
+        };
+
+        if (notes !== undefined) updates.notes = notes;
+        if (progress !== undefined) updates.progress = progress;
+
+        const success = updateReadingSession(bookId, sessionId, updates);
+        if (success) {
+          fetchHistory(); // 履歴を再取得
+          return true;
+        }
+        throw new Error("セッションの完了に失敗しました");
+      } catch (err) {
+        handleError(err, "読書セッションの完了に失敗しました");
+        return false;
+      }
+    },
+    [fetchHistory, handleError],
+  );
+
+  // 特定の本のセッションを削除する
+  const removeSession = useCallback(
+    (bookId: string, sessionId: string) => {
+      try {
+        const success = removeReadingSession(bookId, sessionId);
+        if (success) {
+          fetchHistory(); // 履歴を再取得
+          return true;
+        }
+        throw new Error("セッションの削除に失敗しました");
+      } catch (err) {
+        handleError(err, "読書セッションの削除に失敗しました");
+        return false;
+      }
+    },
+    [fetchHistory, handleError],
   );
 
   // 本を読書履歴から削除する
@@ -132,6 +203,30 @@ export function useReadingHistory() {
     fetchHistory();
   }, [fetchHistory]);
 
+  // 特定の本の最新セッションIDを取得する
+  const getLatestSessionId = useCallback(
+    (bookId: string): string | null => {
+      const bookEntry = history.find((e) => e.bookId === bookId);
+      if (!bookEntry || !bookEntry.sessions || bookEntry.sessions.length === 0) {
+        return null;
+      }
+      return bookEntry.sessions[0].sessionId;
+    },
+    [history],
+  );
+
+  // 特定の本のすべてのセッションを取得する
+  const getSessionsForBook = useCallback(
+    (bookId: string): ReadingSession[] => {
+      const bookEntry = history.find((e) => e.bookId === bookId);
+      if (!bookEntry || !bookEntry.sessions) {
+        return [];
+      }
+      return bookEntry.sessions;
+    },
+    [history],
+  );
+
   return {
     history,
     isLoading,
@@ -141,5 +236,11 @@ export function useReadingHistory() {
     removeFromHistory,
     clearHistory,
     refreshHistory: fetchHistory,
+    // 新しいセッション関連の機能を公開
+    updateSession,
+    completeSession,
+    removeSession,
+    getLatestSessionId,
+    getSessionsForBook,
   };
 }
