@@ -192,7 +192,14 @@ export function formParagraphs(lines: string[]): string[] {
   for (const line of lines) {
     // jisage_1クラスを持つdivタグのみ新しい段落として扱う
     const isJisageDiv = line.trim().startsWith('<div className="jisage_1"');
-    const isNewParagraphStart = /^　|^「|^（/.test(line) || isJisageDiv;
+
+    // 引用符「」の中にあるbrと全角スペースは新しい段落とみなさない
+    const isInsideQuote =
+      current.some((l) => l.includes("「")) &&
+      !current.some((l) => l.includes("」")) &&
+      (line === "<br />" || line.startsWith("　"));
+
+    const isNewParagraphStart = (/^　|^「|^（/.test(line) || isJisageDiv) && !isInsideQuote;
 
     // 新しい段落の開始と、現在の段落が存在する場合
     if (isNewParagraphStart && current.length > 0) {
@@ -202,7 +209,8 @@ export function formParagraphs(lines: string[]): string[] {
       current = [];
     }
 
-    current.push(line);
+    const noIndentedText = removeLeadingFullWidthSpace(line);
+    current.push(noIndentedText);
   }
 
   // 最後の段落を処理
@@ -250,13 +258,6 @@ export function htmlToMdx(html: string, removeFullWidthSpace: boolean = true): s
   const main = extractMainText(html);
   const lines = extractLines(main);
   const paragraphs = formParagraphs(lines);
-
-  // 全角スペースを削除する場合は処理を追加
-  if (removeFullWidthSpace) {
-    for (let i = 0; i < paragraphs.length; i++) {
-      paragraphs[i] = removeLeadingFullWidthSpace(paragraphs[i]);
-    }
-  }
 
   // 段落がない場合は空文字列を返す
   if (paragraphs.length === 0) {

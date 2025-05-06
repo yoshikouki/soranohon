@@ -551,6 +551,25 @@ describe("htmlToMdx self-closing br tag fix", () => {
     expect(result).toContain("<br />");
     expect(result).not.toContain("<br>");
   });
+
+  it("should keep <br /> and indentation within quotes as a single paragraph", () => {
+    const html = `<div class="main_text">
+    <div class="jisage_1" style="margin-left: 1em">
+    「鏡や、鏡、<ruby><rb>壁</rb><rp>（</rp><rt>かべ</rt><rp>）</rp></ruby>にかかっている鏡よ。<br />
+　国じゅうで、だれがいちばんうつくしいか、いっておくれ。」<br />
+    </div></div>`;
+
+    const result = htmlToMdx(html);
+
+    // 引用内のbr tagと字下げがあっても一つの段落として扱われること
+    expect(result).toContain(
+      "「鏡や、鏡、<ruby>壁<rt>かべ</rt></ruby>にかかっている鏡よ。<br />国じゅうで、だれがいちばんうつくしいか、いっておくれ。」",
+    );
+
+    // 段落が分割されないこと
+    const paragraphCount = result.trim().split("\n\n").length;
+    expect(paragraphCount).toBe(1);
+  });
 });
 
 // jisage_1 divタグの処理に関するテスト
