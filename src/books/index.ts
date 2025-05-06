@@ -31,4 +31,13 @@ export const books: Record<string, Book> = {
     coverImage: paths.images.books.scenes("59835_72466", 1),
     mdx: () => import("./59835_72466.mdx"),
   },
+  "42308_17916": {
+    id: "42308_17916",
+    title: "白雪姫",
+    creator: "グリム",
+    translator: "菊池寛訳",
+    bibliographyRaw: `\n\n\n底本：「グリム　世界名作　白雪姫」光文社\n\n　　　1949（昭和24）年3月5日初版発行\n※「旧字、旧仮名で書かれた作品を、現代表記にあらためる際の作業指針」に基づいて、底本の表記をあらためました。\n入力：大久保ゆう\n校正：鈴木厚司\n2005年2月22日作成\n青空文庫作成ファイル：\nこのファイルは、インターネットの図書館、青空文庫（http://www.aozora.gr.jp/）で作られました。入力、校正、制作にあたったのは、ボランティアの皆さんです。\n\n\n`,
+    aozoraBunkoUrl: "https://www.aozora.gr.jp/cards/001091/card42308.html",
+    mdx: () => import("./42308_17916.mdx"),
+  },
 } as const;
