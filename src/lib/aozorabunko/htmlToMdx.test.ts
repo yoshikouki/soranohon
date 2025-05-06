@@ -240,10 +240,10 @@ describe("formParagraphs", () => {
     expect(paragraphs).toEqual(["行1<br />行2"]);
   });
 
-  it("should split paragraphs at full-width space", () => {
+  it("should split paragraphs at full-width space and remove it", () => {
     const lines = ["行1", "<br />", "　行2"];
     const paragraphs = formParagraphs(lines);
-    expect(paragraphs).toEqual(["行1", "　行2"]);
+    expect(paragraphs).toEqual(["行1", "行2"]);
   });
 
   it("should split paragraphs at lines starting with '「'", () => {
@@ -258,10 +258,10 @@ describe("formParagraphs", () => {
     expect(paragraphs).toEqual(["行1", "（注釈）"]);
   });
 
-  it("should remove <br /> at the end of paragraphs", () => {
+  it("should remove <br /> at the end of paragraphs and remove leading full-width spaces", () => {
     const lines = ["行1", "<br />", "<br />", "　行2"];
     const paragraphs = formParagraphs(lines);
-    expect(paragraphs).toEqual(["行1", "　行2"]);
+    expect(paragraphs).toEqual(["行1", "行2"]);
   });
 
   it("should handle empty lines array", () => {
@@ -270,7 +270,7 @@ describe("formParagraphs", () => {
     expect(paragraphs).toEqual([]);
   });
 
-  it("should handle complex case with multiple paragraph breaks", () => {
+  it("should handle complex case with multiple paragraph breaks and remove leading full-width spaces", () => {
     const lines = [
       "段落1",
       "<br />",
@@ -283,7 +283,7 @@ describe("formParagraphs", () => {
       "続き",
     ];
     const paragraphs = formParagraphs(lines);
-    expect(paragraphs).toEqual(["段落1<br />続き", "　段落2続き", "「段落3」続き"]);
+    expect(paragraphs).toEqual(["段落1<br />続き", "段落2続き", "「段落3」続き"]);
   });
 });
 
@@ -462,17 +462,11 @@ describe("removeLeadingFullWidthSpace", () => {
   });
 });
 
-describe("htmlToMdx with removeFullWidthSpace option", () => {
-  it("should convert HTML to MDX and remove full-width spaces by default", () => {
+describe("htmlToMdx full-width space handling", () => {
+  it("should convert HTML to MDX and remove full-width spaces", () => {
     const html = `<div class="main_text">　これはテストです。<br>　これも段落です。</div>`;
     const expected = "これはテストです。\n\nこれも段落です。\n";
     expect(htmlToMdx(html)).toBe(expected);
-  });
-
-  it("should convert HTML to MDX without removing full-width spaces when specified", () => {
-    const html = `<div class="main_text">　これはテストです。<br>　これも段落です。</div>`;
-    const expected = "　これはテストです。\n\n　これも段落です。\n";
-    expect(htmlToMdx(html, false)).toBe(expected);
   });
 
   it("should handle HTML without full-width spaces", () => {
@@ -508,13 +502,7 @@ describe("convertHtmlToMdxWithRuby", () => {
     expect(convertHtmlToMdxWithRuby(html, true)).toBe(expected);
   });
 
-  it("should keep leading full-width spaces when specified true", () => {
-    const html = `<div class="main_text">　テスト</div>`;
-    const expected = "　テスト\n";
-    expect(convertHtmlToMdxWithRuby(html, false, true)).toBe(expected);
-  });
-
-  it("should remove leading full-width spaces by default", () => {
+  it("should always remove leading full-width spaces", () => {
     const html = `<div class="main_text">　テスト</div>`;
     const expected = "テスト\n";
     expect(convertHtmlToMdxWithRuby(html, false)).toBe(expected);

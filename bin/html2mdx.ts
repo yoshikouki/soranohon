@@ -11,7 +11,6 @@ interface CommandLineOptions {
   inputHtml: string;
   outputMdx: string;
   addRuby: boolean;
-  keepSpace: boolean;
   forceOverwrite: boolean;
 }
 
@@ -19,15 +18,12 @@ function parseCommandLineArgs(args: string[]): CommandLineOptions {
   let inputHtml = "";
   let outputMdx = "";
   let addRuby = true; // デフォルトでルビを追加する
-  let keepSpace = false; // デフォルトで全角スペースを削除する
   let forceOverwrite = false; // デフォルトで既存のルビを保護する
 
   // 引数を解析
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--no-ruby" || args[i] === "-n") {
       addRuby = false;
-    } else if (args[i] === "--keep-space" || args[i] === "-k") {
-      keepSpace = true;
     } else if (args[i] === "--force" || args[i] === "-f") {
       forceOverwrite = true;
     } else if (!inputHtml) {
@@ -39,14 +35,11 @@ function parseCommandLineArgs(args: string[]): CommandLineOptions {
 
   if (!inputHtml) {
     console.error(
-      "Usage: bun run ./bin/html2mdx.ts [--no-ruby|-n] [--keep-space|-k] [--force|-f] <input.html> [output.mdx]",
+      "Usage: bun run ./bin/html2mdx.ts [--no-ruby|-n] [--force|-f] <input.html> [output.mdx]",
     );
     console.error("Options:");
     console.error(
       "  --no-ruby, -n       Disable adding ruby placeholder tags to kanji characters",
-    );
-    console.error(
-      "  --keep-space, -k    Keep leading full-width spaces in paragraphs (default: remove)",
     );
     console.error(
       "  --force, -f         Force overwrite existing ruby tags (default: preserve)",
@@ -58,7 +51,6 @@ function parseCommandLineArgs(args: string[]): CommandLineOptions {
     inputHtml,
     outputMdx,
     addRuby,
-    keepSpace,
     forceOverwrite,
   };
 }
@@ -70,18 +62,10 @@ async function convertHtmlToMdxWithOptions(
   html: string,
   existingRubyTags: Map<string, string>,
   addRuby: boolean,
-  keepSpace: boolean,
   forceOverwrite: boolean,
 ): Promise<string> {
-  // HTML→MDX変換（全角スペースの扱いを設定）
-  let mdx = htmlToMdx(html, !keepSpace);
-
-  // 全角スペース処理のログ
-  if (keepSpace) {
-    console.log("Kept leading full-width spaces in paragraphs");
-  } else {
-    console.log("Removed leading full-width spaces from paragraphs");
-  }
+  // HTML→MDX変換
+  let mdx = htmlToMdx(html);
 
   // ルビプレースホルダーの追加（デフォルト有効）
   if (addRuby) {
@@ -126,7 +110,6 @@ async function main() {
     html,
     existingRubyTags,
     options.addRuby,
-    options.keepSpace,
     options.forceOverwrite,
   );
 

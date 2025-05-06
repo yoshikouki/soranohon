@@ -250,11 +250,10 @@ export function removeLeadingFullWidthSpace(text: string): string {
 /**
  * 青空文庫HTMLの.main_text部分をMDXに変換する
  * @param html 青空文庫HTML文字列
- * @param removeFullWidthSpace 先頭の全角スペースを削除するかどうか（デフォルト: true）
  * @returns MDX文字列
  * @throws main_textが見つからない場合
  */
-export function htmlToMdx(html: string, removeFullWidthSpace: boolean = true): string {
+export function htmlToMdx(html: string): string {
   const main = extractMainText(html);
   const lines = extractLines(main);
   const paragraphs = formParagraphs(lines);
@@ -285,7 +284,6 @@ export function addRubyTagsToMdx(mdx: string): string {
  * 青空文庫HTMLをMDXに変換し、オプションでルビプレースホルダーを追加する（後方互換性のため）
  * @param html 青空文庫HTML文字列
  * @param addRubyPlaceholder 漢字にプレースホルダー付きrubyタグを追加するかどうか
- * @param keepFullWidthSpace 先頭の全角スペースを保持するかどうか（デフォルト: 削除する）
  * @returns MDX文字列
  * @throws main_textが見つからない場合
  * @deprecated 代わりに htmlToMdx() と addRubyTagsToMdx() を組み合わせて使用してください
@@ -293,8 +291,7 @@ export function addRubyTagsToMdx(mdx: string): string {
 export function convertHtmlToMdxWithRuby(
   html: string,
   addRubyPlaceholder: boolean = false,
-  keepFullWidthSpace: boolean = false,
 ): string {
-  const mdx = htmlToMdx(html, !keepFullWidthSpace);
+  const mdx = htmlToMdx(html);
   return addRubyPlaceholder ? addRubyTagsToMdx(mdx) : mdx;
 }
