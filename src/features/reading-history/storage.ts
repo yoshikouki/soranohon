@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import { readingHistoryEntrySchema, readingHistorySchema } from "./schema";
 import { ReadingHistoryEntry, ReadingSession } from "./types";
 
 const STORAGE_KEY = "soranohon:reading-history";
@@ -42,7 +43,21 @@ export function getReadingHistory(): ReadingHistoryEntry[] {
     }
 
     try {
+      // JSON解析とデータ検証
       const parsedData = JSON.parse(data);
+
+      // Zodでの検証を試行
+      const validationResult = readingHistorySchema.safeParse(parsedData);
+
+      if (validationResult.success) {
+        // 検証に成功した場合はそのまま返す（新しい形式のデータ）
+        return validationResult.data.sort((a, b) => {
+          const dateA = new Date(a.lastReadAt).getTime();
+          const dateB = new Date(b.lastReadAt).getTime();
+          return Number.isNaN(dateA) || Number.isNaN(dateB) ? 0 : dateB - dateA;
+        });
+      }
+
       // 配列でない場合は初期化
       if (!Array.isArray(parsedData)) {
         console.warn("Invalid reading history format, resetting");
@@ -57,36 +72,66 @@ export function getReadingHistory(): ReadingHistoryEntry[] {
           if (
             !entry ||
             typeof entry !== "object" ||
+            // @ts-ignore - このチェックは型安全ではないが、ここでは必要
             typeof entry.bookId !== "string" ||
+            // @ts-ignore - このチェックは型安全ではないが、ここでは必要
             typeof entry.title !== "string"
           ) {
             return null; // 不正なエントリーはnullを返し、後でフィルタリング
           }
 
-          // 旧形式から新形式への移行処理
-          if (!entry.sessions) {
-            // 旧形式のエントリーからセッションを構築
-            const session: ReadingSession = {
-              sessionId: uuidv4(),
-              startedAt: entry.readAt || getCurrentDate().toISOString(),
-              endedAt: entry.lastReadAt || undefined,
-              completed: entry.completed || false,
-            };
+          try {
+            // 旧形式から新形式への移行処理
+            // @ts-ignore - 型安全ではないが、マイグレーションのためのコード
+            if (!entry.sessions) {
+              // 旧形式のエントリーからセッションを構築
+              const session: ReadingSession = {
+                sessionId: uuidv4(),
+                // @ts-ignore - 型安全ではないが、マイグレーションのためのコード
+                startedAt: entry.readAt || getCurrentDate().toISOString(),
+                // @ts-ignore - 型安全ではないが、マイグレーションのためのコード
+                endedAt: entry.lastReadAt || undefined,
+                // @ts-ignore - 型安全ではないが、マイグレーションのためのコード
+                completed: entry.completed || false,
+              };
 
-            // 新形式のエントリーを返す
-            return {
-              bookId: entry.bookId,
-              title: entry.title,
-              firstReadAt: entry.readAt || getCurrentDate().toISOString(),
-              lastReadAt: entry.lastReadAt || entry.readAt || getCurrentDate().toISOString(),
-              completed: entry.completed || false,
-              coverImage: entry.coverImage,
-              sessions: [session],
-            };
+              // 新形式のエントリーを作成
+              const newEntry = {
+                // @ts-ignore - 型安全ではないが、マイグレーションのためのコード
+                bookId: entry.bookId,
+                // @ts-ignore - 型安全ではないが、マイグレーションのためのコード
+                title: entry.title,
+                // @ts-ignore - 型安全ではないが、マイグレーションのためのコード
+                firstReadAt: entry.readAt || getCurrentDate().toISOString(),
+                // @ts-ignore - 型安全ではないが、マイグレーションのためのコード
+                lastReadAt: entry.lastReadAt || entry.readAt || getCurrentDate().toISOString(),
+                // @ts-ignore - 型安全ではないが、マイグレーションのためのコード
+                completed: entry.completed || false,
+                // @ts-ignore - 型安全ではないが、マイグレーションのためのコード
+                coverImage: entry.coverImage,
+                sessions: [session],
+              };
+
+              // 新形式のエントリーを検証
+              const validationResult = readingHistoryEntrySchema.safeParse(newEntry);
+              if (validationResult.success) {
+                return validationResult.data;
+              }
+              console.warn("Migrated entry validation failed:", validationResult.error);
+              return null;
+            }
+
+            // すでに新形式のエントリーの場合は再検証
+            const validationResult = readingHistoryEntrySchema.safeParse(entry);
+            if (validationResult.success) {
+              return validationResult.data;
+            }
+            console.warn("Existing entry validation failed:", validationResult.error);
+            return null;
+          } catch (error) {
+            console.warn("Entry processing failed:", error);
+            return null;
           }
-
-          // すでに新形式のエントリーの場合はそのまま返す
-          return entry;
         })
         .filter(Boolean) as ReadingHistoryEntry[]; // nullをフィルタリング
 
@@ -167,13 +212,27 @@ export function addReadingHistoryEntry(
           sessions: [newSession],
         };
 
+    // エントリーのバリデーション
+    const validationResult = readingHistoryEntrySchema.safeParse(newEntry);
+    if (!validationResult.success) {
+      console.error("Entry validation failed:", validationResult.error);
+      throw new Error("入力データが不正です");
+    }
+
     // 同じ本がすでに存在する場合は削除（後で新しいエントリーを追加するため）
     const filteredEntries = entries.filter((e) => e.bookId !== entry.bookId);
 
     // 新しいエントリーを追加
-    const newEntries = [newEntry, ...filteredEntries];
+    const newEntries = [validationResult.data, ...filteredEntries];
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newEntries));
+    // エントリー配列全体の検証
+    const entriesValidation = readingHistorySchema.safeParse(newEntries);
+    if (!entriesValidation.success) {
+      console.error("Entries validation failed:", entriesValidation.error);
+      throw new Error("履歴データの更新に失敗しました");
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entriesValidation.data));
   } catch (error) {
     console.error("Failed to add reading history to localStorage:", error);
     throw new Error(
@@ -195,7 +254,15 @@ export function removeReadingHistoryEntry(bookId: string): void {
   try {
     const entries = getReadingHistory();
     const filteredEntries = entries.filter((entry) => entry.bookId !== bookId);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(filteredEntries));
+
+    // エントリー配列全体の検証
+    const entriesValidation = readingHistorySchema.safeParse(filteredEntries);
+    if (!entriesValidation.success) {
+      console.error("Entries validation failed:", entriesValidation.error);
+      throw new Error("履歴データの更新に失敗しました");
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entriesValidation.data));
   } catch (error) {
     console.error("Failed to remove reading history from localStorage:", error);
     throw new Error(
@@ -268,9 +335,18 @@ export function updateReadingSession(
       updatedSession.endedAt = getCurrentDate().toISOString();
     }
 
+    // セッションのバリデーション
+    const sessionValidation =
+      readingHistoryEntrySchema.shape.sessions.element.safeParse(updatedSession);
+
+    if (!sessionValidation.success) {
+      console.error("Session validation failed:", sessionValidation.error);
+      return false;
+    }
+
     // 更新されたセッションで配列を更新
     const updatedSessions = [...bookEntry.sessions];
-    updatedSessions[sessionIndex] = updatedSession;
+    updatedSessions[sessionIndex] = sessionValidation.data;
 
     // エントリーを更新
     const updatedEntry = {
@@ -282,9 +358,24 @@ export function updateReadingSession(
       lastReadAt: updates.endedAt || bookEntry.lastReadAt,
     };
 
+    // エントリーのバリデーション
+    const entryValidation = readingHistoryEntrySchema.safeParse(updatedEntry);
+    if (!entryValidation.success) {
+      console.error("Entry validation failed:", entryValidation.error);
+      return false;
+    }
+
     // 既存のエントリーを更新
-    const updatedEntries = entries.map((e) => (e.bookId === bookId ? updatedEntry : e));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries));
+    const updatedEntries = entries.map((e) => (e.bookId === bookId ? entryValidation.data : e));
+
+    // エントリー配列全体の検証
+    const entriesValidation = readingHistorySchema.safeParse(updatedEntries);
+    if (!entriesValidation.success) {
+      console.error("Entries validation failed:", entriesValidation.error);
+      return false;
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entriesValidation.data));
 
     return true;
   } catch (error) {
@@ -336,9 +427,24 @@ export function removeReadingSession(bookId: string, sessionId: string): boolean
       completed: filteredSessions.some((s) => s.completed),
     };
 
+    // エントリーのバリデーション
+    const entryValidation = readingHistoryEntrySchema.safeParse(updatedEntry);
+    if (!entryValidation.success) {
+      console.error("Entry validation failed:", entryValidation.error);
+      return false;
+    }
+
     // 既存のエントリーを更新
-    const updatedEntries = entries.map((e) => (e.bookId === bookId ? updatedEntry : e));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries));
+    const updatedEntries = entries.map((e) => (e.bookId === bookId ? entryValidation.data : e));
+
+    // エントリー配列全体の検証
+    const entriesValidation = readingHistorySchema.safeParse(updatedEntries);
+    if (!entriesValidation.success) {
+      console.error("Entries validation failed:", entriesValidation.error);
+      return false;
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entriesValidation.data));
 
     return true;
   } catch (error) {
