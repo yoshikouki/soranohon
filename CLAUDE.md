@@ -53,6 +53,7 @@ bun run format:unsafe  # Format with unsafe rules
 - **Tests**: Use describe/it blocks, test edge cases
 - **Error Handling**: Early returns, explicit error messages
 - **Imports**: Organized by Biome, named exports preferred
+- **Dead Code**: Promptly remove unused functions, files, and tests
 
 ## Testing & Verification
 - Tests should be co-located with the code they test
