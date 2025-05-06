@@ -20,6 +20,7 @@ export function extractMainText(html: string): cheerio.Cheerio {
 /**
  * テキスト内の漢字にプレースホルダー付きのrubyタグを追加する
  * 既存のrubyタグは保持する
+ * 同じ漢字に対する異なるルビも正しく処理する
  * @param text 処理するテキスト
  * @returns rubyタグが追加されたテキスト
  */
@@ -31,18 +32,52 @@ export function addPlaceholderRubyToKanji(text: string): string {
 
   // まず既存のrubyタグを一時的に置換して保護する
   // これには従来の<ruby>タグに加えて、複雑な<rb>や<rp>を含むタグも対象とする
-  const rubyTags: string[] = [];
+  interface RubyTagInfo {
+    match: string; // 完全なrubyタグマッチ
+    position: number; // テキスト内の位置
+    length: number; // マッチの長さ
+  }
+
+  const rubyTags: RubyTagInfo[] = [];
 
   // 従来のrubyタグ（<ruby>漢字<rt>かんじ</rt></ruby>形式）と複雑なrubyタグ（<ruby><rb>漢</rb><rp>形式）の両方を対象とした正規表現
   // [\s\S] は . (dotAll) の代替で、改行を含むすべての文字にマッチする
   const rubyTagRegex = /<ruby>(?:[^<]*|<(?!\/ruby>)[^>]*>)*?<\/ruby>/g;
 
   // 既存のrubyタグを見つけて配列に保存し、プレースホルダーに置き換える
-  let protectedText = text.replace(rubyTagRegex, (match) => {
+  let protectedText = "";
+  let lastIndex = 0;
+
+  // matchAll()を使用してすべてのマッチを一度に取得
+  const matches = Array.from(text.matchAll(rubyTagRegex));
+
+  // マッチした各rubyタグを処理
+  for (const match of matches) {
+    // indexプロパティの存在を確認（型安全のため）
+    if (typeof match.index !== "number") {
+      continue; // これは実際には起こり得ないが、型安全のために追加
+    }
+
+    // マッチの前のテキストを追加
+    protectedText += text.substring(lastIndex, match.index);
+
+    // rubyタグの情報を保存
+    const tagInfo: RubyTagInfo = {
+      match: match[0],
+      position: match.index,
+      length: match[0].length,
+    };
+
+    // プレースホルダーを追加
     const placeholder = `__RUBY_TAG_${rubyTags.length}__`;
-    rubyTags.push(match);
-    return placeholder;
-  });
+    protectedText += placeholder;
+
+    rubyTags.push(tagInfo);
+    lastIndex = match.index + match[0].length;
+  }
+
+  // 残りのテキストを追加
+  protectedText += text.substring(lastIndex);
 
   // 漢字に対する正規表現（連続した漢字をグループとして処理）
   const kanjiRegex = /[\p{Script=Han}々]+/gu;
@@ -54,7 +89,7 @@ export function addPlaceholderRubyToKanji(text: string): string {
 
   // プレースホルダーを元のrubyタグに戻す
   const finalText = protectedText.replace(/__RUBY_TAG_(\d+)__/g, (_, index) => {
-    return rubyTags[parseInt(index)];
+    return rubyTags[parseInt(index)].match;
   });
 
   return finalText;
@@ -81,7 +116,7 @@ export function extractLines(main: cheerio.Cheerio): string[] {
       });
       return;
     }
-    
+
     // 通常の要素処理
     if (element.type === "text") {
       const text = $(element)
@@ -232,7 +267,7 @@ export function htmlToMdx(html: string, removeFullWidthSpace: boolean = true): s
   // <br> を <br /> に変換
   let result = paragraphs.join("\n\n") + "\n";
   result = result.replace(/<br>/g, "<br />");
-  
+
   return result;
 }
 

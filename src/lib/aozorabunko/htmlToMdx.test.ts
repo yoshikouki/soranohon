@@ -378,6 +378,22 @@ describe("addPlaceholderRubyToKanji", () => {
       "<div>これは<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>{{required_ruby}}</rt></ruby>と<span><ruby>日<rt>に</rt></ruby><ruby>本<rt>{{required_ruby}}</rt></ruby></span><ruby>語<rt>{{required_ruby}}</rt></ruby>です</div>";
     expect(addPlaceholderRubyToKanji(input)).toBe(expected);
   });
+
+  it("should correctly handle different ruby readings for the same kanji", () => {
+    const input =
+      "これは<ruby>金<rt>かね</rt></ruby>です。<ruby>金<rt>きん</rt></ruby>のネックレスです。";
+    const expected =
+      "これは<ruby>金<rt>かね</rt></ruby>です。<ruby>金<rt>きん</rt></ruby>のネックレスです。";
+    expect(addPlaceholderRubyToKanji(input)).toBe(expected);
+  });
+
+  it("should preserve multiple different ruby readings for the same kanji appearing in different places", () => {
+    const input =
+      "今日は<ruby>金<rt>きん</rt></ruby>曜日です。お<ruby>金<rt>かね</rt></ruby>があります。";
+    const expected =
+      "<ruby>今日<rt>{{required_ruby}}</rt></ruby>は<ruby>金<rt>きん</rt></ruby><ruby>曜日<rt>{{required_ruby}}</rt></ruby>です。お<ruby>金<rt>かね</rt></ruby>があります。";
+    expect(addPlaceholderRubyToKanji(input)).toBe(expected);
+  });
 });
 
 describe("addRubyTagsToMdx", () => {
