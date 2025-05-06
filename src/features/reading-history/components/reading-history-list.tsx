@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { paths } from "@/lib/paths";
 import { formatDate } from "@/lib/utils";
 import { ReadingHistoryEntry } from "../types";
 
@@ -117,7 +118,7 @@ export function ReadingHistoryList({
             >
               <div className="flex-shrink-0">
                 {entry.coverImage ? (
-                  <Link href={`/books/${entry.bookId}`}>
+                  <Link href={paths.books.detail(entry.bookId)}>
                     <Image
                       src={entry.coverImage}
                       alt={entry.title}
@@ -133,7 +134,7 @@ export function ReadingHistoryList({
                 )}
               </div>
               <div className="flex-grow">
-                <Link href={`/books/${entry.bookId}`} className="hover:underline">
+                <Link href={paths.books.detail(entry.bookId)} className="hover:underline">
                   <h3 className="font-medium">{entry.title}</h3>
                 </Link>
                 <p className="text-muted-foreground text-sm">

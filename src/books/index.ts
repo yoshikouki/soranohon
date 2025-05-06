@@ -1,3 +1,5 @@
+import { paths } from "@/lib/paths";
+
 export type Book = {
   id: string;
   title: string;
@@ -26,7 +28,7 @@ export const books: Record<string, Book> = {
     aozoraBunkoUrl: "https://www.aozora.gr.jp/cards/001091/card59835.html",
     bookTitle: "グリム童話集（1）",
     ndc: "NDC K943",
-    coverImage: "/images/books/59835_72466/scene-1.webp",
+    coverImage: paths.images.books.scenes("59835_72466", 1),
     mdx: () => import("./59835_72466.mdx"),
   },
 } as const;

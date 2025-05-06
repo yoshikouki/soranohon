@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useReadingHistoryDialog } from "@/features/reading-history";
+import { paths } from "@/lib/paths";
 
 export const Header = () => {
   const { openDialog: openReadingHistoryDialog } = useReadingHistoryDialog();
@@ -22,11 +23,11 @@ export const Header = () => {
         <div className="container flex h-16 max-w-screen-xl items-center px-4">
           <div className="flex items-center gap-6">
             <Link
-              href="/"
+              href={paths.home()}
               className="flex items-center gap-2 transition-colors hover:text-primary"
             >
               <Image
-                src="/logo.webp"
+                src={paths.images.logo()}
                 loading="eager"
                 alt="service logo"
                 width={24}

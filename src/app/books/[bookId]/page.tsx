@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { books } from "@/books";
+import { paths } from "@/lib/paths";
 import { cn } from "@/lib/utils";
 import styles from "./books.module.css";
 import { ReadHistoryButton } from "./read-history-button";
@@ -67,7 +68,7 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
       </div>
       <div className="py-10 text-center">
         <Link
-          href="/"
+          href={paths.home()}
           className="inline-flex items-center gap-1 py-2 font-bold text-primary transition-colors hover:text-primary/70"
         >
           ← ほんのリストに もどる

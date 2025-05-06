@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { paths } from "@/lib/paths";
 import { ReadingHistoryDialogWithTrigger } from "./reading-history";
 
 export default function Home() {
@@ -23,7 +24,7 @@ export default function Home() {
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           {bookList.map((book) => (
-            <Link key={book.id} href={`/books/${book.id}`}>
+            <Link key={book.id} href={paths.books.detail(book.id)}>
               <Card className="h-full transition-all duration-200 hover:text-primary/60">
                 <CardHeader className="">
                   <div className="flex min-h-20 items-center justify-center">
