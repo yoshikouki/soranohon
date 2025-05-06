@@ -70,10 +70,21 @@ export function extractLines(main: cheerio.Cheerio): string[] {
   const lines: string[] = [];
   let prevIsBr = false;
 
-  main.contents().each((_, el) => {
-    // テキストノードの処理
-    if (el.type === "text") {
-      const text = $(el)
+  // divタグを個別に処理するための再帰関数
+  function processElement(element: cheerio.Element) {
+    // jisage_1クラスを持つdivタグは特別に処理
+    if (element.type === "tag" && element.name === "div" && $(element).hasClass("jisage_1")) {
+      // divタグの中身だけを抽出
+      const children = $(element).contents();
+      children.each((_, child) => {
+        processElement(child);
+      });
+      return;
+    }
+    
+    // 通常の要素処理
+    if (element.type === "text") {
+      const text = $(element)
         .text()
         .replace(/^[ \t\n\r]+|[ \t\n\r]+$/g, "");
       if (text.length === 0) return;
@@ -84,10 +95,10 @@ export function extractLines(main: cheerio.Cheerio): string[] {
     }
 
     // タグでない要素はスキップ
-    if (el.type !== "tag") return;
+    if (element.type !== "tag") return;
 
     // brタグの処理
-    if (el.name === "br") {
+    if (element.name === "br") {
       if (prevIsBr) return; // 直前が<br />ならスキップ
 
       lines.push("<br />");
@@ -96,11 +107,11 @@ export function extractLines(main: cheerio.Cheerio): string[] {
     }
 
     // その他のタグ（ルビやemなど）の処理
-    let html = $.html(el).replace(/class=/g, "className=");
+    let html = $.html(element).replace(/class=/g, "className=");
 
-    if (el.name === "ruby") {
-      const rbContent = $(el).find("rb").text();
-      const rtContent = $(el).find("rt").text();
+    if (element.name === "ruby") {
+      const rbContent = $(element).find("rb").text();
+      const rtContent = $(element).find("rt").text();
       if (rbContent && rtContent) {
         html = `<ruby>${rbContent}<rt>${rtContent}</rt></ruby>`;
       }
@@ -108,8 +119,23 @@ export function extractLines(main: cheerio.Cheerio): string[] {
 
     if (html.trim().length === 0) return;
 
+    // divタグでもjisage_1クラスを持たない場合は通常のタグとして処理
     lines.push(html.trim());
     prevIsBr = false;
+  }
+
+  // main_textの直接の子要素を処理
+  main.contents().each((_, el) => {
+    // jisage_1クラスを持つdivタグのみ別段落として処理
+    if (el.type === "tag" && el.name === "div" && $(el).hasClass("jisage_1")) {
+      // 前に<br />がなければ追加
+      if (lines.length > 0 && lines[lines.length - 1] !== "<br />") {
+        lines.push("<br />");
+      }
+      processElement(el);
+    } else {
+      processElement(el);
+    }
   });
 
   // 先頭・末尾の<br />や空白行を除去
@@ -129,7 +155,9 @@ export function formParagraphs(lines: string[]): string[] {
   let current: string[] = [];
 
   for (const line of lines) {
-    const isNewParagraphStart = /^　|^「|^（/.test(line);
+    // jisage_1クラスを持つdivタグのみ新しい段落として扱う
+    const isJisageDiv = line.trim().startsWith('<div className="jisage_1"');
+    const isNewParagraphStart = /^　|^「|^（/.test(line) || isJisageDiv;
 
     // 新しい段落の開始と、現在の段落が存在する場合
     if (isNewParagraphStart && current.length > 0) {
