@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { books } from "@/books";
 import { paths } from "@/lib/paths";
 import { cn } from "@/lib/utils";
+import { BookVisitRecorder } from "./book-visit-recorder";
 import styles from "./books.module.css";
 import { ReadHistoryButton } from "./read-history-button";
 
@@ -66,7 +67,17 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
       >
         <BookContent />
       </div>
-      <div className="py-10 text-center">
+      <div className="flex flex-col items-center gap-4 py-10 text-center">
+        <ReadHistoryButton
+          book={{
+            bookId: bookId,
+            title: title,
+            coverImage: book.coverImage,
+          }}
+          variant="default"
+          completed={true}
+          label="読了しました"
+        />
         <Link
           href={paths.home()}
           className="inline-flex items-center gap-1 py-2 font-bold text-primary transition-colors hover:text-primary/70"
@@ -74,6 +85,15 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
           ← ほんのリストに もどる
         </Link>
       </div>
+
+      {/* 自動記録コンポーネント */}
+      <BookVisitRecorder
+        book={{
+          bookId: bookId,
+          title: title,
+          coverImage: book.coverImage,
+        }}
+      />
     </main>
   );
 }

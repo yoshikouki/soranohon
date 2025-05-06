@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -134,11 +135,24 @@ export function ReadingHistoryList({
                 )}
               </div>
               <div className="flex-grow">
-                <Link href={paths.books.detail(entry.bookId)} className="hover:underline">
-                  <h3 className="font-medium">{entry.title}</h3>
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link href={paths.books.detail(entry.bookId)} className="hover:underline">
+                    <h3 className="font-medium">{entry.title}</h3>
+                  </Link>
+                  {entry.completed && (
+                    <Badge
+                      variant="outline"
+                      className="border-green-200 bg-green-50 text-green-700"
+                    >
+                      読了済み
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-muted-foreground text-sm">
-                  {formatDate(new Date(entry.readAt))}に読書
+                  初回: {formatDate(new Date(entry.readAt))}
+                  {entry.lastReadAt && entry.lastReadAt !== entry.readAt && (
+                    <> | 最終: {formatDate(new Date(entry.lastReadAt))}</>
+                  )}
                 </p>
               </div>
               {onRemove && (

@@ -44,19 +44,18 @@ export function useReadingHistory() {
 
   // 本を読書履歴に追加する
   const addToHistory = useCallback(
-    (book: { bookId: string; title: string; coverImage?: string }) => {
+    (book: { bookId: string; title: string; coverImage?: string }, completed = false) => {
       try {
         if (!book.bookId || !book.title) {
           throw new Error("本のIDとタイトルは必須です");
         }
 
-        const now = getCurrentDate();
-        const entry: ReadingHistoryEntry = {
+        const entry = {
           ...book,
-          readAt: now.toISOString(),
+          readAt: getCurrentDate().toISOString(),
         };
 
-        addReadingHistoryEntry(entry);
+        addReadingHistoryEntry(entry, completed);
         fetchHistory(); // 履歴を再取得
         return true;
       } catch (err) {
@@ -65,6 +64,32 @@ export function useReadingHistory() {
       }
     },
     [fetchHistory, handleError],
+  );
+
+  // 本をアクセス履歴として記録する（ページを開いた時の自動記録用）
+  const recordBookAccess = useCallback(
+    (book: { bookId: string; title: string; coverImage?: string }) => {
+      try {
+        if (!book.bookId || !book.title) {
+          throw new Error("本のIDとタイトルは必須です");
+        }
+
+        const entry = {
+          ...book,
+          readAt: getCurrentDate().toISOString(),
+        };
+
+        // 既存の読了状態を保持して更新
+        addReadingHistoryEntry(entry, false);
+        // 静かに更新（UI通知なし）
+        fetchHistory();
+        return true;
+      } catch (err) {
+        console.error("Failed to record book access:", err);
+        return false;
+      }
+    },
+    [fetchHistory],
   );
 
   // 本を読書履歴から削除する
@@ -112,6 +137,7 @@ export function useReadingHistory() {
     isLoading,
     error,
     addToHistory,
+    recordBookAccess,
     removeFromHistory,
     clearHistory,
     refreshHistory: fetchHistory,

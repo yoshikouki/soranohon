@@ -87,8 +87,12 @@ export function getReadingHistory(): ReadingHistoryEntry[] {
 /**
  * 読書履歴に新しいエントリーを追加する
  * @param entry 追加する読書履歴エントリー
+ * @param completed 読了したかどうか（デフォルトはfalse）
  */
-export function addReadingHistoryEntry(entry: ReadingHistoryEntry): void {
+export function addReadingHistoryEntry(
+  entry: Omit<ReadingHistoryEntry, "lastReadAt" | "completed">,
+  completed = false,
+): void {
   if (!isStorageAvailable()) {
     console.warn("LocalStorage is not available, skipping add operation");
     return;
@@ -96,12 +100,27 @@ export function addReadingHistoryEntry(entry: ReadingHistoryEntry): void {
 
   try {
     const entries = getReadingHistory();
+    const now = getCurrentDate().toISOString();
+
+    // 同じ本の既存エントリーを探す
+    const existingEntry = entries.find((e) => e.bookId === entry.bookId);
+
+    // 新しいエントリーを作成
+    const newEntry: ReadingHistoryEntry = {
+      ...entry,
+      // 既存エントリーがある場合はそのreadAtを使用、なければ現在時刻
+      readAt: existingEntry?.readAt || now,
+      // 最終アクセス時刻は常に更新
+      lastReadAt: now,
+      // 既存エントリーのcompletedを引き継ぐか、completedパラメータを使用
+      completed: existingEntry?.completed || completed,
+    };
 
     // 同じ本がすでに存在する場合は削除（後で新しいエントリーを追加するため）
     const filteredEntries = entries.filter((e) => e.bookId !== entry.bookId);
 
     // 新しいエントリーを追加
-    const newEntries = [entry, ...filteredEntries];
+    const newEntries = [newEntry, ...filteredEntries];
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newEntries));
   } catch (error) {
