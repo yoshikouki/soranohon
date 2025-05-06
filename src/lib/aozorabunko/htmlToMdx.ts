@@ -200,7 +200,12 @@ export function htmlToMdx(html: string, removeFullWidthSpace: boolean = true): s
     return "";
   }
 
-  return paragraphs.join("\n\n") + "\n";
+  // Cheerioが自己閉じタグのスラッシュを削除する問題に対応
+  // <br> を <br /> に変換
+  let result = paragraphs.join("\n\n") + "\n";
+  result = result.replace(/<br>/g, "<br />");
+  
+  return result;
 }
 
 /**
