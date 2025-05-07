@@ -5,6 +5,17 @@
 import { constants } from "fs";
 import { access, readFile } from "fs/promises";
 
+// 既存のルビタグを抽出する正規表現
+// 3つのパターンに対応:
+// 1. <ruby>漢字<rt>かんじ</rt></ruby>
+// 2. <ruby><rb>漢字</rb><rt>かんじ</rt></ruby>
+// 3. <ruby><rb>漢字</rb><rp>（</rp><rt>かんじ</rt><rp>）</rp></ruby>
+const rubyTagRegex =
+  /<ruby>(?:<rb>)?([^<]+)(?:<\/rb>)?(?:<rp>[^<]*<\/rp>)?<rt>([^<]+)<\/rt>(?:<rp>[^<]*<\/rp>)?<\/ruby>/g;
+
+// 漢字に対する正規表現
+const kanjiRegex = /[\p{Script=Han}々]+/gu;
+
 /**
  * 既存のMDXファイルからルビタグを抽出する
  * @param filePath ファイルパス
@@ -29,13 +40,6 @@ export async function extractExistingRubyTags(
   const existingMdx = await readFile(filePath, "utf-8");
   const existingRubyTags = new Map<string, string[]>();
 
-  // 既存のルビタグを抽出する正規表現
-  // 3つのパターンに対応:
-  // 1. <ruby>漢字<rt>かんじ</rt></ruby>
-  // 2. <ruby><rb>漢字</rb><rt>かんじ</rt></ruby>
-  // 3. <ruby><rb>漢字</rb><rp>（</rp><rt>かんじ</rt><rp>）</rp></ruby>
-  const rubyTagRegex =
-    /<ruby>(?:<rb>)?([^<]+)(?:<\/rb>)?(?:<rp>[^<]*<\/rp>)?<rt>([^<]+)<\/rt>(?:<rp>[^<]*<\/rp>)?<\/ruby>/g;
   let match: RegExpExecArray | null = rubyTagRegex.exec(existingMdx);
   while (match !== null) {
     const kanjiText = match[1];
@@ -81,34 +85,23 @@ export function addRubyTagsWithPreservation(
 ): string {
   // まず既存のrubyタグを一時的に置換して保護
   const rubyTags: string[] = [];
-  const rubyTagRegex = /<ruby>(?:[^<]*|<(?!\/ruby>)[^>]*>)*?<\/ruby>/g;
-
   let protectedText = mdx.replace(rubyTagRegex, (match) => {
     const placeholder = `__RUBY_TAG_${rubyTags.length}__`;
     rubyTags.push(match);
     return placeholder;
   });
 
-  // 漢字に対する正規表現
-  const kanjiRegex = /[\p{Script=Han}々]+/gu;
-
   // 漢字をrubyタグで囲む
   protectedText = protectedText.replace(kanjiRegex, (kanji) => {
-    // 既存のルビタグがあればそれを使う
     if (existingRubyTags.has(kanji)) {
       const rubyArray = existingRubyTags.get(kanji)!;
-
-      // 配列が空の場合は例外を発生させる
       if (rubyArray.length === 0) {
         throw new Error(`No ruby annotations available for kanji: ${kanji}`);
       }
 
       // FIFO方式: 配列の先頭から要素を取り出す
-      const rubyToUse = rubyArray[0];
-
-      // 使用済みのルビを配列から削除
-      existingRubyTags.set(kanji, rubyArray.slice(1));
-
+      const [rubyToUse, ...restArray] = rubyArray;
+      existingRubyTags.set(kanji, restArray);
       return `<ruby>${kanji}<rt>${rubyToUse}</rt></ruby>`;
     }
 
