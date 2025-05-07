@@ -16,7 +16,8 @@
     "knip": "knip",
     "knip:fix": "bun run knip --fix --fix-type dependencies,exports,types --allow-remove-files --include-libs",
     "convertToUTF8:all": "./bin/convert_sjis_to_utf8.sh",
-    "ruby:all": "claude '次の指示に従ってください：src/books/*.mdx ファイル内の `{{required_ruby}}` プレースホルダーを適切なルビに置き換えてください。各漢字や熟語について、文脈に合わせて最も適切な読み方を選び、置換してください。例えば「<ruby>漢字<rt>{{required_ruby}}</rt></ruby>」は「<ruby>漢字<rt>かんじ</rt></ruby>」などに変更します。文学的表現や古語の場合は、青空文庫の他の作品を参考にしてください。'"
+    "ruby:all": "claude '次の指示に従ってください：src/books/*.mdx ファイル内の `{{required_ruby}}` プレースホルダーを適切なルビに置き換えてください。各漢字や熟語について、文脈に合わせて最も適切な読み方を選び、置換してください。例えば「<ruby>漢字<rt>{{required_ruby}}</rt></ruby>」は「<ruby>漢字<rt>かんじ</rt></ruby>」などに変更します。文学的表現や古語の場合は、青空文庫の他の作品を参考にしてください。'",
+    "illustration": "./bin/generate-illustration-plan.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
