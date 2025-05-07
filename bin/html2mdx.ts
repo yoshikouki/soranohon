@@ -60,7 +60,7 @@ function parseCommandLineArgs(args: string[]): CommandLineOptions {
  */
 async function convertHtmlToMdxWithOptions(
   html: string,
-  existingRubyTags: Map<string, string>,
+  existingRubyTags: Map<string, string[]>,
   addRuby: boolean,
   forceOverwrite: boolean,
 ): Promise<string> {

@@ -36,6 +36,8 @@ export function addPlaceholderRubyToKanji(text: string): string {
     match: string; // 完全なrubyタグマッチ
     position: number; // テキスト内の位置
     length: number; // マッチの長さ
+    rb?: string; // ルビの対象（漢字部分）
+    rt?: string; // ルビ本体
   }
 
   const rubyTags: RubyTagInfo[] = [];
@@ -67,6 +69,27 @@ export function addPlaceholderRubyToKanji(text: string): string {
       position: match.index,
       length: match[0].length,
     };
+
+    // <ruby><rb>...</rb><rt>...</rt></ruby>パターンか<ruby>漢字<rt>かんじ</rt></ruby>パターンかを判定
+    const rbRegex = /<rb>(.*?)<\/rb>/;
+    const rtRegex = /<rt>(.*?)<\/rt>/;
+    const rbMatch = match[0].match(rbRegex);
+    const rtMatch = match[0].match(rtRegex);
+
+    // rb,rtの抽出を試みる
+    if (rbMatch && rtMatch) {
+      // <rb>タグを含む複雑なrubyタグの場合
+      tagInfo.rb = rbMatch[1];
+      tagInfo.rt = rtMatch[1];
+    } else if (!rbMatch && rtMatch) {
+      // 通常の<ruby>漢字<rt>かんじ</rt></ruby>形式の場合
+      const basicRubyRegex = /<ruby>([^<]+)<rt>/;
+      const basicRbMatch = match[0].match(basicRubyRegex);
+      if (basicRbMatch) {
+        tagInfo.rb = basicRbMatch[1];
+        tagInfo.rt = rtMatch[1];
+      }
+    }
 
     // プレースホルダーを追加
     const placeholder = `__RUBY_TAG_${rubyTags.length}__`;

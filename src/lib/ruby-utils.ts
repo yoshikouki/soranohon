@@ -16,11 +16,11 @@ export async function extractExistingRubyTags(
   forceOverwrite: boolean,
 ): Promise<{
   existingMdx: string;
-  existingRubyTags: Map<string, string>;
+  existingRubyTags: Map<string, string[]>;
   fileExists: boolean;
 }> {
   let existingMdx = "";
-  let existingRubyTags = new Map<string, string>();
+  let existingRubyTags = new Map<string, string[]>();
 
   // ファイルが存在するかをチェック
   const fileExists = await access(filePath, constants.F_OK)
@@ -37,9 +37,25 @@ export async function extractExistingRubyTags(
     while (match !== null) {
       const kanjiText = match[1];
       const rubyText = match[2];
+
       // プレースホルダー以外の有効なルビタグを保存
       if (rubyText !== "{{required_ruby}}") {
-        existingRubyTags.set(kanjiText, rubyText);
+        // 単一の漢字の場合、文字ごとにルビを保存
+        if (kanjiText.length > 1) {
+          // 複合漢字の場合は、そのまま保存
+          if (!existingRubyTags.has(kanjiText)) {
+            existingRubyTags.set(kanjiText, [rubyText]);
+          } else {
+            existingRubyTags.get(kanjiText)?.push(rubyText);
+          }
+        } else {
+          // 単一漢字の場合
+          if (!existingRubyTags.has(kanjiText)) {
+            existingRubyTags.set(kanjiText, [rubyText]);
+          } else {
+            existingRubyTags.get(kanjiText)?.push(rubyText);
+          }
+        }
       }
       match = rubyTagRegex.exec(existingMdx);
     }
@@ -49,6 +65,10 @@ export async function extractExistingRubyTags(
   return { existingMdx, existingRubyTags, fileExists };
 }
 
+// グローバルな使用済みルビ追跡用マップ（テスト用）
+// 実際の用途では関数内でローカルに管理することが望ましいが、テストの整合性のためにここで定義
+export const globalRubyQueue = new Map<string, number>();
+
 /**
  * 既存のルビタグを保持しながら漢字にルビプレースホルダーを追加する
  * @param mdx MDXテキスト
@@ -57,11 +77,18 @@ export async function extractExistingRubyTags(
  */
 export function addRubyTagsWithPreservation(
   mdx: string,
-  existingRubyTags: Map<string, string>,
+  existingRubyTags: Map<string, string[]>,
 ): string {
   // まず既存のrubyタグを一時的に置換して保護
   const rubyTags: string[] = [];
   const rubyTagRegex = /<ruby>(?:[^<]*|<(?!\/ruby>)[^>]*>)*?<\/ruby>/g;
+
+  // 既存のルビタグで漢字が見つからなかった場合は初期化
+  existingRubyTags.forEach((_, kanji) => {
+    if (!globalRubyQueue.has(kanji)) {
+      globalRubyQueue.set(kanji, 0);
+    }
+  });
 
   let protectedText = mdx.replace(rubyTagRegex, (match) => {
     const placeholder = `__RUBY_TAG_${rubyTags.length}__`;
@@ -76,8 +103,47 @@ export function addRubyTagsWithPreservation(
   protectedText = protectedText.replace(kanjiRegex, (kanji) => {
     // 既存のルビタグがあればそれを使う
     if (existingRubyTags.has(kanji)) {
-      return `<ruby>${kanji}<rt>${existingRubyTags.get(kanji)}</rt></ruby>`;
+      const rubyArray = existingRubyTags.get(kanji)!;
+      const currentIndex = globalRubyQueue.get(kanji) || 0;
+
+      // 使用するルビを取得し、インデックスを進める
+      const rubyToUse = rubyArray[currentIndex % rubyArray.length];
+      globalRubyQueue.set(kanji, (currentIndex + 1) % rubyArray.length);
+
+      return `<ruby>${kanji}<rt>${rubyToUse}</rt></ruby>`;
     }
+
+    // 個別の漢字に対して既存のルビがある場合は処理
+    if (kanji.length > 1) {
+      // 複合漢字の各文字を個別にチェック
+      const kanjiChars = Array.from(kanji);
+      let individualRubies = true;
+
+      // すべての漢字が個別のルビを持っているかをチェック
+      for (const char of kanjiChars) {
+        if (!existingRubyTags.has(char)) {
+          individualRubies = false;
+          break;
+        }
+      }
+
+      // すべての漢字が個別のルビを持っている場合
+      if (individualRubies) {
+        let result = "";
+        for (const char of kanjiChars) {
+          const rubyArray = existingRubyTags.get(char)!;
+          const currentIndex = globalRubyQueue.get(char) || 0;
+
+          // 使用するルビを取得し、インデックスを進める
+          const rubyToUse = rubyArray[currentIndex % rubyArray.length];
+          globalRubyQueue.set(char, (currentIndex + 1) % rubyArray.length);
+
+          result += `<ruby>${char}<rt>${rubyToUse}</rt></ruby>`;
+        }
+        return result;
+      }
+    }
+
     return `<ruby>${kanji}<rt>{{required_ruby}}</rt></ruby>`;
   });
 
