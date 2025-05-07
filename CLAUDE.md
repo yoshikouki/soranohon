@@ -1,5 +1,18 @@
 # Soranohon - Claude Helper
 
+## Principles
+
+- Use immutable data structures
+- Separate side effects
+- Ensure type safety
+
+### Test-Driven Development (TDD)
+
+- Red-Green-Refactor cycle
+- Treat tests as specifications
+- Iterate in small units
+- Continuous refactoring
+
 ## Build & Development Commands
 ```bash
 bun run dev          # Start dev server (PORT=8888, Turbopack)
