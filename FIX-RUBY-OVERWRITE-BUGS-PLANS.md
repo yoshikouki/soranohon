@@ -64,21 +64,4 @@ $ bun run ./bin/html2mdx.ts /Users/yoshikouki/src/github.com/aozorabunko/aozorab
 
 ## 修正計画
 
-1. プレースホルダー置き換え時に元の位置情報を保持するよう修正する
-2. 具体的には、以下の変更を実装する:
-   
-   a. プレースホルダーに位置情報を埋め込む形式に変更
-   ```
-   // 変更前
-   __RUBY_TAG_0__
-   
-   // 変更後
-   __RUBY_TAG_漢字_0__
-   ```
-   
-   b. 漢字にルビを適用する際、対象の漢字に対応するプレースホルダー情報（どの漢字にどのルビが適用されていたか）を参照する
-
-3. `addRubyTagsWithPreservation` 関数を以下のように変更:
-   - existingRubyTags を Map<string, string[]> から Map<string, Map<number, string[]>> に変更し、位置ごとのルビを管理
-   - プレースホルダー作成時に漢字も保存し、復元時に正しいルビが適用されるようにする
-   - 各漢字に対してルビを適用する際に、同一漢字でも位置に応じて適切なルビを選択する
+1. #addRubyTagsWithPreservation におけるプレースホルダーへの置き換えを辞め、MDX の ruby タグをすべて剥がすことで、位置情報を変換前後で同一にする
