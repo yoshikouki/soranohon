@@ -40,31 +40,36 @@ export async function extractExistingRubyTags(
   const existingMdx = await readFile(filePath, "utf-8");
   const existingRubyTags = new Map<string, string[]>();
 
-  let match: RegExpExecArray | null = rubyTagRegex.exec(existingMdx);
-  while (match !== null) {
-    const kanjiText = match[1];
-    const rubyText = match[2];
+  const matches = [...existingMdx.matchAll(rubyTagRegex)];
+  for (const match of matches) {
+    // 各ルビタグから漢字とルビを抽出
+    const fullMatch = match[0];
+    const contentMatch = rubyContentRegex.exec(fullMatch);
 
-    // プレースホルダー以外の有効なルビタグを保存
-    if (rubyText !== "{{required_ruby}}") {
-      // 単一の漢字の場合、文字ごとにルビを保存
-      if (kanjiText.length > 1) {
-        // 複合漢字の場合は、そのまま保存
-        if (!existingRubyTags.has(kanjiText)) {
-          existingRubyTags.set(kanjiText, [rubyText]);
+    if (contentMatch) {
+      const kanjiText = contentMatch[1]?.trim();
+      const rubyText = contentMatch[2]?.trim();
+
+      // プレースホルダー以外の有効なルビタグを保存
+      if (rubyText && rubyText !== "{{required_ruby}}" && kanjiText) {
+        // 単一の漢字の場合、文字ごとにルビを保存
+        if (kanjiText.length > 1) {
+          // 複合漢字の場合は、そのまま保存
+          if (!existingRubyTags.has(kanjiText)) {
+            existingRubyTags.set(kanjiText, [rubyText]);
+          } else {
+            existingRubyTags.get(kanjiText)?.push(rubyText);
+          }
         } else {
-          existingRubyTags.get(kanjiText)?.push(rubyText);
-        }
-      } else {
-        // 単一漢字の場合
-        if (!existingRubyTags.has(kanjiText)) {
-          existingRubyTags.set(kanjiText, [rubyText]);
-        } else {
-          existingRubyTags.get(kanjiText)?.push(rubyText);
+          // 単一漢字の場合
+          if (!existingRubyTags.has(kanjiText)) {
+            existingRubyTags.set(kanjiText, [rubyText]);
+          } else {
+            existingRubyTags.get(kanjiText)?.push(rubyText);
+          }
         }
       }
     }
-    match = rubyTagRegex.exec(existingMdx);
   }
   if (process.env.NODE_ENV !== "test") {
     console.log(`Found ${existingRubyTags.size} existing ruby tags`);
