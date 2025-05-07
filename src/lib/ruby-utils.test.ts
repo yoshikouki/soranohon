@@ -436,5 +436,41 @@ describe("addRubyTagsWithPreservation", () => {
 
       expect(result).toEqual(expected);
     });
+    
+    // Test for the issue with 一軒 ルビ overwriting
+    it("should maintain the correct ruby annotations for the '一軒' issue", () => {
+      // The problematic case from the issue description
+      const mdxText = "<ruby>一<rt>いっ</rt></ruby><ruby>軒<rt>けん</rt></ruby>";
+      
+      // Simulate a situation where we have different ruby values for '一'
+      const existingRubyTags = new Map<string, string[]>([
+        ["一", ["ひと", "いっ"]], // First is 'ひと', second is 'いっ'
+        ["軒", ["けん"]],
+      ]);
+      
+      // The expected output is that the original ruby annotation 'いっ' is preserved
+      const expected = "<ruby>一<rt>いっ</rt></ruby><ruby>軒<rt>けん</rt></ruby>";
+      
+      const result = addRubyTagsWithPreservation(mdxText, existingRubyTags);
+      expect(result).toEqual(expected);
+    });
+    
+    // Test the specific case mentioned in the bug report
+    it("should not overwrite ruby tags when processing compound kanji", () => {
+      // This directly tests the issue mentioned in the bug report with '一軒'
+      const mdxText = "<ruby>一<rt>いっ</rt></ruby><ruby>軒<rt>けん</rt></ruby>";
+      
+      // Intentionally provide wrong order to force the bug to appear
+      const existingRubyTags = new Map<string, string[]>([
+        ["一", ["ひと", "いっ"]], // First occurrence would normally get 'ひと'
+        ["軒", ["けん"]],
+      ]);
+      
+      const result = addRubyTagsWithPreservation(mdxText, existingRubyTags);
+      
+      // Current implementation would incorrectly apply 'ひと' to the first '一'
+      // So this test will fail until the fix is implemented
+      expect(result).toEqual("<ruby>一<rt>いっ</rt></ruby><ruby>軒<rt>けん</rt></ruby>");
+    });
   });
 });
