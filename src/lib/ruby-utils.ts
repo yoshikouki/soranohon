@@ -6,12 +6,18 @@ import { constants } from "fs";
 import { access, readFile } from "fs/promises";
 
 // 既存のルビタグを抽出する正規表現
-// 3つのパターンに対応:
+// 4つのパターンに対応:
 // 1. <ruby>漢字<rt>かんじ</rt></ruby>
 // 2. <ruby><rb>漢字</rb><rt>かんじ</rt></ruby>
 // 3. <ruby><rb>漢字</rb><rp>（</rp><rt>かんじ</rt><rp>）</rp></ruby>
-const rubyTagRegex =
-  /<ruby>(?:<rb>)?([^<]+)(?:<\/rb>)?(?:<rp>[^<]*<\/rp>)?<rt>([^<]+)<\/rt>(?:<rp>[^<]*<\/rp>)?<\/ruby>/g;
+// 4. 改行を含むルビタグ: <ruby>\n漢字\n<rt>\nかんじ\n</rt>\n</ruby>
+export const rubyTagRegex = /<ruby>(?:.|\n)*?<rt>(?:.|\n)*?<\/rt>(?:.|\n)*?<\/ruby>/g;
+
+// 漢字とルビを抽出するための正規表現
+// キャプチャグループを使用して、漢字と対応するルビを抽出します
+// 改行を含むルビタグにも対応するように改良
+export const rubyContentRegex =
+  /<ruby>(?:\s*(?:<rb>)?\s*)([^<]*?)(?:\s*(?:<\/rb>)?\s*)(?:<rp>[^<]*<\/rp>)?\s*<rt>\s*([^<]*?)\s*<\/rt>(?:<rp>[^<]*<\/rp>)?\s*<\/ruby>/;
 
 // 漢字に対する正規表現
 const kanjiRegex = /[\p{Script=Han}々]+/gu;

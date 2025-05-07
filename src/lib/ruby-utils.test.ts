@@ -1,6 +1,10 @@
 import * as fs from "fs/promises";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { addRubyTagsWithPreservation, extractExistingRubyTags } from "./ruby-utils";
+import {
+  addRubyTagsWithPreservation,
+  extractExistingRubyTags,
+  rubyTagRegex,
+} from "./ruby-utils";
 
 // fs.access と fs.readFile をモック化
 vi.mock("fs/promises", () => ({
@@ -289,6 +293,50 @@ describe("addRubyTagsWithPreservation", () => {
     const existingRubyTags = new Map<string, string[]>();
 
     const result = addRubyTagsWithPreservation(mdx, existingRubyTags);
+
+    expect(result).toBe(
+      "<ruby>\n漢字\n<rt>\nかんじ\n</rt>\n</ruby>と<ruby>改行<rt>{{required_ruby}}</rt></ruby>",
+    );
+  });
+
+  // 改行を含むルビタグのためのテスト追加
+  it("should extract ruby tags with line breaks", () => {
+    // エクスポートされたrubyTagRegexを使用して、改行を含むルビタグが正しく抽出できるかを確認します
+    const mdx = "<ruby>\n漢字\n<rt>\nかんじ\n</rt>\n</ruby>と改行";
+
+    const matches = [...mdx.matchAll(rubyTagRegex)];
+    expect(matches.length).toBe(1);
+    expect(matches[0][0]).toBe("<ruby>\n漢字\n<rt>\nかんじ\n</rt>\n</ruby>");
+  });
+
+  // addRubyTagsWithPreservation 関数のデバッグテスト
+  it("should debug ruby tags with line breaks processing", () => {
+    const mdx = "<ruby>\n漢字\n<rt>\nかんじ\n</rt>\n</ruby>と改行";
+
+    // この関数の実行を再現して、問題を特定します
+    const rubyTags: string[] = [];
+    let protectedText = mdx.replace(rubyTagRegex, (match) => {
+      const placeholder = `__RUBY_TAG_${rubyTags.length}__`;
+      rubyTags.push(match);
+      return placeholder;
+    });
+
+    // プレースホルダーの内容を確認
+    expect(rubyTags.length).toBe(1);
+    expect(rubyTags[0]).toBe("<ruby>\n漢字\n<rt>\nかんじ\n</rt>\n</ruby>");
+    expect(protectedText).toBe("__RUBY_TAG_0__と改行");
+
+    // 漢字検出とプレースホルダー復元のシミュレーション
+    protectedText = protectedText.replace(/[\p{Script=Han}々]+/gu, (kanji) => {
+      return `<ruby>${kanji}<rt>{{required_ruby}}</rt></ruby>`;
+    });
+
+    expect(protectedText).toBe("__RUBY_TAG_0__と<ruby>改行<rt>{{required_ruby}}</rt></ruby>");
+
+    // プレースホルダーを元のrubyタグに戻す
+    const result = protectedText.replace(/__RUBY_TAG_(\d+)__/g, (_, index) => {
+      return rubyTags[parseInt(index)];
+    });
 
     expect(result).toBe(
       "<ruby>\n漢字\n<rt>\nかんじ\n</rt>\n</ruby>と<ruby>改行<rt>{{required_ruby}}</rt></ruby>",
