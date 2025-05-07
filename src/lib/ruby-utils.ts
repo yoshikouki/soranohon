@@ -84,11 +84,54 @@ export function addRubyTagsWithPreservation(
   mdx: string,
   existingRubyTags: Map<string, string[]>,
 ): string {
-  // まず既存のrubyタグを一時的に置換して保護
-  const rubyTags: string[] = [];
-  let protectedText = mdx.replace(rubyTagRegex, (match) => {
-    const placeholder = `__RUBY_TAG_${rubyTags.length}__`;
-    rubyTags.push(match);
+  // 既存のrubyタグとその内容を解析して保存するためのオブジェクト
+  interface RubyTagInfo {
+    originalTag: string;
+    kanji: string;
+    ruby: string;
+  }
+
+  // rubyタグの情報を保持する配列
+  const rubyTagInfos: RubyTagInfo[] = [];
+
+  // 漢字と対応するrubyレンダリング情報のマップ
+  // このマップを使って、プレースホルダーを元に戻す際に使用する
+  const kanjiRubyMap = new Map<string, Map<number, string>>();
+
+  // まず既存のrubyタグを一時的に置換して保護すると同時に内容を解析
+  let protectedText = mdx.replace(rubyTagRegex, (match, index) => {
+    // 漢字とルビを抽出
+    const contentMatch = rubyContentRegex.exec(match);
+    if (contentMatch) {
+      const kanji = contentMatch[1]?.trim() || "";
+      const ruby = contentMatch[2]?.trim() || "";
+
+      // プレースホルダーには漢字情報も含める
+      const placeholder = `__RUBY_TAG_${kanji}_${rubyTagInfos.length}__`;
+
+      // タグ情報を保存
+      rubyTagInfos.push({
+        originalTag: match,
+        kanji,
+        ruby,
+      });
+
+      // 漢字-ルビの位置マップに追加
+      if (!kanjiRubyMap.has(kanji)) {
+        kanjiRubyMap.set(kanji, new Map<number, string>());
+      }
+      kanjiRubyMap.get(kanji)!.set(rubyTagInfos.length - 1, ruby);
+
+      return placeholder;
+    }
+
+    // 解析に失敗した場合はシンプルなプレースホルダー
+    const placeholder = `__RUBY_TAG_UNKNOWN_${rubyTagInfos.length}__`;
+    rubyTagInfos.push({
+      originalTag: match,
+      kanji: "",
+      ruby: "",
+    });
     return placeholder;
   });
 
@@ -144,7 +187,20 @@ export function addRubyTagsWithPreservation(
   });
 
   // プレースホルダーを元のrubyタグに戻す
-  return protectedText.replace(/__RUBY_TAG_(\d+)__/g, (_, index) => {
-    return rubyTags[parseInt(index)];
-  });
+  // 拡張したフォーマットに対応する正規表現: __RUBY_TAG_漢字_インデックス__ または __RUBY_TAG_UNKNOWN_インデックス__
+  return protectedText.replace(
+    /__RUBY_TAG_([^_]+)_(\d+)__|__RUBY_TAG_UNKNOWN_(\d+)__/g,
+    (match, kanji, index1, index2) => {
+      // インデックスを取得（通常のケースかUNKNOWNケースか）
+      const index = index1 ? parseInt(index1) : parseInt(index2);
+
+      // 対応するタグ情報を取得して元のタグを返す
+      if (index >= 0 && index < rubyTagInfos.length) {
+        return rubyTagInfos[index].originalTag;
+      }
+
+      // 対応するタグが見つからない場合（通常起きないはず）
+      return match;
+    },
+  );
 }

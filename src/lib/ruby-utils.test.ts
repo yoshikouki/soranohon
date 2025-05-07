@@ -436,71 +436,74 @@ describe("addRubyTagsWithPreservation", () => {
 
       expect(result).toEqual(expected);
     });
-    
+
     // Test for the issue with 一軒 ルビ overwriting
     it("should maintain the correct ruby annotations for the '一軒' issue", () => {
       // The problematic case from the issue description
       const mdxText = "<ruby>一<rt>いっ</rt></ruby><ruby>軒<rt>けん</rt></ruby>";
-      
+
       // Simulate a situation where we have different ruby values for '一'
       const existingRubyTags = new Map<string, string[]>([
         ["一", ["ひと", "いっ"]], // First is 'ひと', second is 'いっ'
         ["軒", ["けん"]],
       ]);
-      
+
       // The expected output is that the original ruby annotation 'いっ' is preserved
       const expected = "<ruby>一<rt>いっ</rt></ruby><ruby>軒<rt>けん</rt></ruby>";
-      
+
       const result = addRubyTagsWithPreservation(mdxText, existingRubyTags);
       expect(result).toEqual(expected);
     });
-    
+
     // A more complex real-world test case similar to the book conversion scenario
     it("should correctly handle complex mixed ruby contexts", () => {
       // This is a more complex test simulating the real book conversion scenario
       console.log("\n== COMPLEX BOOK CONVERSION SIMULATION ==");
-      
+
       // Imagine we have an HTML document with mixed ruby patterns for the same kanji '一'
       // First section with ruby annotation 'いっ' for '一'
       const section1 = "その<ruby>一<rt>いっ</rt></ruby><ruby>軒<rt>けん</rt></ruby>は";
-      
+
       // Another section where '一' has a different reading 'ひと'
       const section2 = "ただ<ruby>一<rt>ひと</rt></ruby>つの";
-      
+
       // Combine sections into a single document
       const fullDocument = `${section1}、${section2}`;
       console.log("Original Document:", fullDocument);
-      
+
       // Now imagine we've extracted ruby tags from this document
       // Both 'いっ' and 'ひと' readings for '一' would be collected
       const extractedTags = new Map<string, string[]>([
         ["一", ["いっ", "ひと"]], // Note: order is based on appearance in document
         ["軒", ["けん"]],
       ]);
-      console.log("Extracted Tags:", JSON.stringify(Object.fromEntries(extractedTags.entries())));
-      
+      console.log(
+        "Extracted Tags:",
+        JSON.stringify(Object.fromEntries(extractedTags.entries())),
+      );
+
       // When we process the text through addRubyTagsWithPreservation,
       // it should correctly preserve the original ruby annotations
       const result = addRubyTagsWithPreservation(fullDocument, extractedTags);
       console.log("Result:", result);
-      
+
       // It should maintain the different readings for '一' in their respective contexts
       expect(result).toEqual(fullDocument);
-      
+
       // Verify explicitly that both readings are still present
       expect(result.includes("<ruby>一<rt>いっ</rt></ruby>")).toBe(true);
       expect(result.includes("<ruby>一<rt>ひと</rt></ruby>")).toBe(true);
     });
-    
+
     // Similar to the actual bug scenario from FIX-RUBY-OVERWRITE-BUGS-PLANS.md
     it("should correctly handle the issue when the same text is processed a second time with different ruby associations", () => {
       console.log("\n== SIMULATING A MORE REALISTIC BUG SCENARIO ==");
-      
+
       // Step 1: Initial HTML to MDX conversion
       // Starting with a simple example text from the original document
       const originalMdx = "<ruby>一<rt>いっ</rt></ruby><ruby>軒<rt>けん</rt></ruby>";
       console.log("Original MDX:", originalMdx);
-      
+
       // Step 2: A second file with the same kanji but different readings
       // In a real scenario, another HTML from the same book might have "一" with "ひと" reading
       // This would cause extractExistingRubyTags to have ["ひと", "いっ"] for "一"
@@ -508,57 +511,63 @@ describe("addRubyTagsWithPreservation", () => {
         ["一", ["ひと", "いっ"]], // Note that "ひと" comes first in the map
         ["軒", ["けん"]],
       ]);
-      console.log("Ruby map from both files:", JSON.stringify(Object.fromEntries(existingRubyMap.entries())));
-      
+      console.log(
+        "Ruby map from both files:",
+        JSON.stringify(Object.fromEntries(existingRubyMap.entries())),
+      );
+
       // Step 3: When processing the original MDX text again using addRubyTagsWithPreservation
       // The existing code might apply "ひと" to the first "一" it encounters, which would be wrong
       const result = addRubyTagsWithPreservation(originalMdx, existingRubyMap);
       console.log("Result after second processing:", result);
-      
+
       // This is what we expect (preserving the original ruby)
       const expectedResult = "<ruby>一<rt>いっ</rt></ruby><ruby>軒<rt>けん</rt></ruby>";
-      
+
       console.log("Expected (preserving original):", expectedResult);
-      
+
       // Test our fix - it should preserve the original ruby tags
       expect(result).toEqual(expectedResult);
     });
-    
+
     // Added after reviewing the issue - a direct test for the buggy case from the document
     it("should accurately reproduce the bug mentioned in the issue document using the real HTML file path", () => {
       console.log("\n== DIRECT BUG REPRODUCTION WITH REAL FILE PATH ==");
-      
+
       // The bug was observed when running:
       // bun run ./bin/html2mdx.ts /Users/yoshikouki/src/github.com/aozorabunko/aozorabunko/cards/001091/files/42308_17916.html
-      
+
       // Create a simplified test case that simulates the exact scenario
       // where <ruby>一<rt>いっ</rt></ruby><ruby>軒 is changed to <ruby>一<rt>ひと</rt></ruby><ruby>軒
-      
+
       // Step 1: Define the fragment that was problematic
       const problematicFragment = "<ruby>一<rt>いっ</rt></ruby><ruby>軒<rt>けん</rt></ruby>";
       console.log("Problematic fragment:", problematicFragment);
-      
+
       // Step 2: Define the extracted ruby tags that cause the problem
       // In this case, the existingRubyTags map would have "一" associated with "ひと" first
       const problematicRubyMap = new Map<string, string[]>([
         ["一", ["ひと", "いっ"]], // This order causes the bug - "ひと" will be used instead of "いっ"
         ["軒", ["けん"]],
       ]);
-      console.log("Problematic ruby map:", JSON.stringify(Object.fromEntries(problematicRubyMap.entries())));
-      
+      console.log(
+        "Problematic ruby map:",
+        JSON.stringify(Object.fromEntries(problematicRubyMap.entries())),
+      );
+
       // Step 3: Directly call addRubyTagsWithPreservation and examine the output
       // This simulates the real-world case
       const actualOutput = addRubyTagsWithPreservation(problematicFragment, problematicRubyMap);
       console.log("Actual output:", actualOutput);
-      
+
       // The expected correct output would preserve the original ruby tag
       const expectedCorrectOutput = "<ruby>一<rt>いっ</rt></ruby><ruby>軒<rt>けん</rt></ruby>";
-      
+
       // If the bug exists, the output would have "ひと" for "一" instead of "いっ"
       const buggyOutput = "<ruby>一<rt>ひと</rt></ruby><ruby>軒<rt>けん</rt></ruby>";
       console.log("Expected correct output:", expectedCorrectOutput);
       console.log("Buggy output (if bug exists):", buggyOutput);
-      
+
       // This test should pass with our fix, but fail with the original implementation
       expect(actualOutput).toEqual(expectedCorrectOutput);
     });
