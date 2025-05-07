@@ -29,6 +29,14 @@ globalRubyQueue.set(kanji, (currentIndex + 1) % rubyArray.length);
 
 これにより、「家」が「いえ」→「うち」→「いえ」と順番に変わっていきます。
 
+## 復元元の ruby のパターン
+
+復元元の ruby はいくつかパターンがあり、確認できているだけでも
+
+- `<ruby><rb>壁</rb><rp>（</rp><rt>かべ</rt><rp>）</rp></ruby>`
+- `<ruby><rb>壁</rb><rt>かべ</rt></ruby>`
+- `<ruby>壁<rt>かべ</rt></ruby>`
+
 ## 問題のテストケース
 
 src/lib/ruby-utils.test.ts にバグ再現を用意した
