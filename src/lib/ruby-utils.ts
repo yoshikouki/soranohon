@@ -52,29 +52,19 @@ export async function extractExistingRubyTags(
     const fullMatch = match[0];
     const contentMatch = rubyContentRegex.exec(fullMatch);
 
-    if (contentMatch) {
-      const kanjiText = contentMatch[1]?.trim();
-      const rubyText = contentMatch[2]?.trim();
+    if (!contentMatch) continue;
 
-      // プレースホルダー以外の有効なルビタグを保存
-      if (rubyText && rubyText !== "{{required_ruby}}" && kanjiText) {
-        // 単一の漢字の場合、文字ごとにルビを保存
-        if (kanjiText.length > 1) {
-          // 複合漢字の場合は、そのまま保存
-          if (!existingRubyTags.has(kanjiText)) {
-            existingRubyTags.set(kanjiText, [rubyText]);
-          } else {
-            existingRubyTags.get(kanjiText)?.push(rubyText);
-          }
-        } else {
-          // 単一漢字の場合
-          if (!existingRubyTags.has(kanjiText)) {
-            existingRubyTags.set(kanjiText, [rubyText]);
-          } else {
-            existingRubyTags.get(kanjiText)?.push(rubyText);
-          }
-        }
-      }
+    const kanjiText = contentMatch[1]?.trim();
+    const rubyText = contentMatch[2]?.trim();
+
+    // プレースホルダーや無効なルビタグは無視
+    if (!rubyText || rubyText === "{{required_ruby}}" || !kanjiText) continue;
+
+    // 漢字の既存のルビを保存（複合漢字も単一漢字も同じロジック）
+    if (!existingRubyTags.has(kanjiText)) {
+      existingRubyTags.set(kanjiText, [rubyText]);
+    } else {
+      existingRubyTags.get(kanjiText)?.push(rubyText);
     }
   }
   if (process.env.NODE_ENV !== "test") {
@@ -104,6 +94,7 @@ export function addRubyTagsWithPreservation(
 
   // 漢字をrubyタグで囲む
   protectedText = protectedText.replace(kanjiRegex, (kanji) => {
+    // 既存のルビタグがある場合は処理
     if (existingRubyTags.has(kanji)) {
       const rubyArray = existingRubyTags.get(kanji)!;
       if (rubyArray.length === 0) {
@@ -116,44 +107,40 @@ export function addRubyTagsWithPreservation(
       return `<ruby>${kanji}<rt>${rubyToUse}</rt></ruby>`;
     }
 
-    // 個別の漢字に対して既存のルビがある場合は処理
-    if (kanji.length > 1) {
-      // 複合漢字の各文字を個別にチェック
-      const kanjiChars = Array.from(kanji);
-      let individualRubies = true;
+    // 複合漢字の場合の処理
+    if (kanji.length <= 1) {
+      return `<ruby>${kanji}<rt>{{required_ruby}}</rt></ruby>`;
+    }
 
-      // すべての漢字が個別のルビを持っているかをチェック
-      for (const char of kanjiChars) {
-        if (!existingRubyTags.has(char)) {
-          individualRubies = false;
-          break;
-        }
-      }
+    // 複合漢字の各文字を個別にチェック
+    const kanjiChars = Array.from(kanji);
 
-      // すべての漢字が個別のルビを持っている場合
-      if (individualRubies) {
-        let result = "";
-        for (const char of kanjiChars) {
-          const rubyArray = existingRubyTags.get(char)!;
-
-          // 配列が空の場合は例外を発生させる
-          if (rubyArray.length === 0) {
-            throw new Error(`No ruby annotations available for kanji: ${char}`);
-          }
-
-          // FIFO方式: 配列の先頭から要素を取り出す
-          const rubyToUse = rubyArray[0];
-
-          // 使用済みのルビを配列から削除
-          existingRubyTags.set(char, rubyArray.slice(1));
-
-          result += `<ruby>${char}<rt>${rubyToUse}</rt></ruby>`;
-        }
-        return result;
+    // すべての漢字が個別のルビを持っているかをチェック
+    for (const char of kanjiChars) {
+      if (!existingRubyTags.has(char)) {
+        return `<ruby>${kanji}<rt>{{required_ruby}}</rt></ruby>`;
       }
     }
 
-    return `<ruby>${kanji}<rt>{{required_ruby}}</rt></ruby>`;
+    // すべての漢字が個別のルビを持っている場合
+    let result = "";
+    for (const char of kanjiChars) {
+      const rubyArray = existingRubyTags.get(char)!;
+
+      // 配列が空の場合は例外を発生させる
+      if (rubyArray.length === 0) {
+        throw new Error(`No ruby annotations available for kanji: ${char}`);
+      }
+
+      // FIFO方式: 配列の先頭から要素を取り出す
+      const rubyToUse = rubyArray[0];
+
+      // 使用済みのルビを配列から削除
+      existingRubyTags.set(char, rubyArray.slice(1));
+
+      result += `<ruby>${char}<rt>${rubyToUse}</rt></ruby>`;
+    }
+    return result;
   });
 
   // プレースホルダーを元のrubyタグに戻す
