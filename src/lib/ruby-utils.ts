@@ -62,14 +62,12 @@ export async function extractExistingRubyTags(
     }
     match = rubyTagRegex.exec(existingMdx);
   }
-  console.log(`Found ${existingRubyTags.size} existing ruby tags`);
+  if (process.env.NODE_ENV !== "test") {
+    console.log(`Found ${existingRubyTags.size} existing ruby tags`);
+  }
 
   return { existingMdx, existingRubyTags, fileExists };
 }
-
-// グローバルな使用済みルビ追跡用マップ（テスト用）
-// 実際の用途では関数内でローカルに管理することが望ましいが、テストの整合性のためにここで定義
-export const globalRubyQueue = new Map<string, number>();
 
 /**
  * 既存のルビタグを保持しながら漢字にルビプレースホルダーを追加する
@@ -85,13 +83,6 @@ export function addRubyTagsWithPreservation(
   const rubyTags: string[] = [];
   const rubyTagRegex = /<ruby>(?:[^<]*|<(?!\/ruby>)[^>]*>)*?<\/ruby>/g;
 
-  // 既存のルビタグで漢字が見つからなかった場合は初期化
-  existingRubyTags.forEach((_, kanji) => {
-    if (!globalRubyQueue.has(kanji)) {
-      globalRubyQueue.set(kanji, 0);
-    }
-  });
-
   let protectedText = mdx.replace(rubyTagRegex, (match) => {
     const placeholder = `__RUBY_TAG_${rubyTags.length}__`;
     rubyTags.push(match);
@@ -106,11 +97,17 @@ export function addRubyTagsWithPreservation(
     // 既存のルビタグがあればそれを使う
     if (existingRubyTags.has(kanji)) {
       const rubyArray = existingRubyTags.get(kanji)!;
-      const currentIndex = globalRubyQueue.get(kanji) || 0;
 
-      // 使用するルビを取得し、インデックスを進める
-      const rubyToUse = rubyArray[currentIndex % rubyArray.length];
-      globalRubyQueue.set(kanji, (currentIndex + 1) % rubyArray.length);
+      // 配列が空の場合は例外を発生させる
+      if (rubyArray.length === 0) {
+        throw new Error(`No ruby annotations available for kanji: ${kanji}`);
+      }
+
+      // FIFO方式: 配列の先頭から要素を取り出す
+      const rubyToUse = rubyArray[0];
+
+      // 使用済みのルビを配列から削除
+      existingRubyTags.set(kanji, rubyArray.slice(1));
 
       return `<ruby>${kanji}<rt>${rubyToUse}</rt></ruby>`;
     }
@@ -134,11 +131,17 @@ export function addRubyTagsWithPreservation(
         let result = "";
         for (const char of kanjiChars) {
           const rubyArray = existingRubyTags.get(char)!;
-          const currentIndex = globalRubyQueue.get(char) || 0;
 
-          // 使用するルビを取得し、インデックスを進める
-          const rubyToUse = rubyArray[currentIndex % rubyArray.length];
-          globalRubyQueue.set(char, (currentIndex + 1) % rubyArray.length);
+          // 配列が空の場合は例外を発生させる
+          if (rubyArray.length === 0) {
+            throw new Error(`No ruby annotations available for kanji: ${char}`);
+          }
+
+          // FIFO方式: 配列の先頭から要素を取り出す
+          const rubyToUse = rubyArray[0];
+
+          // 使用済みのルビを配列から削除
+          existingRubyTags.set(char, rubyArray.slice(1));
 
           result += `<ruby>${char}<rt>${rubyToUse}</rt></ruby>`;
         }

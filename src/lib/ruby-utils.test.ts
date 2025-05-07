@@ -1,10 +1,6 @@
 import * as fs from "fs/promises";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  addRubyTagsWithPreservation,
-  extractExistingRubyTags,
-  globalRubyQueue,
-} from "./ruby-utils";
+import { addRubyTagsWithPreservation, extractExistingRubyTags } from "./ruby-utils";
 
 // fs.access と fs.readFile をモック化
 vi.mock("fs/promises", () => ({
@@ -168,13 +164,6 @@ describe("extractExistingRubyTags", () => {
 });
 
 describe("addRubyTagsWithPreservation", () => {
-  beforeEach(() => {
-    // Reset any existing state for reliable testing
-    // globalRubyQueueの初期化
-    Array.from(globalRubyQueue.keys()).forEach((key) => {
-      globalRubyQueue.delete(key);
-    });
-  });
   it("should add ruby placeholder tags to kanji", () => {
     const mdx = "漢字";
     const existingRubyTags = new Map<string, string[]>();
@@ -216,13 +205,7 @@ describe("addRubyTagsWithPreservation", () => {
     expect(result).toBe("<ruby>一<rt>いち</rt></ruby><ruby>軒<rt>けん</rt></ruby>");
   });
 
-  it("should cycle through multiple ruby readings for the same kanji", () => {
-    // Reset any existing state for reliable testing
-    // globalRubyQueueの初期化
-    Object.keys(globalRubyQueue).forEach((key) => {
-      globalRubyQueue.delete(key);
-    });
-
+  it("should use FIFO for multiple ruby readings of the same kanji", () => {
     const mdx = "一に一を加えると二になる";
     const existingRubyTags = new Map<string, string[]>([
       ["一", ["いち", "ひと"]],
@@ -231,46 +214,35 @@ describe("addRubyTagsWithPreservation", () => {
 
     const result = addRubyTagsWithPreservation(mdx, existingRubyTags);
 
-    // Don't test the exact order, just check that both rubies are used
-    expect(result).toContain("<ruby>一<rt>いち</rt></ruby>");
-    expect(result).toContain("<ruby>一<rt>ひと</rt></ruby>");
+    // With FIFO, first occurrence uses first reading, second uses second reading
+    // We need to parse the result to check the correct order
+    const rubyMatches = [...result.matchAll(/<ruby>一<rt>(.*?)<\/rt><\/ruby>/g)];
+    expect(rubyMatches.length).toBe(2);
+    expect(rubyMatches[0][1]).toBe("いち"); // First occurrence uses first reading
+    expect(rubyMatches[1][1]).toBe("ひと"); // Second occurrence uses second reading
+
     expect(result).toContain("<ruby>二<rt>に</rt></ruby>");
     expect(result).toContain("<ruby>加<rt>{{required_ruby}}</rt></ruby>");
   });
 
-  it("should properly handle the case that caused the bug", () => {
-    // Reset any existing state for reliable testing
-    // globalRubyQueueの初期化
-    Object.keys(globalRubyQueue).forEach((key) => {
-      globalRubyQueue.delete(key);
-    });
-
-    const mdx = "一軒";
+  it("should properly handle the FIFO flow for ruby annotations", () => {
+    // First occurrence will use the first ruby in the array
     const existingRubyTags = new Map<string, string[]>([
       ["一", ["いち", "ひと"]],
       ["軒", ["けん"]],
     ]);
-
-    // First occurrence will use the first ruby in the array
-    let result = addRubyTagsWithPreservation(mdx, existingRubyTags);
+    const result = addRubyTagsWithPreservation("一軒", existingRubyTags);
     expect(result).toBe("<ruby>一<rt>いち</rt></ruby><ruby>軒<rt>けん</rt></ruby>");
-
-    // Second occurrence should use the second ruby
-    result = addRubyTagsWithPreservation(mdx, existingRubyTags);
-    expect(result).toBe("<ruby>一<rt>ひと</rt></ruby><ruby>軒<rt>けん</rt></ruby>");
-
-    // Third occurrence cycles back to the first ruby
-    result = addRubyTagsWithPreservation(mdx, existingRubyTags);
-    expect(result).toBe("<ruby>一<rt>いち</rt></ruby><ruby>軒<rt>けん</rt></ruby>");
+    // Try with a different text to avoid the error
+    const result2 = addRubyTagsWithPreservation("一", existingRubyTags);
+    expect(result2).toBe("<ruby>一<rt>ひと</rt></ruby>");
+    // This would now throw an error if we tried to use it
+    expect(() => {
+      addRubyTagsWithPreservation("一", existingRubyTags);
+    }).toThrow("No ruby annotations available for kanji: 一");
   });
 
   it("should handle mixed content with existing ruby and new kanji", () => {
-    // Reset any existing state for reliable testing
-    // globalRubyQueueの初期化
-    Object.keys(globalRubyQueue).forEach((key) => {
-      globalRubyQueue.delete(key);
-    });
-
     const mdx = "<ruby>漢<rt>かん</rt></ruby>字と日本語";
     const existingRubyTags = new Map<string, string[]>([["日本", ["にほん"]]]);
 
@@ -323,14 +295,7 @@ describe("addRubyTagsWithPreservation", () => {
     );
   });
 
-  describe("Ruby overwrite bug with FIFO queue", () => {
-    beforeEach(() => {
-      // Reset globalRubyQueue before each test
-      Array.from(globalRubyQueue.keys()).forEach((key) => {
-        globalRubyQueue.delete(key);
-      });
-    });
-
+  describe("Ruby overwrite with FIFO queue", () => {
     it("should reproduce the ruby tag overwrite issue in the 'いえ/うち' context", () => {
       const firstResult = addRubyTagsWithPreservation(
         `その<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>にあるものは、`,
@@ -372,6 +337,56 @@ describe("addRubyTagsWithPreservation", () => {
       ]);
       const result = addRubyTagsWithPreservation(mdxText, existingRubyTags);
       expect(result).toEqual(mdxText);
+    });
+
+    it("should correctly apply FIFO for ruby tags in the 'いえ/うち' context", () => {
+      // This test should be in a single call since we're consuming annotations
+      const mdxText = `
+      その家の中にあるものは、
+      その家中だったのです。`;
+
+      const existingRubyTags = new Map<string, string[]>([
+        ["家", ["いえ", "うち"]],
+        ["中", ["なか", "じゅう"]],
+      ]);
+
+      const result = addRubyTagsWithPreservation(mdxText, existingRubyTags);
+
+      // With FIFO, first '家' gets 'いえ', second gets 'うち'
+      // First '中' gets 'なか', second gets 'じゅう'
+      const expected = `
+      その<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>にあるものは、
+      その<ruby>家<rt>うち</rt></ruby><ruby>中<rt>じゅう</rt></ruby>だったのです。`;
+
+      expect(result).toEqual(expected);
+    });
+
+    it("should handle multiple uses of the same kanji in different contexts", () => {
+      // This test recreates the book scenario where '家' has different contextual readings
+      const mdxText = `
+      もう家にはけっしてかえらないから。
+      一軒の小さな家を見つけましたので。
+      その家の中にあるものは、なんでも
+      `;
+
+      const existingRubyTags = new Map<string, string[]>([
+        ["家", ["いえ", "うち", "いえ"]],
+        ["中", ["なか"]],
+        ["一", ["いっ"]],
+        ["軒", ["けん"]],
+        ["小", ["ちい"]],
+        ["見", ["み"]],
+      ]);
+
+      const result = addRubyTagsWithPreservation(mdxText, existingRubyTags);
+
+      const expected = `
+      もう<ruby>家<rt>いえ</rt></ruby>にはけっしてかえらないから。
+      <ruby>一<rt>いっ</rt></ruby><ruby>軒<rt>けん</rt></ruby>の<ruby>小<rt>ちい</rt></ruby>さな<ruby>家<rt>うち</rt></ruby>を<ruby>見<rt>み</rt></ruby>つけましたので。
+      その<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>にあるものは、なんでも
+      `;
+
+      expect(result).toEqual(expected);
     });
   });
 });
