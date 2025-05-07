@@ -19,53 +19,50 @@ export async function extractExistingRubyTags(
   existingRubyTags: Map<string, string[]>;
   fileExists: boolean;
 }> {
-  let existingMdx = "";
-  let existingRubyTags = new Map<string, string[]>();
-
-  // ファイルが存在するかをチェック
   const fileExists = await access(filePath, constants.F_OK)
     .then(() => true)
     .catch(() => false);
+  if (!fileExists || forceOverwrite) {
+    return { existingRubyTags: new Map<string, string[]>(), existingMdx: "", fileExists };
+  }
 
-  if (fileExists && !forceOverwrite) {
-    // 既存ファイルがあり、強制上書きでない場合は読み込む
-    existingMdx = await readFile(filePath, "utf-8");
+  const existingMdx = await readFile(filePath, "utf-8");
+  const existingRubyTags = new Map<string, string[]>();
 
-    // 既存のルビタグを抽出する正規表現
-    // 3つのパターンに対応:
-    // 1. <ruby>漢字<rt>かんじ</rt></ruby>
-    // 2. <ruby><rb>漢字</rb><rt>かんじ</rt></ruby>
-    // 3. <ruby><rb>漢字</rb><rp>（</rp><rt>かんじ</rt><rp>）</rp></ruby>
-    const rubyTagRegex =
-      /<ruby>(?:<rb>)?([^<]+)(?:<\/rb>)?(?:<rp>[^<]*<\/rp>)?<rt>([^<]+)<\/rt>(?:<rp>[^<]*<\/rp>)?<\/ruby>/g;
-    let match: RegExpExecArray | null = rubyTagRegex.exec(existingMdx);
-    while (match !== null) {
-      const kanjiText = match[1];
-      const rubyText = match[2];
+  // 既存のルビタグを抽出する正規表現
+  // 3つのパターンに対応:
+  // 1. <ruby>漢字<rt>かんじ</rt></ruby>
+  // 2. <ruby><rb>漢字</rb><rt>かんじ</rt></ruby>
+  // 3. <ruby><rb>漢字</rb><rp>（</rp><rt>かんじ</rt><rp>）</rp></ruby>
+  const rubyTagRegex =
+    /<ruby>(?:<rb>)?([^<]+)(?:<\/rb>)?(?:<rp>[^<]*<\/rp>)?<rt>([^<]+)<\/rt>(?:<rp>[^<]*<\/rp>)?<\/ruby>/g;
+  let match: RegExpExecArray | null = rubyTagRegex.exec(existingMdx);
+  while (match !== null) {
+    const kanjiText = match[1];
+    const rubyText = match[2];
 
-      // プレースホルダー以外の有効なルビタグを保存
-      if (rubyText !== "{{required_ruby}}") {
-        // 単一の漢字の場合、文字ごとにルビを保存
-        if (kanjiText.length > 1) {
-          // 複合漢字の場合は、そのまま保存
-          if (!existingRubyTags.has(kanjiText)) {
-            existingRubyTags.set(kanjiText, [rubyText]);
-          } else {
-            existingRubyTags.get(kanjiText)?.push(rubyText);
-          }
+    // プレースホルダー以外の有効なルビタグを保存
+    if (rubyText !== "{{required_ruby}}") {
+      // 単一の漢字の場合、文字ごとにルビを保存
+      if (kanjiText.length > 1) {
+        // 複合漢字の場合は、そのまま保存
+        if (!existingRubyTags.has(kanjiText)) {
+          existingRubyTags.set(kanjiText, [rubyText]);
         } else {
-          // 単一漢字の場合
-          if (!existingRubyTags.has(kanjiText)) {
-            existingRubyTags.set(kanjiText, [rubyText]);
-          } else {
-            existingRubyTags.get(kanjiText)?.push(rubyText);
-          }
+          existingRubyTags.get(kanjiText)?.push(rubyText);
+        }
+      } else {
+        // 単一漢字の場合
+        if (!existingRubyTags.has(kanjiText)) {
+          existingRubyTags.set(kanjiText, [rubyText]);
+        } else {
+          existingRubyTags.get(kanjiText)?.push(rubyText);
         }
       }
-      match = rubyTagRegex.exec(existingMdx);
     }
-    console.log(`Found ${existingRubyTags.size} existing ruby tags`);
+    match = rubyTagRegex.exec(existingMdx);
   }
+  console.log(`Found ${existingRubyTags.size} existing ruby tags`);
 
   return { existingMdx, existingRubyTags, fileExists };
 }
