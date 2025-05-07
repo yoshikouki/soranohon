@@ -31,8 +31,13 @@ export async function extractExistingRubyTags(
     // 既存ファイルがあり、強制上書きでない場合は読み込む
     existingMdx = await readFile(filePath, "utf-8");
 
-    // 既存のルビタグを抽出
-    const rubyTagRegex = /<ruby>([^<]+)<rt>([^<]+)<\/rt><\/ruby>/g;
+    // 既存のルビタグを抽出する正規表現
+    // 3つのパターンに対応:
+    // 1. <ruby>漢字<rt>かんじ</rt></ruby>
+    // 2. <ruby><rb>漢字</rb><rt>かんじ</rt></ruby>
+    // 3. <ruby><rb>漢字</rb><rp>（</rp><rt>かんじ</rt><rp>）</rp></ruby>
+    const rubyTagRegex =
+      /<ruby>(?:<rb>)?([^<]+)(?:<\/rb>)?(?:<rp>[^<]*<\/rp>)?<rt>([^<]+)<\/rt>(?:<rp>[^<]*<\/rp>)?<\/ruby>/g;
     let match: RegExpExecArray | null = rubyTagRegex.exec(existingMdx);
     while (match !== null) {
       const kanjiText = match[1];

@@ -77,6 +77,61 @@ describe("extractExistingRubyTags", () => {
     expect(result.existingRubyTags.get("日本")).toEqual(["にほん"]);
   });
 
+  it("should extract ruby tags with rb element", async () => {
+    // access が成功するようにモック
+    vi.mocked(fs.access).mockResolvedValueOnce(undefined);
+
+    // readFile が MDX コンテンツを返すようにモック（rbタグがある場合）
+    const mdxContent =
+      "テスト<ruby><rb>漢字</rb><rt>かんじ</rt></ruby>と<ruby><rb>日本</rb><rt>にほん</rt></ruby>語";
+    vi.mocked(fs.readFile).mockResolvedValueOnce(mdxContent);
+
+    const result = await extractExistingRubyTags("/path/to/file.mdx", false);
+
+    expect(result.fileExists).toBe(true);
+    expect(result.existingMdx).toBe(mdxContent);
+    expect(result.existingRubyTags.size).toBe(2);
+    expect(result.existingRubyTags.get("漢字")).toEqual(["かんじ"]);
+    expect(result.existingRubyTags.get("日本")).toEqual(["にほん"]);
+  });
+
+  it("should extract ruby tags with rp elements", async () => {
+    // access が成功するようにモック
+    vi.mocked(fs.access).mockResolvedValueOnce(undefined);
+
+    // readFile が MDX コンテンツを返すようにモック（rpタグがある場合）
+    const mdxContent =
+      "テスト<ruby><rb>漢字</rb><rp>（</rp><rt>かんじ</rt><rp>）</rp></ruby>と<ruby><rb>日本</rb><rp>（</rp><rt>にほん</rt><rp>）</rp></ruby>語";
+    vi.mocked(fs.readFile).mockResolvedValueOnce(mdxContent);
+
+    const result = await extractExistingRubyTags("/path/to/file.mdx", false);
+
+    expect(result.fileExists).toBe(true);
+    expect(result.existingMdx).toBe(mdxContent);
+    expect(result.existingRubyTags.size).toBe(2);
+    expect(result.existingRubyTags.get("漢字")).toEqual(["かんじ"]);
+    expect(result.existingRubyTags.get("日本")).toEqual(["にほん"]);
+  });
+
+  it("should extract ruby tags with mixed formats", async () => {
+    // access が成功するようにモック
+    vi.mocked(fs.access).mockResolvedValueOnce(undefined);
+
+    // readFile が MDX コンテンツを返すようにモック（混合フォーマット）
+    const mdxContent =
+      "テスト<ruby>漢字<rt>かんじ</rt></ruby>と<ruby><rb>日本</rb><rt>にほん</rt></ruby>語<ruby><rb>変換</rb><rp>（</rp><rt>へんかん</rt><rp>）</rp></ruby>";
+    vi.mocked(fs.readFile).mockResolvedValueOnce(mdxContent);
+
+    const result = await extractExistingRubyTags("/path/to/file.mdx", false);
+
+    expect(result.fileExists).toBe(true);
+    expect(result.existingMdx).toBe(mdxContent);
+    expect(result.existingRubyTags.size).toBe(3);
+    expect(result.existingRubyTags.get("漢字")).toEqual(["かんじ"]);
+    expect(result.existingRubyTags.get("日本")).toEqual(["にほん"]);
+    expect(result.existingRubyTags.get("変換")).toEqual(["へんかん"]);
+  });
+
   it("should ignore placeholder ruby tags", async () => {
     // access が成功するようにモック
     vi.mocked(fs.access).mockResolvedValueOnce(undefined);
@@ -277,24 +332,27 @@ describe("addRubyTagsWithPreservation", () => {
     });
 
     it("should reproduce the ruby tag overwrite issue in the 'いえ/うち' context", () => {
-      // Test simulating the issue with '家' having different readings in context
-      const mdxSource = `その<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>にあるものは、`;
-      const existingRubyTags = new Map<string, string[]>([
-        ["家", ["いえ", "うち"]],
-        ["中", ["なか"]],
-      ]);
+      const firstResult = addRubyTagsWithPreservation(
+        `その<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>にあるものは、`,
+        new Map([
+          ["家", ["いえ"]],
+          ["中", ["なか"]],
+        ]),
+      );
+      expect(firstResult).toEqual(
+        `その<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>にあるものは、`,
+      );
 
-      // First application uses the first reading 'いえ'
-      let firstResult = addRubyTagsWithPreservation(mdxSource, existingRubyTags);
-      expect(firstResult).toContain("<ruby>家<rt>いえ</rt></ruby>");
-
-      // Second application should ideally maintain 'いえ' for this context,
-      // but with the current implementation it cycles to 'うち'
-      let secondResult = addRubyTagsWithPreservation(mdxSource, existingRubyTags);
-      expect(secondResult).toContain("<ruby>家<rt>うち</rt></ruby>");
-
-      // This test demonstrates the issue: contextual semantic meaning is lost
-      // when cycling through ruby readings without considering context
+      const secondResult = addRubyTagsWithPreservation(
+        `その<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>にあるものは、その<ruby>家<rt>うち</rt></ruby><ruby>中<rt>じゅう</rt></ruby>だったのです。`,
+        new Map([
+          ["家", ["いえ", "うち"]],
+          ["中", ["なか", "じゅう"]],
+        ]),
+      );
+      expect(secondResult).toEqual(
+        `その<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>にあるものは、その<ruby>家<rt>うち</rt></ruby><ruby>中<rt>じゅう</rt></ruby>だったのです。`,
+      );
     });
 
     it("should show full context with multiple uses of the same kanji in different contexts", () => {
@@ -304,47 +362,16 @@ describe("addRubyTagsWithPreservation", () => {
       <ruby>一<rt>いっ</rt></ruby><ruby>軒<rt>けん</rt></ruby>の<ruby>小<rt>ちい</rt></ruby>さな<ruby>家<rt>うち</rt></ruby>を<ruby>見<rt>み</rt></ruby>つけましたので。
       その<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>にあるものは、なんでも
       `;
-
       const existingRubyTags = new Map<string, string[]>([
-        ["家", ["いえ", "うち"]],
-        ["中", ["なか"]],
+        ["家", ["いえ", "うち", "いえ"]],
+        ["中", ["なか", "なか"]],
         ["一", ["いっ"]],
         ["軒", ["けん"]],
         ["小", ["ちい"]],
         ["見", ["み"]],
       ]);
-
-      // Process the text with our ruby tag preservation
       const result = addRubyTagsWithPreservation(mdxText, existingRubyTags);
-
-      // The first instance of '家' should use 'いえ' (home)
-      expect(result).toContain("もう<ruby>家<rt>いえ</rt></ruby>にはけっして");
-
-      // The second instance of '家' should use 'うち' (small house/dwelling)
-      expect(result).toContain(
-        "さな<ruby>家<rt>うち</rt></ruby>を<ruby>見<rt>み</rt></ruby>つけ",
-      );
-
-      // The THIRD instance of '家' should semantically be 'いえ' again,
-      // but the current implementation will cycle back to 'いち' due to the FIFO queue
-      // This is the issue we're trying to fix
-      expect(result).toContain(
-        "その<ruby>家<rt>いえ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>に",
-      );
-
-      // Process the text again to see the cycling behavior
-      const secondPass = addRubyTagsWithPreservation(mdxText, existingRubyTags);
-
-      // Now the readings are cycled, changing the semantic meaning incorrectly
-      expect(secondPass).toContain("もう<ruby>家<rt>うち</rt></ruby>にはけっして");
-      expect(secondPass).toContain(
-        "さな<ruby>家<rt>いえ</rt></ruby>を<ruby>見<rt>み</rt></ruby>つけ",
-      );
-      expect(secondPass).toContain(
-        "その<ruby>家<rt>うち</rt></ruby>の<ruby>中<rt>なか</rt></ruby>に",
-      );
-
-      // This fails because we want context-appropriate readings to be preserved
+      expect(result).toEqual(mdxText);
     });
   });
 });
