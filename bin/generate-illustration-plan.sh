@@ -57,8 +57,27 @@ PROMPT=$(echo "$PROMPT" | sed -e '/MDX_CONTENT/r '"$TEMP_FILE" -e 's/MDX_CONTENT
 # 一時ファイルを削除
 rm "$TEMP_FILE"
 
+# プロンプトを一時ファイルに保存
+PROMPT_FILE=$(mktemp)
+echo "$PROMPT" > "$PROMPT_FILE"
+
 # Claudeコマンドを実行
-echo "$PROMPT" | claude > "$OUTPUT_FILE"
+echo "Claudeコマンドを実行中..."
+
+# 専用のNode.jsスクリプトを使用してClaudeと通信
+NODE_SCRIPT_PATH="src/tools/illustration-automation/claude-api-client.js"
+
+# スクリプトに実行権限を付与
+chmod +x "$NODE_SCRIPT_PATH"
+
+# Claude APIスクリプトを実行
+if ! node "$NODE_SCRIPT_PATH" "$PROMPT_FILE" "$OUTPUT_FILE" 2>/dev/null; then
+  echo "Claude APIでの生成に失敗しました。テンプレートを使用します。"
+  # エラー処理はスクリプト内で行われます
+fi
+
+# 一時ファイルを削除
+rm "$PROMPT_FILE"
 
 # 結果の確認
 if [ -f "$OUTPUT_FILE" ]; then
