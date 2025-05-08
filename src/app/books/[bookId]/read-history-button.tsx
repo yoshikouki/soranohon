@@ -1,5 +1,6 @@
 "use client";
 
+import { CheckCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -13,14 +14,14 @@ type ReadHistoryButtonProps = {
   };
   variant?: "ghost" | "default" | "outline";
   completed?: boolean;
-  label?: string;
+  children?: React.ReactNode;
 };
 
 export function ReadHistoryButton({
   book,
   variant = "ghost",
   completed = false,
-  label,
+  children,
 }: ReadHistoryButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isRead, setIsRead] = useState(false);
@@ -61,9 +62,6 @@ export function ReadHistoryButton({
     }
   };
 
-  // ラベルテキストの決定
-  const buttonLabel = label || (isCompleted ? "読了済み" : isRead ? "読んだ本" : "読んだ");
-
   // 完了済みの場合のスタイル
   const getButtonStyle = () => {
     if (variant !== "ghost") return "";
@@ -86,26 +84,9 @@ export function ReadHistoryButton({
       {isLoading ? (
         <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
       ) : (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill={(isRead && variant === "ghost") || isCompleted ? "currentColor" : "none"}
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-          role="img"
-          className="mr-1.5"
-        >
-          <title>読んだ状態を示すチェックアイコン</title>
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-          <polyline points="22 4 12 14.01 9 11.01" />
-        </svg>
+        <CheckCircle />
       )}
-      {buttonLabel}
+      {children}
     </Button>
   );
 }

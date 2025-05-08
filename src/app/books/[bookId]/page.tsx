@@ -45,17 +45,9 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
 
   return (
     <main className="relative flex h-full w-full flex-col items-center justify-center py-6">
-      <div className="sticky top-0 z-10 flex h-16 w-full items-center justify-between bg-background/80 px-4 backdrop-blur-sm">
-        <div className="flex-1"></div>
-        <h1 className="flex-2 text-center font-bold text-3xl sm:text-4xl">{title}</h1>
-        <div className="flex flex-1 justify-end">
-          <ReadHistoryButton
-            book={{
-              bookId: bookId,
-              title: title,
-              coverImage: book.coverImage,
-            }}
-          />
+      <div className="sticky top-0 z-10 flex h-16 w-full items-center justify-center bg-background/80 px-4 backdrop-blur-sm">
+        <div className="w-full max-w-3xl px-4">
+          <h1 className="text-start font-bold text-3xl sm:text-4xl">{title}</h1>
         </div>
       </div>
       <div
@@ -76,8 +68,9 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
           }}
           variant="default"
           completed={true}
-          label="読了しました"
-        />
+        >
+          よんだ
+        </ReadHistoryButton>
         <Link
           href={paths.home()}
           className="inline-flex items-center gap-1 py-2 font-bold text-primary transition-colors hover:text-primary/70"
