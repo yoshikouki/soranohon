@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { books } from "@/books";
+import { MdxEditor } from "@/features/books/components/mdx-editor";
+import { FilesystemMdxRepository } from "@/features/books/repository/mdx-repository";
 import { paths } from "@/lib/paths";
 
 export async function generateMetadata({
@@ -31,6 +33,14 @@ export default async function BookEditPage({
   }
   const isDevelopment = process.env.NODE_ENV === "development";
   if (!isDevelopment) {
+    console.error("Development mode only");
+    notFound();
+  }
+
+  const mdxRepository = new FilesystemMdxRepository();
+  const mdxContent = await mdxRepository.getMdxContent(bookId);
+  if (!mdxContent) {
+    console.error(`MDX content not found for book ID: ${bookId}`);
     notFound();
   }
 
@@ -48,11 +58,17 @@ export default async function BookEditPage({
         </Link>
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-        <p className="text-xl">挿絵編集機能は開発中です</p>
-        <p className="mt-4 text-muted-foreground">
-          この機能を使用して、本の挿絵を計画し、生成することができます。
-        </p>
+      <div className="grid grid-cols-1 gap-6">
+        <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+          <p className="text-xl">挿絵編集機能は開発中です</p>
+          <p className="mt-4 text-muted-foreground">
+            この機能を使用して、本の挿絵を計画し、生成することができます。
+          </p>
+        </div>
+
+        <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+          <MdxEditor initialContent={mdxContent.content} />
+        </div>
       </div>
     </main>
   );
