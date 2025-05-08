@@ -65,7 +65,8 @@ bun run format:unsafe  # Format with unsafe rules
 - **Naming**: camelCase for variables/functions, descriptive names
 - **Tests**: Use describe/it blocks, test edge cases
 - **Error Handling**: Early returns, explicit error messages
-- **Imports**: Organized by Biome, named exports preferred
+- **Imports**: Organized by Biome, named exports preferred, direct imports only
+- **Barrel Files**: NEVER use index.ts for re-exporting - import directly from source files
 - **Dead Code**: Promptly remove unused functions, files, and tests
 
 ## Testing & Verification

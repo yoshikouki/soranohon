@@ -157,3 +157,5 @@ src/app/
 - Use absolute imports with `@/` prefix for non-relative imports
 - Use relative imports for files within the same feature/module
 - Keep import paths as short as possible while maintaining clarity
+- **NEVER use index.ts** files for re-exporting - import directly from the source files
+- Avoid barrel exports to prevent circular dependency issues
