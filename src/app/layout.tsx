@@ -3,7 +3,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Geist_Mono, Noto_Sans_JP } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
-import { ReadingHistoryDialogProvider } from "@/features/reading-history";
+import { ReadingHistoryDialogProvider } from "@/features/reading-history/context";
 import { cn } from "@/lib/utils";
 import { Footer } from "./footer";
 import { Header } from "./header";

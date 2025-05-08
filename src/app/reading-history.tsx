@@ -2,11 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  ReadingHistoryList,
-  useReadingHistory,
-  useReadingHistoryDialog,
-} from "@/features/reading-history";
+import { ReadingHistoryList } from "@/features/reading-history/components/reading-history-list";
+import { useReadingHistoryDialog } from "@/features/reading-history/context";
+import { useReadingHistory } from "@/features/reading-history/hooks/use-reading-history";
 
 // 読書履歴ダイアログコンポーネント（グローバルで使用）
 export function ReadingHistoryDialog() {

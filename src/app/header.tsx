@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useReadingHistoryDialog } from "@/features/reading-history";
+import { useReadingHistoryDialog } from "@/features/reading-history/context";
 import { paths } from "@/lib/paths";
 
 export const Header = () => {

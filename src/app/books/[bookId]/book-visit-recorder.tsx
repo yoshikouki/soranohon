@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useReadingHistory } from "@/features/reading-history";
+import { useReadingHistory } from "@/features/reading-history/hooks/use-reading-history";
 
 type BookVisitRecorderProps = {
   book: {

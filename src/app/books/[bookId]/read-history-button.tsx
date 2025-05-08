@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { useReadingHistory } from "@/features/reading-history";
+import { useReadingHistory } from "@/features/reading-history/hooks/use-reading-history";
 
 type ReadHistoryButtonProps = {
   book: {
