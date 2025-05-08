@@ -99,7 +99,7 @@ export function addRubyTagsWithPreservation(
   const kanjiRubyMap = new Map<string, Map<number, string>>();
 
   // まず既存のrubyタグを一時的に置換して保護すると同時に内容を解析
-  let protectedText = mdx.replace(rubyTagRegex, (match, index) => {
+  let protectedText = mdx.replace(rubyTagRegex, (match) => {
     // 漢字とルビを抽出
     const contentMatch = rubyContentRegex.exec(match);
     if (contentMatch) {
@@ -190,7 +190,7 @@ export function addRubyTagsWithPreservation(
   // 拡張したフォーマットに対応する正規表現: __RUBY_TAG_漢字_インデックス__ または __RUBY_TAG_UNKNOWN_インデックス__
   return protectedText.replace(
     /__RUBY_TAG_([^_]+)_(\d+)__|__RUBY_TAG_UNKNOWN_(\d+)__/g,
-    (match, kanji, index1, index2) => {
+    (match, _kanji, index1, index2) => {
       // インデックスを取得（通常のケースかUNKNOWNケースか）
       const index = index1 ? parseInt(index1) : parseInt(index2);
 

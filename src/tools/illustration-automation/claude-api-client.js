@@ -2,17 +2,17 @@
 
 /**
  * Claude API Client for Illustration Plan Generation
- * 
+ *
  * This script takes a prompt file and generates a response using Claude API,
  * then writes the response to the specified output file.
  */
 
-const fs = require('fs');
-const { execSync } = require('child_process');
+const fs = require("fs");
+const { execSync } = require("child_process");
 
 // Validate command line arguments
 if (process.argv.length < 4) {
-  console.error('Usage: node claude-api-client.js <prompt-file> <output-file>');
+  console.error("Usage: node claude-api-client.js <prompt-file> <output-file>");
   process.exit(1);
 }
 
@@ -27,20 +27,22 @@ if (!fs.existsSync(promptFile)) {
 
 // Read the prompt
 try {
-  const prompt = fs.readFileSync(promptFile, 'utf8');
-  
+  const prompt = fs.readFileSync(promptFile, "utf8");
+
   // Try to generate a response using Claude API
   try {
     // Call Claude API (adjust the command as needed for your environment)
-    const response = execSync(`echo "${prompt}" | npx @anthropic-ai/claude-api`, { encoding: 'utf8' });
-    
+    const response = execSync(`echo "${prompt}" | npx @anthropic-ai/claude-api`, {
+      encoding: "utf8",
+    });
+
     // Write the response to the output file
     fs.writeFileSync(outputFile, response);
     console.log("Success: Claude API response generated");
     process.exit(0);
   } catch (error) {
     console.error("Error: Failed to generate Claude API response", error.message);
-    
+
     // Generate a fallback template
     generateFallbackTemplate(outputFile);
     process.exit(1);
@@ -56,7 +58,7 @@ try {
  */
 function generateFallbackTemplate(outputFile) {
   console.log("Generating fallback template...");
-  
+
   const template = `# 白雪姫 - 挿絵計画
 
 ## 物語の概要
