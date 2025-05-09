@@ -2,8 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { books } from "@/books";
-import { MdxEditor } from "@/features/books/components/mdx-editor";
-import { FilesystemMdxRepository } from "@/features/books/repository/mdx-repository";
+import { MdxEditor } from "@/features/illustration-generator/components/mdx-editor";
+import { FilesystemMdxRepository } from "@/features/illustration-generator/repository/mdx-repository";
 import { paths } from "@/lib/paths";
 
 export async function generateMetadata({
