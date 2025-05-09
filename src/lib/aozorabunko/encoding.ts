@@ -16,3 +16,12 @@ export function detectAndDecode(buffer: Buffer) {
   });
   return { text, encoding };
 }
+
+/**
+ * バイナリデータをUTF-8にデコードする
+ * 主にShiftJISエンコードされた青空文庫のHTMLファイルをデコードするのに使用
+ */
+export function decode(buffer: Buffer): string {
+  const { text } = detectAndDecode(buffer);
+  return text;
+}
