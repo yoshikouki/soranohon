@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { books } from "@/books";
+import { Paragraph } from "@/features/book-viewer/paragraph";
+import { StickyImage } from "@/features/book-viewer/sticky-image";
 import { paths } from "@/lib/paths";
 import { cn } from "@/lib/utils";
 import { BookVisitRecorder } from "./book-visit-recorder";
@@ -57,7 +59,12 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
           styles.booksLineBreak,
         )}
       >
-        <BookContent />
+        <BookContent
+          components={{
+            p: Paragraph,
+            img: StickyImage,
+          }}
+        />
       </div>
       <div className="flex flex-col items-center gap-4 py-10 text-center">
         <ReadHistoryButton
