@@ -113,7 +113,8 @@ function convertUrlToFilePath(url: string): string {
       ...pathParts.slice(1),
     );
   } catch (error) {
-    throw new Error(`Invalid aozora.gr.jp URL: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Invalid aozora.gr.jp URL: ${errorMessage}`);
   }
 }
 
