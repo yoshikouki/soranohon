@@ -1,4 +1,6 @@
 import { books } from "@/books";
+import { filePaths } from "@/lib/file-paths";
+import { defaultFileSystem, FileSystem } from "@/lib/fs";
 
 export type MdxContent = {
   content: string | undefined;
@@ -9,6 +11,12 @@ export interface MdxRepository {
 }
 
 export class FilesystemMdxRepository implements MdxRepository {
+  private fs: FileSystem;
+
+  constructor(fs: FileSystem = defaultFileSystem) {
+    this.fs = fs;
+  }
+
   async getMdxContent(bookId: string): Promise<MdxContent | null> {
     const book = books[bookId as keyof typeof books];
     if (!book?.mdx) {
@@ -17,26 +25,28 @@ export class FilesystemMdxRepository implements MdxRepository {
     }
 
     // ファイルパスを構築
-    const filePath = `/src/books/${bookId}.mdx`;
+    const filePath = filePaths.books.sources.mdx(bookId);
 
     // ファイルの内容を直接読み込む
     try {
-      // Node.jsの環境でファイルを読み込む
-      // 注: Next.jsのサーバーコンポーネントでのみ動作します
-      const fs = require("fs");
-      const path = require("path");
-      const processCwd = process.cwd();
-      const fullPath = path.join(processCwd, filePath);
+      // フルパスを構築
+      const baseDir = this.fs.getCwd();
+      const fullPath = this.fs.join(baseDir, filePath.replace(/^\//, ""));
+
+      // ファイルが存在するか確認
+      if (!this.fs.existsSync(fullPath)) {
+        console.error(`MDX file does not exist at path: ${fullPath}`);
+        return null;
+      }
 
       // ファイルの内容を直接読み込む
-      const rawContent = fs.readFileSync(fullPath, "utf8");
+      const rawContent = this.fs.readFileSync(fullPath, "utf8");
 
       return {
         content: rawContent,
       };
-    } catch (fsError) {
-      console.error(`Error reading MDX file directly: ${fsError}`);
-
+    } catch (error) {
+      console.error(`Error reading MDX file directly: ${error}`);
       return null;
     }
   }
