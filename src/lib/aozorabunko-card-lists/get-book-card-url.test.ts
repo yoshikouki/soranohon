@@ -50,14 +50,14 @@ describe("getAozoraBunkoCardUrl", () => {
     expect(url).toBe("https://www.aozora.gr.jp/cards/001091/card59835.html");
   });
 
-  it("存在しないbookIdの場合はundefinedを返す", () => {
+  it("存在しないbookIdの場合は推測URLを返す", () => {
     const url = getAozoraBunkoCardUrl("99999_00000");
-    expect(url).toBeUndefined();
+    expect(url).toBe("https://www.aozora.gr.jp/cards/000000/card99999.html");
   });
 
-  it("不正なbookIdの場合はundefinedを返す", () => {
+  it("不正なbookIdの場合でも推測URLを返す", () => {
     const url = getAozoraBunkoCardUrl("invalid_format");
-    expect(url).toBeUndefined();
+    expect(url).toBe("https://www.aozora.gr.jp/cards/000000/cardinvalid.html");
   });
 
   it("CSVファイルが存在しない場合はフォールバックURLを返す", () => {
