@@ -151,7 +151,19 @@ async function convertHtmlToMdxWithOptions(
  * 本のエントリー情報を生成する
  */
 function generateBookEntry(meta: ReturnType<typeof extractBookMeta>): string {
-  return `\n--- books entry ---\n"${meta.id}": {\n  id: "${meta.id}",\n  title: "${meta.title}",\n  creator: "${meta.creator}",\n  translator: ${meta.translator ? `"${meta.translator}"` : "undefined"},\n  bibliographyRaw: \`${meta.bibliographyRaw}\`,\n  mdx: () => import("./${meta.id}.mdx"),\n},\n--- end ---`;
+  return `
+ℹ️ Add this to src/books/index.ts
+
+--- books entry ---
+  "${meta.id}": {
+    id: "${meta.id}",
+    title: "${meta.title}",
+    creator: "${meta.creator}",
+    translator: ${meta.translator ? `"${meta.translator}"` : "undefined"},
+    bibliographyRaw: \`${meta.bibliographyRaw}\`,
+    mdx: () => import("./${meta.id}.mdx"),
+  },
+--- end ---`;
 }
 
 async function main() {
