@@ -1,5 +1,5 @@
-import { FilesystemMdxRepository } from "../repository/mdx-repository";
-import { FilesystemPlanRepository } from "../repository/plan-repository";
+import { FilesystemMdxRepository, MdxRepository } from "../repository/mdx-repository";
+import { FilesystemPlanRepository, PlanRepository } from "../repository/plan-repository";
 import {
   IllustrationPlan,
   IllustrationPlanRequest,
@@ -7,8 +7,8 @@ import {
 } from "../types/illustration-plan";
 
 export class IllustrationPlanService {
-  private mdxRepository: FilesystemMdxRepository;
-  private planRepository: FilesystemPlanRepository;
+  private mdxRepository: MdxRepository;
+  private planRepository: PlanRepository;
 
   constructor(
     mdxRepository = new FilesystemMdxRepository(),

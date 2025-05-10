@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useReadingHistory } from "@/features/reading-history/hooks/use-reading-history";
+import { cn } from "@/lib/utils";
 
 type ReadHistoryButtonProps = {
   book: {
@@ -62,24 +63,18 @@ export function ReadHistoryButton({
     }
   };
 
-  // 完了済みの場合のスタイル
-  const getButtonStyle = () => {
-    if (variant !== "ghost") return "";
-
-    return `flex items-center gap-1.5 ${
-      isRead || isCompleted
-        ? "bg-primary/10 text-primary hover:bg-primary/20"
-        : "text-primary hover:bg-primary/10 hover:text-primary"
-    }`;
-  };
-
   return (
     <Button
       variant={variant}
       size={variant === "default" ? "default" : "sm"}
       onClick={handleAddToHistory}
       disabled={isLoading || (isCompleted && completed)}
-      className={getButtonStyle()}
+      className={cn(
+        "w-full",
+        variant === "ghost" && (isRead || isCompleted)
+          ? "flex items-center gap-1.5 bg-primary/10 text-primary hover:bg-primary/20"
+          : "flex items-center gap-1.5 text-primary hover:bg-primary/10 hover:text-primary",
+      )}
     >
       {isLoading ? (
         <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
