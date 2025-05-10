@@ -2,10 +2,10 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { books } from "@/books";
+import { BookContent } from "@/features/book-content/core";
 import { generateIllustrationPlan } from "@/features/illustration-generator/actions/generate-illustration-plan";
 import { IllustrationPlanForm } from "@/features/illustration-generator/components/illustration-plan-form";
 import { MdxEditor } from "@/features/illustration-generator/components/mdx-editor";
-import { FilesystemMdxRepository } from "@/features/illustration-generator/repository/mdx-repository";
 import { paths } from "@/lib/paths";
 
 export async function generateMetadata({
@@ -39,9 +39,8 @@ export default async function BookEditPage({
     notFound();
   }
 
-  const mdxRepository = new FilesystemMdxRepository();
-  const mdxContent = await mdxRepository.getMdxContent(bookId);
-  if (!mdxContent) {
+  const bookContent = await BookContent.readFileByBookId(bookId);
+  if (!bookContent) {
     console.error(`MDX content not found for book ID: ${bookId}`);
     notFound();
   }
@@ -67,7 +66,10 @@ export default async function BookEditPage({
         </div>
 
         <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-          <MdxEditor initialContent={mdxContent.content} />
+          <MdxEditor
+            contents={bookContent.toMdx()}
+            contentsWithoutTags={bookContent.toStringWithoutTags()}
+          />
         </div>
       </div>
     </main>

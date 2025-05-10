@@ -55,7 +55,7 @@ function getContentLength(htmlPath: string): number {
     content = content.replace(regex.html.ruby.captureBase, "$1");
 
     // 残りのHTMLタグをすべて削除
-    content = content.replace(/<[^>]+>/g, "");
+    content = content.replace(regex.html.allTags, "");
 
     // 空白文字や改行を除去して文字数を計算
     const cleanedContent = content.replace(/\s+/g, "");

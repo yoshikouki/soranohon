@@ -3,5 +3,6 @@ export const regex = {
     ruby: {
       captureBase: /<ruby>.*?<rb>(.*?)<\/rb>.*?<\/ruby>/g,
     },
+    allTags: /<[^>]*>/g,
   },
 };
