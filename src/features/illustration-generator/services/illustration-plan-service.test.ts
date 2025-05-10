@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { FilesystemMdxRepository } from "../repository/mdx-repository";
-import { FilesystemPlanRepository } from "../repository/plan-repository";
+import { FilesystemMdxRepository, MdxRepository } from "../repository/mdx-repository";
+import { FilesystemPlanRepository, PlanRepository } from "../repository/plan-repository";
 import { IllustrationPlan } from "../types/illustration-plan";
 import { IllustrationPlanService } from "./illustration-plan-service";
 
@@ -15,11 +15,11 @@ vi.mock("../repository/plan-repository", () => ({
 
 describe("IllustrationPlanService", () => {
   let service: IllustrationPlanService;
-  let mockMdxRepository: any;
-  let mockPlanRepository: any;
-  let mockGetMdxContent: any;
-  let mockGetPlan: any;
-  let mockSavePlan: any;
+  let mockMdxRepository: MdxRepository;
+  let mockPlanRepository: PlanRepository;
+  let mockGetMdxContent: vi.Mock;
+  let mockGetPlan: vi.Mock;
+  let mockSavePlan: vi.Mock;
 
   beforeEach(() => {
     vi.clearAllMocks();
