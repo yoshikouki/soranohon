@@ -1,11 +1,8 @@
 import { describe, expect, it } from "vitest";
-import {
-  AozoraRecord,
-  CsvParser,
-  FileSystem,
-  getAozoraBunkoCardUrl,
-  Logger,
-} from "./get-book-card-url";
+import { CsvParser } from "@/lib/csv";
+import { FileSystem } from "@/lib/fs";
+import { Logger } from "@/lib/logger";
+import { AozoraRecord, getAozoraBunkoCardUrl } from "./get-book-card-url";
 
 describe("getAozoraBunkoCardUrl", () => {
   // モックデータ

@@ -1,6 +1,7 @@
-import { parse } from "csv-parse/sync";
-import * as fs from "fs";
 import * as path from "path";
+import { CsvParser, defaultCsvParser } from "@/lib/csv";
+import { defaultFileSystem, FileSystem } from "@/lib/fs";
+import { defaultLogger, Logger } from "@/lib/logger";
 
 // CSVファイルパスの定数
 const CSV_FILE_PATH = path.join(__dirname, "data", "childrens-books-without-copyright.csv");
@@ -12,39 +13,6 @@ export interface AozoraRecord {
   図書カードURL: string;
   [key: string]: string; // その他のプロパティ
 }
-
-// ファイルシステム操作の抽象化
-export interface FileSystem {
-  existsSync(path: string): boolean;
-  readFileSync(path: string, encoding: string): string;
-}
-
-// CSVパーサーの抽象化
-export interface CsvParser {
-  parse(input: string, options: Record<string, unknown>): AozoraRecord[];
-}
-
-// デフォルトのファイルシステム実装
-export const defaultFileSystem: FileSystem = {
-  existsSync: (path: string) => fs.existsSync(path),
-  readFileSync: (path: string, encoding: string) => fs.readFileSync(path, encoding),
-};
-
-// デフォルトのCSVパーサー実装
-export const defaultCsvParser: CsvParser = {
-  parse: (input: string, options: Record<string, unknown>) =>
-    parse(input, options) as AozoraRecord[],
-};
-
-// ロガーの抽象化
-export interface Logger {
-  error(message: string): void;
-}
-
-// デフォルトのロガー実装
-export const defaultLogger: Logger = {
-  error: (message: string) => console.error(message),
-};
 
 /**
  * CSVファイルをロードする関数
@@ -67,7 +35,7 @@ export function loadCsvData(
 
   try {
     const csvData = fs.readFileSync(csvFilePath, "utf-8");
-    const records = csvParser.parse(csvData, {
+    const records = csvParser.parse<AozoraRecord>(csvData, {
       columns: true,
       skip_empty_lines: true,
       relax_quotes: true,
