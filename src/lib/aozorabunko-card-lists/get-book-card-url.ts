@@ -34,12 +34,15 @@ export function loadCsvData(
   }
 
   try {
+    // BOMを含むUTF-8ファイルを対応するためのオプション
     const csvData = fs.readFileSync(csvFilePath, "utf-8");
+
     const records = csvParser.parse<AozoraRecord>(csvData, {
       columns: true,
       skip_empty_lines: true,
       relax_quotes: true,
       skip_records_with_error: true,
+      bom: true, // BOMを検出して適切に処理
     });
 
     // 無効なレコード（作品IDがないもの）を除外
