@@ -53,7 +53,7 @@ describe("AozoraBunkoHtml", () => {
         title: "テストタイトル",
         creator: "テスト作者",
         translator: "テスト翻訳者",
-        bibliographyRaw: "テスト書誌情報１行目\nテスト書誌情報２行目",
+        bibliographyRaw: "テスト書誌情報１行目\\nテスト書誌情報２行目",
       });
     });
 
@@ -139,7 +139,7 @@ describe("AozoraBunkoHtml", () => {
       expect(bookContent.contents.length).toBe(2);
       expect(bookContent.contents[0]).toBe("これは導入部です。");
       expect(bookContent.contents[1]).toBe(
-        "「これは字下げされた会話です。<br />これも字下げの続きです。」これは通常の文章です。",
+        "「これは字下げされた会話です。<br />これも字下げの続きです。」<br />これは通常の文章です。",
       );
     });
 
@@ -163,6 +163,87 @@ describe("AozoraBunkoHtml", () => {
       expect(bookContent.contents[0]).toBe(
         "<ruby>漢<rt>かん</rt></ruby><ruby>字<rt>じ</rt></ruby>と<ruby>仮名<rt>かな</rt></ruby>の混在する文章です。",
       );
+    });
+
+    it("引用符内の改行を一つの段落として処理する", async () => {
+      const html = `
+        <html>
+          <body>
+            <div class="main_text">
+              「これは会話の始まりです。<br />
+              　これは会話の続きです。<br />
+              　さらに会話が続きます。」<br />
+              これは地の文です。
+            </div>
+          </body>
+        </html>
+      `;
+      const htmlProvider = vi.fn().mockResolvedValue(html);
+      const instance = await AozoraBunkoHtml.read(htmlProvider);
+
+      const bookContent = new BookContent();
+      instance.convertToBookContent({ bookContent });
+
+      expect(bookContent.contents.length).toBe(1);
+      expect(bookContent.contents[0]).toBe(
+        "「これは会話の始まりです。<br />これは会話の続きです。<br />さらに会話が続きます。」<br />これは地の文です。"
+      );
+    });
+
+    it("複数のHTMLタグが混在する場合を正しく処理する", async () => {
+      const html = `
+        <html>
+          <body>
+            <div class="main_text">
+              <em>これは強調テキストです。</em>この部分は強調されていません。<br />
+              これは<strong>太字</strong>テキストが含まれる段落です。<br />
+              <div style="text-align: right">
+                これは右寄せの段落です。
+              </div>
+            </div>
+          </body>
+        </html>
+      `;
+      const htmlProvider = vi.fn().mockResolvedValue(html);
+      const instance = await AozoraBunkoHtml.read(htmlProvider);
+
+      const bookContent = new BookContent();
+      instance.convertToBookContent({ bookContent });
+
+      expect(bookContent.contents.length).toBe(1);
+      const content = bookContent.contents[0];
+      expect(content.includes("<em>これは強調テキストです。</em>")).toBe(true);
+      expect(content.includes("<strong>太字</strong>")).toBe(true);
+      expect(content.includes("これは右寄せの段落です")).toBe(true);
+    });
+
+    it("入れ子になったdivを正しく処理する", async () => {
+      const html = `
+        <html>
+          <body>
+            <div class="main_text">
+              これは通常の段落です。<br />
+              <div class="jisage_1" style="margin-left: 1em">
+                <div style="font-style: italic;">
+                  これは入れ子になった字下げとイタリック段落です。
+                </div>
+              </div>
+              これは通常の段落の続きです。
+            </div>
+          </body>
+        </html>
+      `;
+      const htmlProvider = vi.fn().mockResolvedValue(html);
+      const instance = await AozoraBunkoHtml.read(htmlProvider);
+
+      const bookContent = new BookContent();
+      instance.convertToBookContent({ bookContent });
+
+      expect(bookContent.contents.length).toBe(1);
+      const content = bookContent.contents[0];
+      expect(content.includes("これは通常の段落です。")).toBe(true);
+      expect(content.includes("これは入れ子になった字下げとイタリック段落です。")).toBe(true);
+      expect(content.includes("これは通常の段落の続きです。")).toBe(true);
     });
   });
 });
