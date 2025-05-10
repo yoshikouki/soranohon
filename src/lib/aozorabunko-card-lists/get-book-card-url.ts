@@ -34,7 +34,9 @@ function loadCsvData(): AozoraRecord[] {
 
     return records;
   } catch (error) {
-    // CSVパース時のエラーは安全に処理し、空配列を返す
+    // CSVパース時のエラーをログに記録し、安全に処理
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`CSVデータの読み込みエラー: ${errorMessage}`);
     return [];
   }
 }
@@ -61,9 +63,12 @@ export function getAozoraBunkoCardUrl(bookId: string): string | undefined {
       return record.図書カードURL;
     }
   } catch (error) {
-    // エラーは無視して推測URLを使用する
+    // エラーをログに記録して例外を再スロー
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`図書カードURL取得エラー: ${errorMessage}`);
+    throw new Error(`図書カードURLの取得に失敗しました: ${errorMessage}`);
   }
 
-  // CSVレコードが見つからない場合は、カード番号からURLを推測して返す
-  return `https://www.aozora.gr.jp/cards/000000/card${cardNumber}.html`;
+  // CSVレコードが見つからない場合は、例外をスロー
+  throw new Error(`bookId が図書リストから見つかりません: ${bookId}`);
 }
