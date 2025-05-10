@@ -7,6 +7,7 @@ import {
   extractMainText,
   formParagraphs,
   htmlToMdx,
+  isJisageOrStyledDiv,
   removeLeadingFullWidthSpace,
   removeTrailingBreaks,
 } from "./htmlToMdx";
@@ -602,5 +603,52 @@ describe("htmlToMdx jisage_1 div tag handling", () => {
     expect(mdxWithRuby).not.toContain("</div>");
     expect(mdxWithRuby).toContain("「<ruby>女王<rt>");
     expect(mdxWithRuby).toContain("お<ruby>国<rt>");
+  });
+});
+
+describe("isJisageOrStyledDiv", () => {
+  it("should return true for div with jisage_1 class", () => {
+    const line = '<div className="jisage_1">text</div>';
+    expect(isJisageOrStyledDiv(line)).toBe(true);
+  });
+
+  it("should return true for div with jisage_10 class", () => {
+    const line = '<div class="jisage_10">text</div>';
+    expect(isJisageOrStyledDiv(line)).toBe(true);
+  });
+
+  it("should return true for div with style attribute", () => {
+    const line = '<div style="margin-left: 1em">text</div>';
+    expect(isJisageOrStyledDiv(line)).toBe(true);
+  });
+
+  it("should return true for div with both jisage class and style attribute", () => {
+    const line = '<div class="jisage_2" style="text-align: center">text</div>';
+    expect(isJisageOrStyledDiv(line)).toBe(true);
+  });
+
+  it("should return false for div without jisage class or style attribute", () => {
+    const line = '<div class="some_other_class">text</div>';
+    expect(isJisageOrStyledDiv(line)).toBe(false);
+  });
+
+  it("should return false for non-div tags", () => {
+    const line = '<p class="jisage_1">text</p>';
+    expect(isJisageOrStyledDiv(line)).toBe(false);
+  });
+
+  it("should return false for empty string", () => {
+    const line = "";
+    expect(isJisageOrStyledDiv(line)).toBe(false);
+  });
+
+  it("should return true for div with complex attributes including jisage", () => {
+    const line = '<div id="test" class="foo jisage_3 bar" data-attr="value">text</div>';
+    expect(isJisageOrStyledDiv(line)).toBe(true);
+  });
+
+  it("should return true for div with complex style attribute", () => {
+    const line = '<div style="color: red; margin-left: 2em; text-indent: 0;">text</div>';
+    expect(isJisageOrStyledDiv(line)).toBe(true);
   });
 });

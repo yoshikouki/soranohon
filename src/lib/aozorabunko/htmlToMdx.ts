@@ -130,8 +130,11 @@ export function extractLines(main: cheerio.Cheerio): string[] {
 
   // divタグを個別に処理するための再帰関数
   function processElement(element: cheerio.Element) {
-    // jisage_1クラスを持つdivタグは特別に処理
-    if (element.type === "tag" && element.name === "div" && $(element).hasClass("jisage_1")) {
+    if (
+      element.type === "tag" &&
+      element.name === "div" &&
+      isJisageOrStyledDiv($(element).html() ?? "")
+    ) {
       // divタグの中身だけを抽出
       const children = $(element).contents();
       children.each((_, child) => {
@@ -185,7 +188,7 @@ export function extractLines(main: cheerio.Cheerio): string[] {
   // main_textの直接の子要素を処理
   main.contents().each((_, el) => {
     // jisage_1クラスを持つdivタグのみ別段落として処理
-    if (el.type === "tag" && el.name === "div" && $(el).hasClass("jisage_1")) {
+    if (el.type === "tag" && el.name === "div" && isJisageOrStyledDiv($(el).html() ?? "")) {
       // 前に<br />がなければ追加
       if (lines.length > 0 && lines[lines.length - 1] !== "<br />") {
         lines.push("<br />");
@@ -213,8 +216,8 @@ export function formParagraphs(lines: string[]): string[] {
   let current: string[] = [];
 
   for (const line of lines) {
-    // jisage_1クラスを持つdivタグのみ新しい段落として扱う
-    const isJisageDiv = line.trim().startsWith('<div className="jisage_1"');
+    // jisage_Xクラスを持つdivタグ、またはstyle属性を持つdivタグを新しい段落として扱う
+    const isJisageDiv = isJisageOrStyledDiv(line);
 
     // 引用符「」の中にあるbrと全角スペースは新しい段落とみなさない
     const isInsideQuote =
@@ -243,6 +246,18 @@ export function formParagraphs(lines: string[]): string[] {
   }
 
   return paragraphs;
+}
+
+/**
+ * 指定された行が字下げまたはスタイル付きのdivタグであるかを判定する
+ * @param line 評価する行の文字列
+ * @returns 字下げまたはスタイル付きのdivタグであればtrue、そうでなければfalse
+ */
+export function isJisageOrStyledDiv(line: string): boolean {
+  // class属性にjisage_Xが含まれるか、style属性が存在するかをチェック
+  return /<div\s+.*?((class|className)=["\'].*?jisage_\d+.*?["\']|style=["\'].*?["\']).*?>/.test(
+    line.trim(),
+  );
 }
 
 /**
