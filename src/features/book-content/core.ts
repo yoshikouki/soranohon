@@ -5,8 +5,8 @@ import { regex } from "@/lib/regex";
 export class BookContent {
   contents: string[] = [];
 
-  constructor(content: string) {
-    this.contents = content.split("\n\n");
+  constructor(content?: string) {
+    this.contents = content ? content.split("\n\n") : [];
   }
 
   toMdx(_contents = this.contents): string {

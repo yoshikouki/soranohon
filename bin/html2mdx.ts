@@ -1,82 +1,55 @@
 #!/usr/bin/env bun
-import * as fs from "fs";
-import { readFile, writeFile } from "fs/promises";
-import * as path from "path";
+import { readFile } from "fs/promises";
 import * as process from "process";
-import { extractBookMeta } from "../src/lib/aozorabunko/bookMeta";
-import { detectAndDecode } from "../src/lib/aozorabunko/encoding";
-import { addRubyTagsToMdx, htmlToMdx } from "../src/lib/aozorabunko/htmlToMdx";
-import { getMdxOutputPath } from "../src/lib/aozorabunko/path";
-import { getAozoraBunkoCardUrl } from "../src/lib/aozorabunko-card-lists/get-book-card-url";
-import { addRubyTagsWithPreservation, extractExistingRubyTags } from "../src/lib/ruby-utils";
+import { BookContent } from "@/features/book-content/core";
+import { AozoraBunkoHtml } from "@/lib/aozorabunko/aozora-bunko-html";
+import { detectAndDecode } from "@/lib/aozorabunko/encoding";
+import { getMdxOutputPath } from "@/lib/aozorabunko/path";
+import { RubyTags } from "@/lib/aozorabunko/ruby-tags";
+import { getAozoraBunkoCardUrl } from "@/lib/aozorabunko-card-lists/get-book-card-url";
+import { defaultFileSystem } from "@/lib/fs";
+import { defaultLogger, Logger } from "@/lib/logger";
 
 interface CommandLineOptions {
   inputHtml: string;
   outputMdx: string;
-  addRuby: boolean;
-  forceOverwrite: boolean;
 }
 
+/**
+ * コマンドライン引数を解析する
+ */
 function parseCommandLineArgs(args: string[]): CommandLineOptions {
-  // デフォルト値を設定
-  let addRuby = true; // デフォルトでルビを追加する
-  let forceOverwrite = false; // デフォルトで既存のルビを保護する
-  const fileArgs: string[] = [];
-
-  // オプション引数を解析
-  for (let i = 0; i < args.length; i++) {
-    if (args[i] === "--no-ruby" || args[i] === "-n") {
-      addRuby = false;
-    } else if (args[i] === "--force" || args[i] === "-f") {
-      forceOverwrite = true;
-    } else {
-      fileArgs.push(args[i]);
-    }
-  }
+  // ファイル引数を取得
+  const fileArgs: string[] = args;
 
   // 入力と出力ファイルの取得
   const inputHtml = fileArgs[0] || "";
   const outputMdx = fileArgs[1] || "";
 
   if (!inputHtml) {
-    console.error(
-      "Usage: bun run ./bin/html2mdx.ts [--no-ruby|-n] [--force|-f] <input.html> [output.mdx]",
-    );
-    console.error("Options:");
-    console.error(
-      "  --no-ruby, -n       Disable adding ruby placeholder tags to kanji characters",
-    );
-    console.error(
-      "  --force, -f         Force overwrite existing ruby tags (default: preserve)",
-    );
+    console.error("Usage: bun run ./bin/html2mdx.ts <input.html> [output.mdx]");
     process.exit(1);
   }
 
   return {
     inputHtml,
     outputMdx,
-    addRuby,
-    forceOverwrite,
   };
 }
 
 /**
  * 入力パスを処理し、実際のファイルパスとソースタイプを返す
  */
-function processInputPath(input: string): { inputPath: string; sourceType: "file" | "url" } {
+function processInputPath(
+  input: string,
+  logger: Logger = defaultLogger,
+): { inputPath: string; sourceType: "file" | "url" } {
   if (!isUrl(input)) {
     return { inputPath: input, sourceType: "file" };
   }
 
   const inputPath = convertUrlToFilePath(input);
-  console.log(`URL detected. Attempting to read from local path: ${inputPath}`);
-
-  // ファイルの存在確認
-  if (!fs.existsSync(inputPath)) {
-    console.error(`File not found at: ${inputPath}`);
-    console.error("Make sure the aozorabunko repository is cloned at the expected location.");
-    process.exit(1);
-  }
+  logger.info(`URL detected. Attempting to read from local path: ${inputPath}`);
 
   return { inputPath, sourceType: "url" };
 }
@@ -96,7 +69,7 @@ function isUrl(str: string): boolean {
 /**
  * URLからファイルパスに変換する
  */
-function convertUrlToFilePath(url: string): string {
+export function convertUrlToFilePath(url: string): string {
   try {
     const parsedUrl = new URL(url);
     if (parsedUrl.hostname !== "www.aozora.gr.jp") {
@@ -108,9 +81,8 @@ function convertUrlToFilePath(url: string): string {
       throw new Error("Unexpected URL format");
     }
 
-    return path.join(
-      "/Users/yoshikouki/src/github.com/aozorabunko/aozorabunko",
-      ...pathParts.slice(1),
+    return (
+      "/Users/yoshikouki/src/github.com/aozorabunko/aozorabunko/" + pathParts.slice(1).join("/")
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -119,40 +91,9 @@ function convertUrlToFilePath(url: string): string {
 }
 
 /**
- * HTML→MDX変換処理（オプション指定可能）
- */
-async function convertHtmlToMdxWithOptions(
-  html: string,
-  existingRubyTags: Map<string, string[]>,
-  addRuby: boolean,
-  forceOverwrite: boolean,
-): Promise<string> {
-  // HTML→MDX変換
-  const baseMdx = htmlToMdx(html);
-
-  // ルビプレースホルダーの追加（デフォルト有効）
-  if (!addRuby) {
-    console.log("Ruby placeholder tags disabled");
-    return baseMdx;
-  }
-
-  if (existingRubyTags.size > 0 && !forceOverwrite) {
-    // 既存のルビタグがある場合は、それを保持しつつ新しいプレースホルダーを追加
-    const resultMdx = addRubyTagsWithPreservation(baseMdx, existingRubyTags);
-    console.log("Ruby placeholder tags added with existing ruby preserved");
-    return resultMdx;
-  }
-
-  // 既存のルビがない、または強制上書きの場合は通常処理
-  const resultMdx = addRubyTagsToMdx(baseMdx);
-  console.log("Ruby placeholder tags added to kanji characters");
-  return resultMdx;
-}
-
-/**
  * 本のエントリー情報を生成する
  */
-function generateBookEntry(meta: ReturnType<typeof extractBookMeta>): string {
+function generateBookEntry(meta: ReturnType<AozoraBunkoHtml["extractBookMeta"]>): string {
   // 青空文庫の図書カードURLを取得
   const aozoraBunkoUrl = getAozoraBunkoCardUrl(meta.id) || "";
 
@@ -172,39 +113,54 @@ function generateBookEntry(meta: ReturnType<typeof extractBookMeta>): string {
 --- end ---`;
 }
 
-async function main() {
-  // コマンドライン引数の解析
-  const options = parseCommandLineArgs(process.argv.slice(2));
+export async function processHtmlFile(inputHtmlPath: string, outputMdxPath?: string) {
+  const logger = defaultLogger;
+  const fileSystem = defaultFileSystem;
 
-  // 入力がURLの場合は、ローカルのaozorabunkoリポジトリパスに変換
-  const { inputPath, sourceType } = processInputPath(options.inputHtml);
+  const { inputPath } = processInputPath(inputHtmlPath, logger);
+  const outPath = outputMdxPath || getMdxOutputPath(inputPath);
 
-  const outPath = options.outputMdx || getMdxOutputPath(inputPath);
+  // AozoraBunkoHtmlクラスの初期化
+  const aozoraBunkoHtml = await AozoraBunkoHtml.read(async () => {
+    const buffer = await readFile(inputPath);
+    const { text: html } = detectAndDecode(buffer);
+    return html;
+  });
 
-  // バイナリで読み込み、encoding-japaneseで自動判定＆デコード
-  const buffer = await readFile(inputPath);
-  const { text: html, encoding } = detectAndDecode(buffer);
+  // 既存のMDXファイルからBookContentとRubyTagsを取得
+  let existingBookContent: BookContent | null = null;
+  try {
+    existingBookContent = await BookContent.readFile(outPath);
+    logger.info(`Found existing MDX file: ${outPath}`);
+  } catch (_error) {
+    logger.info(`No existing MDX file found at: ${outPath}`);
+  }
 
-  // 既存のMDXファイルの確認とルビタグ抽出
-  const { existingRubyTags } = await extractExistingRubyTags(outPath, options.forceOverwrite);
+  // RubyTagsの抽出
+  const existingRubyTags = RubyTags.extract(existingBookContent);
 
-  // HTML→MDX変換処理
-  const mdx = await convertHtmlToMdxWithOptions(
-    html,
-    existingRubyTags,
-    options.addRuby,
-    options.forceOverwrite,
-  );
+  // 新しいBookContentの作成と変換
+  const bookContent = new BookContent();
+  aozoraBunkoHtml.convertToBookContent({
+    bookContent,
+    existingRubyTags: existingRubyTags.getRubyMap(),
+  });
+
+  // MDXへの変換
+  const mdx = bookContent.toMdx();
 
   // ファイル出力
-  await writeFile(outPath, mdx, "utf-8");
-  console.log(
-    `Converted: ${sourceType === "url" ? options.inputHtml : inputPath} (${encoding}) -> ${outPath}`,
-  );
+  fileSystem.writeFileSync(outPath, mdx, "utf-8");
+  logger.info(`Converted: ${inputPath} -> ${outPath}`);
 
   // booksエントリを標準出力
-  const meta = extractBookMeta(inputPath, html);
-  console.log(generateBookEntry(meta));
+  const meta = aozoraBunkoHtml.extractBookMeta(inputPath);
+  logger.info(generateBookEntry(meta));
+}
+
+async function main() {
+  const options = parseCommandLineArgs(process.argv.slice(2));
+  await processHtmlFile(options.inputHtml, options.outputMdx);
 }
 
 if (require.main === module) {
