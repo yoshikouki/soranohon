@@ -42,7 +42,17 @@ export function loadCsvData(
       skip_records_with_error: true,
     });
 
-    return records;
+    // 無効なレコード（作品IDがないもの）を除外
+    const validRecords = records.filter((record) => record?.作品ID);
+
+    if (validRecords.length < records.length) {
+      const invalidCount = records.length - validRecords.length;
+      logger.error(
+        `無効なレコードが${invalidCount}件除外されました（作品IDフィールドがありません）`,
+      );
+    }
+
+    return validRecords;
   } catch (error) {
     // CSVパース時のエラーをログに記録し、安全に処理
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -69,7 +79,9 @@ export function getAozoraBunkoCardUrl(
   csvFilePath: string = CSV_FILE_PATH,
 ): string {
   // bookIdからカード番号部分を抽出（例: "59835_72466" -> "59835"）
-  const cardNumber = bookId.split("_")[0];
+  // URLから抽出するIDは先頭のゼロがない形式（"59521"）だが、
+  // CSVファイルでは先頭にゼロがついている場合がある（"059521"）
+  let cardNumber = bookId.split("_")[0];
 
   // 有効なカード番号かチェック
   if (!cardNumber) {
@@ -83,8 +95,21 @@ export function getAozoraBunkoCardUrl(
 
   // 作品IDが一致するレコードを検索
   // CSVでは作品IDが「059521」のように先頭にゼロがついた形式で保存されているため、
-  // 末尾の数字部分で比較する
-  const record = records.find((r) => r.作品ID.endsWith(cardNumber));
+  // 検索では両方の可能性を考慮する
+
+  // 1. 完全一致検索
+  let record = records.find((r) => r?.作品ID === cardNumber);
+
+  // 2. 完全一致で見つからない場合、末尾一致で検索（ゼロ埋めの場合）
+  if (!record) {
+    record = records.find((r) => r?.作品ID?.endsWith(cardNumber));
+  }
+
+  // 3. それでも見つからない場合、先頭にゼロを付けて検索
+  if (!record) {
+    const paddedCardNumber = `0${cardNumber}`;
+    record = records.find((r) => r?.作品ID === paddedCardNumber);
+  }
 
   // レコードが見つかった場合はそのURLを返す
   if (record?.図書カードURL) {
