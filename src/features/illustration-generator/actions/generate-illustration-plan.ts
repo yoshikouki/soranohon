@@ -11,7 +11,7 @@ export async function generateIllustrationPlan(
   request: IllustrationPlanRequest,
 ): Promise<IllustrationPlan | null> {
   try {
-    const { bookId, sceneCount = 10, prompt, stylePreference } = request;
+    const { bookId, sceneCount = 10 } = request;
 
     // MDXコンテンツを取得
     const mdxRepository = new FilesystemMdxRepository();
