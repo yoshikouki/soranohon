@@ -9,8 +9,9 @@ export function extractBookMeta(htmlPath: string, html: string) {
   const translator = $("h2.translator").text() || undefined;
   const bibliographyRaw = $(".bibliographical_information")
     .text()
-    .replace(/\r?\n/g, "\\n")
-    .trim()
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .join("\\n")
     .replace(/^(\\n)+/, "")
     .replace(/(\\n)+$/, "");
   return {
