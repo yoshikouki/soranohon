@@ -81,8 +81,8 @@ export function getAozoraBunkoCardUrl(
   // CSVデータをロード
   const records = loadCsvData(fs, csvParser, logger, csvFilePath);
 
-  // 作品IDが一致するレコードを検索
-  const record = records.find((r) => r.作品ID === cardNumber);
+  // 作品IDが一致するレコードを検索（先頭のゼロを無視して数値として比較）
+  const record = records.find((r) => parseInt(r.作品ID, 10) === parseInt(cardNumber, 10));
 
   // レコードが見つかった場合はそのURLを返す
   if (record?.図書カードURL) {
