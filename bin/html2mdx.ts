@@ -7,6 +7,7 @@ import { extractBookMeta } from "../src/lib/aozorabunko/bookMeta";
 import { detectAndDecode } from "../src/lib/aozorabunko/encoding";
 import { addRubyTagsToMdx, htmlToMdx } from "../src/lib/aozorabunko/htmlToMdx";
 import { getMdxOutputPath } from "../src/lib/aozorabunko/path";
+import { getAozoraBunkoCardUrl } from "../src/lib/aozorabunko-card-lists/get-book-card-url";
 import { addRubyTagsWithPreservation, extractExistingRubyTags } from "../src/lib/ruby-utils";
 
 interface CommandLineOptions {
@@ -151,6 +152,9 @@ async function convertHtmlToMdxWithOptions(
  * 本のエントリー情報を生成する
  */
 function generateBookEntry(meta: ReturnType<typeof extractBookMeta>): string {
+  // 青空文庫の図書カードURLを取得
+  const aozoraBunkoUrl = getAozoraBunkoCardUrl(meta.id) || "";
+
   return `
 ℹ️ Add this to src/books/index.ts
 
@@ -161,6 +165,7 @@ function generateBookEntry(meta: ReturnType<typeof extractBookMeta>): string {
     creator: "${meta.creator}",
     translator: ${meta.translator ? `"${meta.translator}"` : "undefined"},
     bibliographyRaw: \`${meta.bibliographyRaw}\`,
+    aozoraBunkoUrl: "${aozoraBunkoUrl}",
     mdx: () => import("./${meta.id}.mdx"),
   },
 --- end ---`;
