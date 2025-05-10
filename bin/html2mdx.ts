@@ -17,23 +17,25 @@ interface CommandLineOptions {
 }
 
 function parseCommandLineArgs(args: string[]): CommandLineOptions {
-  let inputHtml = "";
-  let outputMdx = "";
+  // デフォルト値を設定
   let addRuby = true; // デフォルトでルビを追加する
   let forceOverwrite = false; // デフォルトで既存のルビを保護する
+  const fileArgs: string[] = [];
 
-  // 引数を解析
+  // オプション引数を解析
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--no-ruby" || args[i] === "-n") {
       addRuby = false;
     } else if (args[i] === "--force" || args[i] === "-f") {
       forceOverwrite = true;
-    } else if (!inputHtml) {
-      inputHtml = args[i];
-    } else if (!outputMdx) {
-      outputMdx = args[i];
+    } else {
+      fileArgs.push(args[i]);
     }
   }
+
+  // 入力と出力ファイルの取得
+  const inputHtml = fileArgs[0] || "";
+  const outputMdx = fileArgs[1] || "";
 
   if (!inputHtml) {
     console.error(
@@ -55,6 +57,27 @@ function parseCommandLineArgs(args: string[]): CommandLineOptions {
     addRuby,
     forceOverwrite,
   };
+}
+
+/**
+ * 入力パスを処理し、実際のファイルパスとソースタイプを返す
+ */
+function processInputPath(input: string): { inputPath: string; sourceType: "file" | "url" } {
+  if (!isUrl(input)) {
+    return { inputPath: input, sourceType: "file" };
+  }
+
+  const inputPath = convertUrlToFilePath(input);
+  console.log(`URL detected. Attempting to read from local path: ${inputPath}`);
+
+  // ファイルの存在確認
+  if (!fs.existsSync(inputPath)) {
+    console.error(`File not found at: ${inputPath}`);
+    console.error("Make sure the aozorabunko repository is cloned at the expected location.");
+    process.exit(1);
+  }
+
+  return { inputPath, sourceType: "url" };
 }
 
 /**
@@ -103,24 +126,25 @@ async function convertHtmlToMdxWithOptions(
   forceOverwrite: boolean,
 ): Promise<string> {
   // HTML→MDX変換
-  let mdx = htmlToMdx(html);
+  const baseMdx = htmlToMdx(html);
 
   // ルビプレースホルダーの追加（デフォルト有効）
-  if (addRuby) {
-    if (existingRubyTags.size > 0 && !forceOverwrite) {
-      // 既存のルビタグがある場合は、それを保持しつつ新しいプレースホルダーを追加
-      mdx = addRubyTagsWithPreservation(mdx, existingRubyTags);
-      console.log("Ruby placeholder tags added with existing ruby preserved");
-    } else {
-      // 既存のルビがない、または強制上書きの場合は通常処理
-      mdx = addRubyTagsToMdx(mdx);
-      console.log("Ruby placeholder tags added to kanji characters");
-    }
-  } else {
+  if (!addRuby) {
     console.log("Ruby placeholder tags disabled");
+    return baseMdx;
   }
 
-  return mdx;
+  if (existingRubyTags.size > 0 && !forceOverwrite) {
+    // 既存のルビタグがある場合は、それを保持しつつ新しいプレースホルダーを追加
+    const resultMdx = addRubyTagsWithPreservation(baseMdx, existingRubyTags);
+    console.log("Ruby placeholder tags added with existing ruby preserved");
+    return resultMdx;
+  }
+
+  // 既存のルビがない、または強制上書きの場合は通常処理
+  const resultMdx = addRubyTagsToMdx(baseMdx);
+  console.log("Ruby placeholder tags added to kanji characters");
+  return resultMdx;
 }
 
 /**
@@ -135,21 +159,7 @@ async function main() {
   const options = parseCommandLineArgs(process.argv.slice(2));
 
   // 入力がURLの場合は、ローカルのaozorabunkoリポジトリパスに変換
-  let inputPath = options.inputHtml;
-  let sourceType = "file";
-
-  if (isUrl(options.inputHtml)) {
-    inputPath = convertUrlToFilePath(options.inputHtml);
-    sourceType = "url";
-    console.log(`URL detected. Attempting to read from local path: ${inputPath}`);
-
-    // ファイルの存在確認
-    if (!fs.existsSync(inputPath)) {
-      console.error(`File not found at: ${inputPath}`);
-      console.error("Make sure the aozorabunko repository is cloned at the expected location.");
-      process.exit(1);
-    }
-  }
+  const { inputPath, sourceType } = processInputPath(options.inputHtml);
 
   const outPath = options.outputMdx || getMdxOutputPath(inputPath);
 
