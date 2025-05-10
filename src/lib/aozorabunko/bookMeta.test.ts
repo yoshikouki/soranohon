@@ -35,4 +35,22 @@ describe("extractBookMeta", () => {
     const meta = extractBookMeta("dummy.html", html);
     expect(meta.translator).toBe(undefined);
   });
+
+  it("should trim leading and trailing newlines in bibliographyRaw", async () => {
+    const html = `
+      <html>
+        <body>
+          <div class="bibliographical_information">
+\n\n\n底本：グリム童話集\n入力：sogo\n\n\n
+          </div>
+        </body>
+      </html>
+    `;
+    const meta = extractBookMeta("test.html", html);
+    console.log("bibliographyRaw:", JSON.stringify(meta.bibliographyRaw));
+    expect(meta.bibliographyRaw.startsWith("\\n")).toBe(false);
+    expect(meta.bibliographyRaw.endsWith("\\n")).toBe(false);
+    expect(meta.bibliographyRaw).toContain("底本：グリム童話集");
+    expect(meta.bibliographyRaw).toContain("入力：sogo");
+  });
 });

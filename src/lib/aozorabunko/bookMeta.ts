@@ -10,7 +10,9 @@ export function extractBookMeta(htmlPath: string, html: string) {
   const bibliographyRaw = $(".bibliographical_information")
     .text()
     .replace(/\r?\n/g, "\\n")
-    .trim();
+    .trim()
+    .replace(/^(\\n)+/, "")
+    .replace(/(\\n)+$/, "");
   return {
     id,
     title,
