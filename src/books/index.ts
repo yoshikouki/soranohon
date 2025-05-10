@@ -31,6 +31,15 @@ export const books: Record<string, Book> = {
     coverImage: paths.images.books.scenes("59835_72466", 1),
     mdx: () => import("./59835_72466.mdx"),
   },
+  "59521_71684": {
+    id: "59521_71684",
+    title: "オオカミと七ひきの子ヤギ",
+    creator: "グリム　Grimm",
+    translator: "矢崎源九郎訳",
+    bibliographyRaw: `底本：「グリム童話集（1）」偕成社文庫、偕成社\n1980（昭和55）年6月1刷\n2009（平成21）年6月49刷\n入力：sogo\n校正：チエコ\n2020年8月28日作成\n青空文庫作成ファイル：\nこのファイルは、インターネットの図書館、青空文庫（https://www.aozora.gr.jp/）で作られました。入力、校正、制作にあたったのは、ボランティアの皆さんです。`,
+    aozoraBunkoUrl: "https://www.aozora.gr.jp/cards/001091/card59521.html",
+    mdx: () => import("./59521_71684.mdx"),
+  },
   "42308_17916": {
     id: "42308_17916",
     title: "白雪姫",
