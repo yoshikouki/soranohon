@@ -36,7 +36,7 @@ export function StickyImage({
   return (
     <div
       id={id}
-      className={cn("prose-invert sticky top-0 z-10 w-full max-w-md p-4", className)}
+      className={cn("prose-invert sticky top-0 z-10 w-full max-w-3xl p-4", className)}
     >
       <Image
         src={src}

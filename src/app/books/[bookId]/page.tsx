@@ -1,3 +1,4 @@
+import { MDXContent } from "mdx/types";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -24,7 +25,7 @@ export async function generateMetadata({
   };
 }
 
-type MdxModule = { default: React.ComponentType };
+type MdxModule = { default: MDXContent };
 function isMdxModule(mod: unknown): mod is MdxModule {
   return typeof mod === "object" && mod !== null && "default" in mod;
 }
