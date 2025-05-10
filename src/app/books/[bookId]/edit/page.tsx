@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { books } from "@/books";
+import { generateIllustrationPlan } from "@/features/illustration-generator/actions/generate-illustration-plan";
+import { IllustrationPlanForm } from "@/features/illustration-generator/components/illustration-plan-form";
 import { MdxEditor } from "@/features/illustration-generator/components/mdx-editor";
 import { FilesystemMdxRepository } from "@/features/illustration-generator/repository/mdx-repository";
 import { paths } from "@/lib/paths";
@@ -60,10 +62,8 @@ export default async function BookEditPage({
 
       <div className="grid grid-cols-1 gap-6">
         <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-          <p className="text-xl">挿絵編集機能は開発中です</p>
-          <p className="mt-4 text-muted-foreground">
-            この機能を使用して、本の挿絵を計画し、生成することができます。
-          </p>
+          <h2 className="mb-4 font-semibold text-xl">挿絵計画の作成</h2>
+          <IllustrationPlanForm bookId={bookId} generateAction={generateIllustrationPlan} />
         </div>
 
         <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
