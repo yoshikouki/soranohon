@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync } from "fs";
 import { JSDOM } from "jsdom";
 import * as path from "path";
 import { decode } from "../aozorabunko/encoding";
+import { regex } from "../regex";
 
 // パス設定
 const csvPath = "./src/lib/aozorabunko-card-lists/data/childrens-books-without-copyright.csv";
@@ -51,7 +52,7 @@ function getContentLength(htmlPath: string): number {
     let content = mainTextElement.innerHTML;
 
     // ルビから本文のみを抽出（<rb>タグ内のテキスト）
-    content = content.replace(/<ruby>.*?<rb>(.*?)<\/rb>.*?<\/ruby>/g, "$1");
+    content = content.replace(regex.html.ruby.captureBase, "$1");
 
     // 残りのHTMLタグをすべて削除
     content = content.replace(/<[^>]+>/g, "");
