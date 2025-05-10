@@ -11,7 +11,9 @@ import { IllustrationPlan, IllustrationPlanRequest } from "../types/illustration
 
 interface IllustrationPlanFormProps {
   bookId: string;
-  generateAction: (request: IllustrationPlanRequest) => Promise<IllustrationPlan | null>;
+  generateAction: (
+    request: IllustrationPlanRequest,
+  ) => Promise<{ plan: IllustrationPlan | null; message: string }>;
 }
 
 export function IllustrationPlanForm({ bookId, generateAction }: IllustrationPlanFormProps) {
@@ -34,7 +36,7 @@ export function IllustrationPlanForm({ bookId, generateAction }: IllustrationPla
       };
 
       const result = await generateAction(request);
-      setPlan(result);
+      setPlan(result.plan);
     } catch (error) {
       console.error("Failed to generate illustration plan:", error);
     } finally {

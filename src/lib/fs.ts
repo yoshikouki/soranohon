@@ -1,11 +1,11 @@
 import * as fs from "fs";
-import path from "path";
+import * as path from "path";
 
 // ファイルシステム操作の抽象化
 export interface FileSystem {
   existsSync(path: string): boolean;
-  readFileSync(path: string, encoding: string): string;
-  writeFileSync(path: string, data: string, encoding: string): void;
+  readFileSync(path: string, encoding: BufferEncoding): string;
+  writeFileSync(path: string, data: string, encoding: BufferEncoding): void;
   mkdirSync(path: string, options?: { recursive?: boolean }): void;
   join(...paths: string[]): string;
   dirname(path: string): string;
@@ -14,12 +14,14 @@ export interface FileSystem {
 
 // デフォルトのファイルシステム実装
 export const defaultFileSystem: FileSystem = {
-  existsSync: (path: string) => fs.existsSync(path),
-  readFileSync: (path: string, encoding: string) => fs.readFileSync(path, encoding),
-  writeFileSync: (path: string, data: string, encoding: string) =>
-    fs.writeFileSync(path, data, encoding),
-  mkdirSync: (path: string, options?: { recursive?: boolean }) => fs.mkdirSync(path, options),
+  existsSync: (filePath: string) => fs.existsSync(filePath),
+  readFileSync: (filePath: string, encoding: BufferEncoding) =>
+    fs.readFileSync(filePath, { encoding }),
+  writeFileSync: (filePath: string, data: string, encoding: BufferEncoding) =>
+    fs.writeFileSync(filePath, data, { encoding }),
+  mkdirSync: (filePath: string, options?: { recursive?: boolean }) =>
+    fs.mkdirSync(filePath, options),
   join: (...paths: string[]) => path.join(...paths),
-  dirname: (path: string) => path.dirname(path),
+  dirname: (filePath: string) => path.dirname(filePath),
   getCwd: () => process.cwd(),
 };

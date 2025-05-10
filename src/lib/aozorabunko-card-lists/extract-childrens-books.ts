@@ -2,7 +2,6 @@ import { parse } from "csv-parse/sync";
 import { stringify } from "csv-stringify/sync";
 import { writeFileSync } from "fs";
 import * as unzipper from "unzipper";
-import { Entry } from "unzipper";
 
 // パス設定
 const zipFilePath = "./src/lib/aozorabunko-card-lists/data/list_person_all_extended_utf8.zip";
@@ -39,7 +38,7 @@ async function processZipFile(): Promise<void> {
 
   // CSVファイルのエントリを検索
   const csvEntry = directory.files.find(
-    (entry: Entry) => entry.path === csvFileName || entry.path.endsWith(`/${csvFileName}`),
+    (entry) => entry.path === csvFileName || entry.path.endsWith(`/${csvFileName}`),
   );
 
   if (!csvEntry) {
