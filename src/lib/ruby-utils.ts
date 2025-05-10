@@ -106,8 +106,8 @@ export function addRubyTagsWithPreservation(
       const kanji = contentMatch[1]?.trim() || "";
       const ruby = contentMatch[2]?.trim() || "";
 
-      // プレースホルダーには漢字情報も含める
-      const placeholder = `__RUBY_TAG_${kanji}_${rubyTagInfos.length}__`;
+      // シンプルなプレースホルダーを使用
+      const placeholder = `__RUBY_TAG_${rubyTagInfos.length}__`;
 
       // タグ情報を保存
       rubyTagInfos.push({
@@ -125,8 +125,8 @@ export function addRubyTagsWithPreservation(
       return placeholder;
     }
 
-    // 解析に失敗した場合はシンプルなプレースホルダー
-    const placeholder = `__RUBY_TAG_UNKNOWN_${rubyTagInfos.length}__`;
+    // 解析に失敗した場合も同じ形式のプレースホルダー
+    const placeholder = `__RUBY_TAG_${rubyTagInfos.length}__`;
     rubyTagInfos.push({
       originalTag: match,
       kanji: "",
@@ -187,20 +187,17 @@ export function addRubyTagsWithPreservation(
   });
 
   // プレースホルダーを元のrubyタグに戻す
-  // 拡張したフォーマットに対応する正規表現: __RUBY_TAG_漢字_インデックス__ または __RUBY_TAG_UNKNOWN_インデックス__
-  return protectedText.replace(
-    /__RUBY_TAG_([^_]+)_(\d+)__|__RUBY_TAG_UNKNOWN_(\d+)__/g,
-    (match, _kanji, index1, index2) => {
-      // インデックスを取得（通常のケースかUNKNOWNケースか）
-      const index = index1 ? parseInt(index1) : parseInt(index2);
+  // シンプル化したプレースホルダーパターン: __RUBY_TAG_インデックス__
+  return protectedText.replace(/__RUBY_TAG_(\d+)__/g, (match, index) => {
+    // インデックスを数値に変換
+    const idx = parseInt(index);
 
-      // 対応するタグ情報を取得して元のタグを返す
-      if (index >= 0 && index < rubyTagInfos.length) {
-        return rubyTagInfos[index].originalTag;
-      }
+    // 対応するタグ情報を取得して元のタグを返す
+    if (idx >= 0 && idx < rubyTagInfos.length) {
+      return rubyTagInfos[idx].originalTag;
+    }
 
-      // 対応するタグが見つからない場合（通常起きないはず）
-      return match;
-    },
-  );
+    // 対応するタグが見つからない場合（通常起きないはず）
+    return match;
+  });
 }
