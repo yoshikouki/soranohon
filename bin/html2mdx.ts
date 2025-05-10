@@ -1,5 +1,7 @@
 #!/usr/bin/env bun
+import * as fs from "fs";
 import { readFile, writeFile } from "fs/promises";
+import * as path from "path";
 import * as process from "process";
 import { extractBookMeta } from "../src/lib/aozorabunko/bookMeta";
 import { detectAndDecode } from "../src/lib/aozorabunko/encoding";
@@ -56,6 +58,42 @@ function parseCommandLineArgs(args: string[]): CommandLineOptions {
 }
 
 /**
+ * URL文字列かどうかを判定する
+ */
+function isUrl(str: string): boolean {
+  try {
+    new URL(str);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * URLからファイルパスに変換する
+ */
+function convertUrlToFilePath(url: string): string {
+  try {
+    const parsedUrl = new URL(url);
+    if (parsedUrl.hostname !== "www.aozora.gr.jp") {
+      throw new Error("Only aozora.gr.jp URLs are supported");
+    }
+    const pathParts = parsedUrl.pathname.split("/");
+    // cards/001091/files/59521_71684.html のような形式を想定
+    if (pathParts.length < 4 || pathParts[1] !== "cards") {
+      throw new Error("Unexpected URL format");
+    }
+
+    return path.join(
+      "/Users/yoshikouki/src/github.com/aozorabunko/aozorabunko",
+      ...pathParts.slice(1),
+    );
+  } catch (error) {
+    throw new Error(`Invalid aozora.gr.jp URL: ${error.message}`);
+  }
+}
+
+/**
  * HTML→MDX変換処理（オプション指定可能）
  */
 async function convertHtmlToMdxWithOptions(
@@ -96,10 +134,27 @@ async function main() {
   // コマンドライン引数の解析
   const options = parseCommandLineArgs(process.argv.slice(2));
 
-  const outPath = options.outputMdx || getMdxOutputPath(options.inputHtml);
+  // 入力がURLの場合は、ローカルのaozorabunkoリポジトリパスに変換
+  let inputPath = options.inputHtml;
+  let sourceType = "file";
+
+  if (isUrl(options.inputHtml)) {
+    inputPath = convertUrlToFilePath(options.inputHtml);
+    sourceType = "url";
+    console.log(`URL detected. Attempting to read from local path: ${inputPath}`);
+
+    // ファイルの存在確認
+    if (!fs.existsSync(inputPath)) {
+      console.error(`File not found at: ${inputPath}`);
+      console.error("Make sure the aozorabunko repository is cloned at the expected location.");
+      process.exit(1);
+    }
+  }
+
+  const outPath = options.outputMdx || getMdxOutputPath(inputPath);
 
   // バイナリで読み込み、encoding-japaneseで自動判定＆デコード
-  const buffer = await readFile(options.inputHtml);
+  const buffer = await readFile(inputPath);
   const { text: html, encoding } = detectAndDecode(buffer);
 
   // 既存のMDXファイルの確認とルビタグ抽出
@@ -115,10 +170,12 @@ async function main() {
 
   // ファイル出力
   await writeFile(outPath, mdx, "utf-8");
-  console.log(`Converted: ${options.inputHtml} (${encoding}) -> ${outPath}`);
+  console.log(
+    `Converted: ${sourceType === "url" ? options.inputHtml : inputPath} (${encoding}) -> ${outPath}`,
+  );
 
   // booksエントリを標準出力
-  const meta = extractBookMeta(options.inputHtml, html);
+  const meta = extractBookMeta(inputPath, html);
   console.log(generateBookEntry(meta));
 }
 
