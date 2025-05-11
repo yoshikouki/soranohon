@@ -85,7 +85,6 @@
     "@biomejs/biome": "2.0.0-beta.1",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.16",
-    "@types/cheerio": "^0.22.35",
     "@types/encoding-japanese": "^2.2.1",
     "@types/node": "^20",
     "@types/react": "^19",
