@@ -120,6 +120,14 @@ export class RubyTags {
 
   // 既存ルビを保持しながらルビタグ追加
   addRubyTagsWithPreservation(mdx: string): string {
+    // 画像タグを保持するために置換する
+    const imageTagRegex = /!\[.*?\]\(.*?\)/g;
+    const imageTagInfos: string[] = [];
+    let textWithImageProtected = mdx.replace(imageTagRegex, (match) => {
+      const placeholder = `__IMAGE_TAG_${imageTagInfos.length}__`;
+      imageTagInfos.push(match);
+      return placeholder;
+    });
     // rubyタグの情報を保持する配列
     interface RubyTagInfo {
       originalTag: string;
@@ -130,7 +138,7 @@ export class RubyTags {
     const rubyTagInfos: RubyTagInfo[] = [];
 
     // 既存のrubyタグを一時的に置換して保護すると同時に内容を解析
-    let protectedText = mdx.replace(rubyTagRegex, (match) => {
+    let protectedText = textWithImageProtected.replace(rubyTagRegex, (match) => {
       // 漢字とルビを抽出
       const contentMatch = rubyContentRegex.exec(match);
       if (contentMatch) {
@@ -169,9 +177,32 @@ export class RubyTags {
       if (typeof match.index !== "number") continue;
 
       // マッチ前のテキストを追加
-      result += protectedText.substring(lastIndex, match.index);
+      const textBeforeMatch = protectedText.substring(lastIndex, match.index);
+
+      // チェック: マッチ前のテキストにプレースホルダーが含まれているか
+      const hasRubyTagBefore = textBeforeMatch.includes("__RUBY_TAG_");
+      result += textBeforeMatch;
+
+      // 現在の漢字順層がすでにプレースホルダー内にあるか確認
+      const currentPosition = match.index;
+      const isInsideRubyTag = rubyTagInfos.some((_info, idx) => {
+        const placeholder = `__RUBY_TAG_${idx}__`;
+        const placeholderPos = protectedText.indexOf(placeholder);
+        if (placeholderPos === -1) return false;
+        return (
+          currentPosition > placeholderPos &&
+          currentPosition < placeholderPos + placeholder.length
+        );
+      });
 
       const kanji = match[0];
+
+      // すでにプレースホルダー内ならスキップ
+      if (isInsideRubyTag || hasRubyTagBefore) {
+        result += kanji;
+        lastIndex = match.index + kanji.length;
+        continue;
+      }
 
       // 個々の漢字ごとに処理
       if (kanji.length === 1 && this.rubyMap.has(kanji)) {
@@ -222,12 +253,23 @@ export class RubyTags {
     result += protectedText.substring(lastIndex);
 
     // プレースホルダーを元のrubyタグに戻す
-    return result.replace(/__RUBY_TAG_(\d+)__/g, (_, index) => {
+    result = result.replace(/__RUBY_TAG_(\d+)__/g, (_, index) => {
       const idx = parseInt(index);
       if (idx >= 0 && idx < rubyTagInfos.length) {
         return rubyTagInfos[idx].originalTag;
       }
       return _;
     });
+
+    // 画像タグのプレースホルダーを元に戻す
+    result = result.replace(/__IMAGE_TAG_(\d+)__/g, (_, index) => {
+      const idx = parseInt(index);
+      if (idx >= 0 && idx < imageTagInfos.length) {
+        return imageTagInfos[idx];
+      }
+      return _;
+    });
+
+    return result;
   }
 }

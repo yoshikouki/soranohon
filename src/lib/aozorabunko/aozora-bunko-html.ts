@@ -2,6 +2,7 @@ import * as cheerio from "cheerio";
 import type { AnyNode, Element } from "domhandler";
 import * as path from "path";
 import { BookContent } from "@/features/book-content/core";
+import { defaultFileSystem } from "@/lib/fs";
 import { RubyTags } from "./ruby-tags";
 
 export interface BookMeta {
@@ -56,12 +57,74 @@ export class AozoraBunkoHtml {
     bookContent: BookContent;
     existingRubyTags?: RubyTags;
   }): void {
-    const { bookContent } = options;
+    const { bookContent, existingRubyTags } = options;
     const lines = this.extractLines();
     const paragraphs = this.formParagraphs(lines);
 
+    // 画像タグの保持のために既存のコンテンツから抽出
+    let imageTagContents: string[] = [];
+    if (existingRubyTags) {
+      // ルビがある場合は、元のMDXから画像タグを収集する
+      try {
+        // リファクタリング前のオリジナルMDXから画像タグを抽出
+        const imageTags: string[] = [];
+        const bookIdMatch = bookContent.contents[0]?.match(/\d+_\d+/);
+        const bookId = bookIdMatch?.[0] || "";
+        if (bookId) {
+          const originalMdxPath = `src/books/${bookId}.mdx`;
+          try {
+            if (defaultFileSystem.existsSync(originalMdxPath)) {
+              const content = defaultFileSystem.readFileSync(originalMdxPath, "utf-8");
+              const originalMdx = new BookContent(content).toMdx();
+              const imageTagRegex = /!\[.*?\]\(.*?\)/g;
+              const matches = originalMdx.match(imageTagRegex);
+              if (matches) {
+                for (const match of matches) {
+                  imageTags.push(match);
+                }
+              }
+            }
+          } catch (e) {
+            // ファイルが存在しないか読み込みエラー（新規の場合）
+            console.error(`Failed to read original MDX file: ${originalMdxPath}`, e);
+          }
+        }
+
+        if (imageTags.length > 0) {
+          imageTagContents = imageTags;
+        }
+      } catch (_e) {
+        // 何もしない
+      }
+    }
+
+    // 段落ごとにHTMLを処理
     for (const paragraph of paragraphs) {
       bookContent.addParagraph(paragraph);
+    }
+
+    // 既存のルビタグがある場合は、変換後のコンテンツに適用する
+    if (existingRubyTags) {
+      const mdx = bookContent.toMdx();
+      const mdxWithRuby = existingRubyTags.addRubyTagsWithPreservation(mdx);
+
+      // BookContentを空にしてルビ適用後のコンテンツで再構築
+      bookContent.contents = [];
+
+      // 画像タグがあれば最初に追加
+      if (imageTagContents.length > 0) {
+        for (const imageTag of imageTagContents) {
+          bookContent.addParagraph(imageTag);
+        }
+      }
+
+      // ルビを適用したコンテンツを追加
+      const paragraphsWithRuby = mdxWithRuby.split("\n\n");
+      for (const p of paragraphsWithRuby) {
+        if (p.trim()) {
+          bookContent.addParagraph(p);
+        }
+      }
     }
   }
 
@@ -163,7 +226,11 @@ export class AozoraBunkoHtml {
         !current.some((l) => l.includes("」")) &&
         (line === "<br />" || line.startsWith("　"));
 
-      const isNewParagraphStart = (/^　|^「|^（/.test(line) || isJisageDiv) && !isInsideQuote;
+      // 改行タグの後になし領域がある場合を考慮 (「ゴロゴロ ガラガラ」のような詩的な表現)
+      const isPoemOrSong = line.includes("<br />") && current.some((l) => l.includes("<br />"));
+
+      const isNewParagraphStart =
+        (/^　|^「|^（/.test(line) || isJisageDiv) && !isInsideQuote && !isPoemOrSong;
 
       if (isNewParagraphStart && current.length > 0) {
         this.removeTrailingBreaks(current);

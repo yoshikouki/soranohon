@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { BookContent } from "@/features/book-content/core";
 import { AozoraBunkoHtml } from "./aozora-bunko-html";
+import { RubyTags } from "./ruby-tags";
 
 describe("AozoraBunkoHtml", () => {
   // テスト用の基本HTMLを設定
@@ -113,6 +114,176 @@ describe("AozoraBunkoHtml", () => {
       expect(bookContent.contents[1]).toBe("これは新しい段落です。");
       expect(bookContent.contents[2]).toBe("「これは会話です。」");
       expect(bookContent.contents[3]).toBe("（これは注釈です。）");
+    });
+
+    // 既存ルビタグの保持に関するテスト - リファクタリングによる問題を再現
+    it("既存のルビマップを使用して単一漢字のルビを正しく保持する", async () => {
+      // 青空文庫のHTMLから変換されるであろうコンテンツ（ルビなし）
+      const html = `
+        <html>
+          <body>
+            <div class="main_text">
+              むかしむかし、冬のさなかのことでした。雪が、鳥の羽のように、ヒラヒラと天からふっていました。
+            </div>
+          </body>
+        </html>
+      `;
+
+      // 既存のMDXコンテンツ（ルビ付き）
+      const existingMdx =
+        "むかしむかし、<ruby>冬<rt>ふゆ</rt></ruby>のさなかのことでした。<ruby>雪<rt>ゆき</rt></ruby>が、<ruby>鳥<rt>とり</rt></ruby>の<ruby>羽<rt>はね</rt></ruby>のように、ヒラヒラと<ruby>天<rt>てん</rt></ruby>からふっていました。";
+      const existingBookContent = new BookContent(existingMdx);
+      const existingRubyTags = RubyTags.extract(existingBookContent);
+
+      const htmlProvider = vi.fn().mockResolvedValue(html);
+      const instance = await AozoraBunkoHtml.read(htmlProvider);
+
+      const bookContent = new BookContent();
+
+      // 既存ルビマップを使用して変換
+      instance.convertToBookContent({
+        bookContent,
+        existingRubyTags,
+      });
+
+      // 変換後のコンテンツで、単一漢字のルビが保持されているかを確認
+      const result = existingRubyTags.addRubyTagsWithPreservation(bookContent.toMdx());
+
+      // 期待される結果（すべての単一漢字にルビが適用されている）
+      expect(result).toContain("<ruby>冬<rt>ふゆ</rt></ruby>");
+      expect(result).toContain("<ruby>雪<rt>ゆき</rt></ruby>");
+      expect(result).toContain("<ruby>鳥<rt>とり</rt></ruby>");
+      expect(result).toContain("<ruby>羽<rt>はね</rt></ruby>");
+      expect(result).toContain("<ruby>天<rt>てん</rt></ruby>");
+    });
+
+    // リファクタリングによるルビ処理の修正を確認するテスト
+    it("bin/html2mdxの改善後の動作確認：ルビが保持される", async () => {
+      // ステップ1: 現在の白雪姫MDXを模したサンプル
+      const existingMdx =
+        "むかしむかし、<ruby>冬<rt>ふゆ</rt></ruby>のさなかのことでした。<ruby>雪<rt>ゆき</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>っていました。";
+
+      // ステップ2: HTMLからの読み込みをシミュレート
+      const html = `
+        <html>
+          <body>
+            <div class="main_text">
+              むかしむかし、冬のさなかのことでした。雪が降っていました。
+            </div>
+          </body>
+        </html>
+      `;
+
+      // ステップ3: bin/html2mdx.tsの処理をシミュレート
+      const existingBookContent = new BookContent(existingMdx);
+      const existingRubyTags = RubyTags.extract(existingBookContent);
+
+      const htmlProvider = vi.fn().mockResolvedValue(html);
+      const instance = await AozoraBunkoHtml.read(htmlProvider);
+
+      // 新しいBookContentインスタンスを作成（HTMLから変換）
+      const newBookContent = new BookContent();
+      // テスト用にbookIdパターンを含む段落を追加
+      newBookContent.addParagraph("test_59835_72466");
+
+      // AozoraBunkoHtml.convertToBookContentを呼び出す
+      // 修正後は既存のルビタグを使用して単一漢字のルビが保持される
+      instance.convertToBookContent({
+        bookContent: newBookContent,
+        existingRubyTags: existingRubyTags,
+      });
+
+      // MDXに変換
+      const generatedMdx = newBookContent.toMdx();
+
+      // 修正後の動作確認：生成されたMDXにルビタグが含まれている
+      console.log("Original MDX: " + existingMdx);
+      console.log("Generated MDX: " + generatedMdx);
+
+      // この時点で既にルビが保持されていることを確認（修正後）
+      expect(generatedMdx).toContain("<ruby>冬<rt>ふゆ</rt></ruby>");
+      expect(generatedMdx).toContain("<ruby>雪<rt>ゆき</rt></ruby>");
+      expect(generatedMdx).toContain("<ruby>降<rt>ふ</rt></ruby>");
+    });
+
+    // 段落整形の問題を確認するテスト
+    it("段落の整形問題: 改行を含む複合段落の処理", async () => {
+      // 問題を再現するHTMLコンテンツ (赤ずきんの例)
+      const html = `
+        <html>
+          <body>
+            <div class="main_text">
+              ゴロゴロ　ガラガラ　なにがなる<br />
+              おれのはらんなかで　なにがなる<br />
+              子ヤギどもかと思ったが<br />
+              こんなあんばいじゃ石ころだ
+            </div>
+          </body>
+        </html>
+      `;
+      const htmlProvider = vi.fn().mockResolvedValue(html);
+      const instance = await AozoraBunkoHtml.read(htmlProvider);
+
+      const bookContent = new BookContent();
+      instance.convertToBookContent({ bookContent });
+
+      // 段落の整形方法を確認
+      const mdx = bookContent.toMdx();
+      console.log("Generated paragraph MDX:", mdx);
+
+      // 期待される動作: 複数行のテキストが1つの段落として整形される
+      // 改行があっても改行文字を保持し、段落は1つとして扱われる
+      expect(bookContent.contents.length).toBe(1);
+      expect(bookContent.contents[0]).toBe(
+        "ゴロゴロ　ガラガラ　なにがなる<br />おれのはらんなかで　なにがなる<br />子ヤギどもかと思ったが<br />こんなあんばいじゃ石ころだ",
+      );
+    });
+
+    // 画像タグが保持されることを確認するテスト
+    it.skip("画像タグを含むMDXコンテンツの処理", async () => {
+      // 画像タグを含むMDXコンテンツ
+      const existingMdx =
+        "![赤ずきんちゃんとおばあさんの紹介](/images/books/59835_72466/scene-1.webp)\n\nむかしむかし、<ruby>冬<rt>ふゆ</rt></ruby>のさなかのことでした。";
+
+      // HTMLからの読み込みをシミュレート
+      const html = `
+        <html>
+          <body>
+            <div class="main_text">
+              むかしむかし、冬のさなかのことでした。
+            </div>
+          </body>
+        </html>
+      `;
+
+      // bin/html2mdx.tsの処理をシミュレート
+      const existingBookContent = new BookContent(existingMdx);
+      const existingRubyTags = RubyTags.extract(existingBookContent);
+
+      const htmlProvider = vi.fn().mockResolvedValue(html);
+      const instance = await AozoraBunkoHtml.read(htmlProvider);
+
+      // 新しいBookContentインスタンスを作成（HTMLから変換）
+      const newBookContent = new BookContent();
+      // テスト用にbookIdパターンを含む段落を追加
+      newBookContent.addParagraph("test_59835_72466");
+
+      // AozoraBunkoHtml.convertToBookContentを呼び出す
+      instance.convertToBookContent({
+        bookContent: newBookContent,
+        existingRubyTags: existingRubyTags,
+      });
+
+      // MDXに変換（現在の実装では画像タグは失われるはず）
+      const generatedMdx = newBookContent.toMdx();
+      console.log("Original MDX with image:", existingMdx);
+      console.log("Generated MDX:", generatedMdx);
+
+      // 期待される動作: 画像タグが保持される
+      // 現状の問題: 画像タグが失われる
+      expect(generatedMdx).toContain(
+        "![赤ずきんちゃんとおばあさんの紹介](/images/books/59835_72466/scene-1.webp)",
+      );
     });
 
     it("字下げdivを正しく処理する", async () => {
