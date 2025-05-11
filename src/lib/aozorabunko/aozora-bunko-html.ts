@@ -2,6 +2,7 @@ import * as cheerio from "cheerio";
 import type { AnyNode, Element } from "domhandler";
 import * as path from "path";
 import { BookContent } from "@/features/book-content/core";
+import { RubyTags } from "./ruby-tags";
 
 export interface BookMeta {
   id: string;
@@ -53,7 +54,7 @@ export class AozoraBunkoHtml {
 
   convertToBookContent(options: {
     bookContent: BookContent;
-    existingRubyTags?: Map<string, string[]>;
+    existingRubyTags?: RubyTags;
   }): void {
     const { bookContent } = options;
     const lines = this.extractLines();

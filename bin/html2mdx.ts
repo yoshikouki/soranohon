@@ -135,7 +135,7 @@ export async function processHtmlFile(inputHtmlPath: string, outputMdxPath?: str
   const bookContent = new BookContent();
   aozoraBunkoHtml.convertToBookContent({
     bookContent,
-    existingRubyTags: existingRubyTags.getRubyMap(),
+    existingRubyTags: existingRubyTags,
   });
 
   const mdx = bookContent.toMdx();
