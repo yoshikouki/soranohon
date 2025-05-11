@@ -18,36 +18,21 @@ describe("AozoraBunkoHtml と RubyTags の連携", () => {
 
   describe("HTML読み込みからルビ処理までの連携", () => {
     it("HTMLからBookContentへの変換とRubyTagsの抽出が連携して動作する", async () => {
-      // HTMLプロバイダーを準備
       const htmlProvider = vi.fn().mockResolvedValue(htmlWithRuby);
-      
-      // 1. HTMLからAozoraBunkoHtmlインスタンスを作成
       const aozoraBunkoHtml = await AozoraBunkoHtml.read(htmlProvider);
-      
-      // 2. BookContentインスタンスを作成
       const bookContent = new BookContent();
-      
-      // 3. HTMLをBookContentに変換
+
       aozoraBunkoHtml.convertToBookContent({ bookContent });
-      
-      // 4. BookContentからRubyTagsを抽出
       const rubyTags = RubyTags.extract(bookContent);
-      
-      // 結果の検証
       const rubyMap = rubyTags.getRubyMap();
-      
-      // RubyTagsがすべてのルビを正しく抽出できているか確認
+
       expect(rubyMap.size).toBe(5);
       expect(rubyMap.get("漢")).toEqual(["かん"]);
       expect(rubyMap.get("字")).toEqual(["じ"]);
       expect(rubyMap.get("仮名")).toEqual(["かな"]);
       expect(rubyMap.get("日本")).toEqual(["にほん"]);
       expect(rubyMap.get("文化")).toEqual(["ぶんか"]);
-      
-      // BookContentが正しく生成されているか確認
       expect(bookContent.contents.length).toBeGreaterThan(0);
-      
-      // 内容にルビタグが正しく含まれているか確認
       const mdx = bookContent.toMdx();
       expect(mdx).toContain("<ruby>漢<rt>かん</rt></ruby>");
       expect(mdx).toContain("<ruby>字<rt>じ</rt></ruby>");
@@ -57,53 +42,32 @@ describe("AozoraBunkoHtml と RubyTags の連携", () => {
     });
 
     it("ルビマップを使用して新しいテキストにルビを追加できる", async () => {
-      // HTMLプロバイダーを準備
       const htmlProvider = vi.fn().mockResolvedValue(htmlWithRuby);
-      
-      // 1. HTMLからAozoraBunkoHtmlインスタンスを作成
       const aozoraBunkoHtml = await AozoraBunkoHtml.read(htmlProvider);
-      
-      // 2. BookContentインスタンスを作成
       const bookContent = new BookContent();
-      
-      // 3. HTMLをBookContentに変換
+
       aozoraBunkoHtml.convertToBookContent({ bookContent });
-      
-      // 4. BookContentからRubyTagsを抽出
       const rubyTags = RubyTags.extract(bookContent);
-      
-      // 5. 新しいテキストにルビを追加
       const newText = "漢字と日本語の勉強";
       const result = rubyTags.addRubyTagsWithPreservation(newText);
-      
-      // 結果の検証
+
       expect(result).toContain("<ruby>漢<rt>かん</rt></ruby>");
       expect(result).toContain("<ruby>字<rt>じ</rt></ruby>");
-      
-      // "日本"は個別の漢字としてルビが抽出されていて、"日本"という複合漢字としては登録されていない
       expect(result).not.toContain("<ruby>日本<rt>にほん</rt></ruby>");
       expect(result).toContain("<ruby>日本語<rt>{{required_ruby}}</rt></ruby>");
-      
-      // ルビマップに存在しない漢字にはプレースホルダーが使用される
       expect(result).toContain("<ruby>勉強<rt>{{required_ruby}}</rt></ruby>");
     });
 
     it("漢字を検出してルビプレースホルダーを適用できる", async () => {
-      // 1. BookContentを作成
-      const bookContent = new BookContent();
-      
-      // 2. RubyTagsのインスタンスを作成
       const rubyTags = new RubyTags();
-      
-      // 3. プレーンテキストに漢字検出とルビ追加
       const plainText = "漢字と日本語";
       const result = rubyTags.addPlaceholderRubyToKanji(plainText);
-      
-      // 結果の検証 - すべての漢字にプレースホルダーが付く
+
       expect(result).toContain("<ruby>漢字<rt>{{required_ruby}}</rt></ruby>");
       expect(result).toContain("<ruby>日本語<rt>{{required_ruby}}</rt></ruby>");
-      // "と"は漢字ではないため変換されない
-      expect(result).toBe("<ruby>漢字<rt>{{required_ruby}}</rt></ruby>と<ruby>日本語<rt>{{required_ruby}}</rt></ruby>");
+      expect(result).toBe(
+        "<ruby>漢字<rt>{{required_ruby}}</rt></ruby>と<ruby>日本語<rt>{{required_ruby}}</rt></ruby>",
+      );
     });
   });
 
@@ -125,31 +89,18 @@ describe("AozoraBunkoHtml と RubyTags の連携", () => {
           </body>
         </html>
       `;
-      
-      // HTMLプロバイダーを準備
       const htmlProvider = vi.fn().mockResolvedValue(complexHtml);
-      
-      // 1. HTMLからAozoraBunkoHtmlインスタンスを作成
       const aozoraBunkoHtml = await AozoraBunkoHtml.read(htmlProvider);
-      
-      // 2. BookContentインスタンスを作成し、HTMLを変換
       const bookContent = new BookContent();
       aozoraBunkoHtml.convertToBookContent({ bookContent });
-      
-      // 3. BookContentからRubyTagsを抽出
       const rubyTags = RubyTags.extract(bookContent);
-      
-      // 結果の検証
       const rubyMap = rubyTags.getRubyMap();
-      
-      // すべての異なるタイプのルビが抽出されているか確認
+
       expect(rubyMap.has("強調")).toBe(true);
       expect(rubyMap.has("字")).toBe(true);
       expect(rubyMap.has("下")).toBe(true);
       expect(rubyMap.has("げ")).toBe(true);
       expect(rubyMap.has("漢字")).toBe(true);
-      
-      // bookContentとrubyTagsの両方が期待通りのコンテンツを持っているか確認
       const mdx = bookContent.toMdx();
       expect(mdx).toContain("<ruby>強調<rt>きょうちょう</rt></ruby>");
       expect(mdx).toContain("<ruby>字<rt>じ</rt></ruby>");

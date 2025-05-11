@@ -47,7 +47,6 @@ describe("extractBookMeta", () => {
       </html>
     `;
     const meta = extractBookMeta("test.html", html);
-    console.log("bibliographyRaw:", JSON.stringify(meta.bibliographyRaw));
     expect(meta.bibliographyRaw.startsWith("\\n")).toBe(false);
     expect(meta.bibliographyRaw.endsWith("\\n")).toBe(false);
     expect(meta.bibliographyRaw).toContain("底本：グリム童話集");

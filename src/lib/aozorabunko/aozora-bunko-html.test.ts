@@ -186,7 +186,7 @@ describe("AozoraBunkoHtml", () => {
 
       expect(bookContent.contents.length).toBe(1);
       expect(bookContent.contents[0]).toBe(
-        "「これは会話の始まりです。<br />これは会話の続きです。<br />さらに会話が続きます。」<br />これは地の文です。"
+        "「これは会話の始まりです。<br />これは会話の続きです。<br />さらに会話が続きます。」<br />これは地の文です。",
       );
     });
 

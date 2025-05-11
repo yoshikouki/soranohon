@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
-import path from "path"; // プロジェクトルートからの相対パスを解決するために使用
-import { books } from "@/books"; // src/books/index.ts を参照
+
+import path from "path";
+import { books } from "@/books";
 import { defaultLogger } from "@/lib/logger";
 import { convertUrlToFilePath, processHtmlFile } from "./html2mdx";
 

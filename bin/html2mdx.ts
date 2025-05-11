@@ -19,10 +19,8 @@ interface CommandLineOptions {
  * コマンドライン引数を解析する
  */
 function parseCommandLineArgs(args: string[]): CommandLineOptions {
-  // ファイル引数を取得
   const fileArgs: string[] = args;
 
-  // 入力と出力ファイルの取得
   const inputHtml = fileArgs[0] || "";
   const outputMdx = fileArgs[1] || "";
 
@@ -76,7 +74,6 @@ export function convertUrlToFilePath(url: string): string {
       throw new Error("Only aozora.gr.jp URLs are supported");
     }
     const pathParts = parsedUrl.pathname.split("/");
-    // cards/001091/files/59521_71684.html のような形式を想定
     if (pathParts.length < 4 || pathParts[1] !== "cards") {
       throw new Error("Unexpected URL format");
     }
@@ -94,7 +91,6 @@ export function convertUrlToFilePath(url: string): string {
  * 本のエントリー情報を生成する
  */
 function generateBookEntry(meta: ReturnType<AozoraBunkoHtml["extractBookMeta"]>): string {
-  // 青空文庫の図書カードURLを取得
   const aozoraBunkoUrl = getAozoraBunkoCardUrl(meta.id) || "";
 
   return `
@@ -120,14 +116,12 @@ export async function processHtmlFile(inputHtmlPath: string, outputMdxPath?: str
   const { inputPath } = processInputPath(inputHtmlPath, logger);
   const outPath = outputMdxPath || getMdxOutputPath(inputPath);
 
-  // AozoraBunkoHtmlクラスの初期化
   const aozoraBunkoHtml = await AozoraBunkoHtml.read(async () => {
     const buffer = await readFile(inputPath);
     const { text: html } = detectAndDecode(buffer);
     return html;
   });
 
-  // 既存のMDXファイルからBookContentとRubyTagsを取得
   let existingBookContent: BookContent | null = null;
   try {
     existingBookContent = await BookContent.readFile(outPath);
@@ -136,24 +130,19 @@ export async function processHtmlFile(inputHtmlPath: string, outputMdxPath?: str
     logger.info(`No existing MDX file found at: ${outPath}`);
   }
 
-  // RubyTagsの抽出
   const existingRubyTags = RubyTags.extract(existingBookContent);
 
-  // 新しいBookContentの作成と変換
   const bookContent = new BookContent();
   aozoraBunkoHtml.convertToBookContent({
     bookContent,
     existingRubyTags: existingRubyTags.getRubyMap(),
   });
 
-  // MDXへの変換
   const mdx = bookContent.toMdx();
 
-  // ファイル出力
   fileSystem.writeFileSync(outPath, mdx, "utf-8");
   logger.info(`Converted: ${inputPath} -> ${outPath}`);
 
-  // booksエントリを標準出力
   const meta = aozoraBunkoHtml.extractBookMeta(inputPath);
   logger.info(generateBookEntry(meta));
 }
