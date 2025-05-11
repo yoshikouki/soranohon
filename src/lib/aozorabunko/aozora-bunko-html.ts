@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import type { AnyNode, Element } from "domhandler";
 import * as path from "path";
 import { BookContent } from "@/features/book-content/core";
 
@@ -12,7 +13,7 @@ export interface BookMeta {
 
 export class AozoraBunkoHtml {
   private readonly html: string;
-  private readonly mainText: cheerio.Cheerio;
+  private readonly mainText: cheerio.Cheerio<Element>;
   private readonly $: cheerio.CheerioAPI;
 
   private constructor(html: string) {
@@ -63,7 +64,7 @@ export class AozoraBunkoHtml {
     }
   }
 
-  private extractMainText(): cheerio.Cheerio {
+  private extractMainText(): cheerio.Cheerio<Element> {
     const main = this.$(".main_text");
 
     if (!main.length) {
@@ -78,7 +79,7 @@ export class AozoraBunkoHtml {
     const lines: string[] = [];
     let prevIsBr = false;
 
-    const processElement = (element: cheerio.Element) => {
+    const processElement = (element: AnyNode) => {
       if (
         element.type === "tag" &&
         element.name === "div" &&
