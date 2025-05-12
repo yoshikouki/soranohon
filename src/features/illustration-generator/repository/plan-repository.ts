@@ -24,7 +24,8 @@ export class FilesystemPlanRepository implements PlanRepository {
 
   async savePlan(bookId: string, rawPlan: string): Promise<boolean> {
     const planFilePath = this.getPlanFilePath(bookId);
-    this.fs.writeFileSync(planFilePath, rawPlan);
+    const illustrationPlanXml = this.extractIllustrationPlanXml(rawPlan);
+    this.fs.writeFileSync(planFilePath, illustrationPlanXml);
     return true;
   }
 
@@ -36,6 +37,16 @@ export class FilesystemPlanRepository implements PlanRepository {
 
     const planContent = this.fs.readFileSync(planFilePath, "utf8");
     return this.parseMdToPlan(planContent, bookId);
+  }
+
+  private extractIllustrationPlanXml(rawPlan: string): string {
+    const illustrationPlanXml = rawPlan.match(/<plan>(.*?)<\/plan>/);
+    if (!illustrationPlanXml) {
+      throw new Error(
+        `Invalid plan format: <plan>...</plan> not found: ${rawPlan.slice(0, 10)}`,
+      );
+    }
+    return illustrationPlanXml[0];
   }
 
   private parseMdToPlan(mdContent: string, bookId: string): IllustrationPlan | null {
