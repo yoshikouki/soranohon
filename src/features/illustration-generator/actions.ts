@@ -6,6 +6,7 @@ import { createStreamableValue } from "ai/rsc";
 import { books } from "@/books";
 import { BookContent } from "@/features/book-content/core";
 import { prompts } from "./prompts";
+import { FilesystemPlanRepository } from "./repository/plan-repository";
 
 const isDevEnvironment = () => {
   return process.env.NODE_ENV === "development";
@@ -29,6 +30,7 @@ export async function generateIllustrationPlan(bookId: string) {
   });
 
   const stream = createStreamableValue("");
+  let chunk = "";
   (async () => {
     const { textStream } = streamText({
       model: google("models/gemini-2.5-pro-preview-05-06"),
@@ -37,9 +39,12 @@ export async function generateIllustrationPlan(bookId: string) {
 
     for await (const delta of textStream) {
       stream.update(delta);
+      chunk += delta;
     }
 
     stream.done();
+    const planRepository = new FilesystemPlanRepository();
+    await planRepository.savePlan(bookId, chunk);
   })();
 
   return { output: stream.value };

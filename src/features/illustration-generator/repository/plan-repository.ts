@@ -3,7 +3,7 @@ import { defaultFileSystem, FileSystem } from "@/lib/fs";
 import { IllustrationPlan } from "../types";
 
 export interface PlanRepository {
-  savePlan(bookId: string, plan: IllustrationPlan): Promise<boolean>;
+  savePlan(bookId: string, rawPlan: string): Promise<boolean>;
   getPlan(bookId: string): Promise<IllustrationPlan | null>;
 }
 
@@ -22,9 +22,10 @@ export class FilesystemPlanRepository implements PlanRepository {
     );
   }
 
-  async savePlan(bookId: string, plan: IllustrationPlan): Promise<boolean> {
-    // WIP: 実装
-    return false;
+  async savePlan(bookId: string, rawPlan: string): Promise<boolean> {
+    const planFilePath = this.getPlanFilePath(bookId);
+    this.fs.writeFileSync(planFilePath, rawPlan);
+    return true;
   }
 
   async getPlan(bookId: string): Promise<IllustrationPlan | null> {
