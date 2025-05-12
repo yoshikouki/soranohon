@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "PORT=8888 next dev --turbopack",
+    "dev": "PORT=8888 next dev",
     "build": "next build",
     "build:test": "NEXT_DIST_DIR=.next-build next build",
     "start": "next start",
