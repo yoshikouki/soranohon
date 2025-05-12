@@ -5,4 +5,5 @@ export const regex = {
     },
     allTags: /<[^>]*>/g,
   },
+  illustrationPlan: /<plan>[\s\S]*?<\/plan>/,
 };

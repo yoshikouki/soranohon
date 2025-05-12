@@ -65,3 +65,32 @@ describe("Boundary tests for regex.html.ruby.captureBase", () => {
     expect(matches[1][1]).toBe("最高");
   });
 });
+
+describe("regex.illustrationPlan", () => {
+  it("<plan>タグのみ（1行）を抽出できる", () => {
+    const text = "<plan>test</plan>";
+    const match = text.match(regex.illustrationPlan);
+    expect(match).not.toBeNull();
+    expect(match?.[0]).toBe("<plan>test</plan>");
+  });
+
+  it("<plan>タグが複数行・インデントありでも抽出できる", () => {
+    const text = `<plan>\n  <theme>テーマ</theme>\n</plan>`;
+    const match = text.match(regex.illustrationPlan);
+    expect(match).not.toBeNull();
+    expect(match?.[0]).toBe(`<plan>\n  <theme>テーマ</theme>\n</plan>`);
+  });
+
+  it("```xmlで始まる場合も抽出できる", () => {
+    const text = "```xml\n<plan>\n  <theme>テーマ</theme>\n</plan>\n```\n";
+    const match = text.match(regex.illustrationPlan);
+    expect(match).not.toBeNull();
+    expect(match?.[0]).toBe("<plan>\n  <theme>テーマ</theme>\n</plan>");
+  });
+
+  it("<plan>タグが存在しない場合はnull", () => {
+    const text = "<theme>テーマ</theme>";
+    const match = text.match(regex.illustrationPlan);
+    expect(match).toBeNull();
+  });
+});

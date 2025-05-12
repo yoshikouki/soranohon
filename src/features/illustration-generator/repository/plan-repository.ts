@@ -1,6 +1,7 @@
 import { filePaths } from "@/lib/file-paths";
 import { defaultFileSystem, FileSystem } from "@/lib/fs";
-import { IllustrationPlan } from "../types";
+import { regex } from "@/lib/regex";
+import { IllustrationPlan, IllustrationScene } from "../types";
 
 export interface PlanRepository {
   savePlan(bookId: string, rawPlan: string): Promise<boolean>;
@@ -34,19 +35,23 @@ export class FilesystemPlanRepository implements PlanRepository {
     if (!this.fs.existsSync(planFilePath)) {
       return null;
     }
-
-    const planContent = this.fs.readFileSync(planFilePath, "utf8");
-    return this.parseMdToPlan(planContent, bookId);
+    try {
+      const planContent = this.fs.readFileSync(planFilePath, "utf8");
+      return this.parseMdToPlan(planContent, bookId);
+    } catch (error) {
+      console.error(`getPlan error: ${error}`);
+      return null;
+    }
   }
 
   private extractIllustrationPlanXml(rawPlan: string): string {
-    const illustrationPlanXml = rawPlan.match(/<plan>(.*?)<\/plan>/);
+    const illustrationPlanXml = rawPlan.match(regex.illustrationPlan);
     if (!illustrationPlanXml) {
-      throw new Error(
-        `Invalid plan format: <plan>...</plan> not found: ${rawPlan.slice(0, 10)}`,
+      console.error(
+        `Invalid plan format: <plan>...</plan> not found: ${rawPlan.slice(0, 100)}`,
       );
     }
-    return illustrationPlanXml[0];
+    return illustrationPlanXml?.[0] || rawPlan;
   }
 
   private parseMdToPlan(mdContent: string, bookId: string): IllustrationPlan | null {
