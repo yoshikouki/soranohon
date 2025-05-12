@@ -9,6 +9,7 @@ export const paths = {
   books: {
     root: () => "/books",
     detail: (bookId: string) => `/books/${bookId}`,
+    illustrationPlans: (bookId: string) => `/books/${bookId}/illustration-plans`,
   },
   images: {
     books: {

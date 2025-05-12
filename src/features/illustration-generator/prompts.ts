@@ -1,7 +1,8 @@
 import { BookForIllustrationPlan } from "./types";
 
 export const prompts = {
-  illustrationPlan: (book: BookForIllustrationPlan): string => `
+  illustrationPlan: (book: BookForIllustrationPlan): string =>
+    `
 # 青空文庫 児童文学 挿絵計画作成依頼
 あなたは**熟練の絵本アートディレクター**です。これから渡す青空文庫の絵本 **「${book.title}」** を読み、
 物語をもっとも魅力的に伝える挿絵を設計してください。
@@ -105,5 +106,5 @@ ${book.contentWithTags}
 """
 
 # 挿絵計画
-`,
+`.trim(),
 } as const;
