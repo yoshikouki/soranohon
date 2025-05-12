@@ -9,10 +9,11 @@ import { prompts } from "../services/prompt-templates";
 interface IllustrationPromptDisplayProps {
   bookId: string;
   title: string;
+  contentWithTags: string;
 }
 
-export function IllustrationPromptDisplay({ bookId, title }: IllustrationPromptDisplayProps) {
-  const promptText = prompts.illustrationPlan({ bookId, title });
+export function IllustrationPromptDisplay(book: IllustrationPromptDisplayProps) {
+  const promptText = prompts.illustrationPlan(book);
 
   const copyToClipboard = async () => {
     try {
@@ -25,7 +26,7 @@ export function IllustrationPromptDisplay({ bookId, title }: IllustrationPromptD
 
   return (
     <Card className="p-4">
-      <div className="mb-2 flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <h3 className="font-medium text-lg">挿絵計画生成プロンプト</h3>
         <Button
           variant="outline"
@@ -37,7 +38,13 @@ export function IllustrationPromptDisplay({ bookId, title }: IllustrationPromptD
           コピー
         </Button>
       </div>
-      <div className="whitespace-pre-wrap rounded-md bg-muted p-3 text-sm">{promptText}</div>
+      <div className="space-x-2">
+        <span>Length:</span>
+        <span>{promptText.length.toLocaleString() || "0"}</span>
+      </div>
+      <div className="h-96 overflow-y-auto">
+        <pre className="whitespace-pre-wrap rounded-md bg-muted p-4 text-sm">{promptText}</pre>
+      </div>
     </Card>
   );
 }

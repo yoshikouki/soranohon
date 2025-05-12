@@ -7,7 +7,7 @@ export const filePaths = {
   books: {
     sources: {
       mdx: (bookId: string) => `./src/books/${bookId}.mdx`,
-      plan: (bookId: string) => `./src/books/${bookId}.plan.md`,
+      illustrationPlans: (bookId: string) => `./src/books/${bookId}.plan.md`,
     },
   },
 };

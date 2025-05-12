@@ -16,5 +16,5 @@ export interface IllustrationScene {
 export interface IllustrationPlan {
   bookId: string;
   scenes: IllustrationScene[];
-  createdAt: string;
+  rawPlan: string;
 }
