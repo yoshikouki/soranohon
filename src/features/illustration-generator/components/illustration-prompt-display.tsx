@@ -6,14 +6,11 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { generateIllustrationPlan } from "../actions/generate-illustration";
+import { generateIllustrationPlan } from "../actions";
 import { prompts } from "../prompts";
+import { BookForIllustrationPlan } from "../types";
 
-interface IllustrationPromptDisplayProps {
-  bookId: string;
-  title: string;
-  contentWithTags: string;
-}
+interface IllustrationPromptDisplayProps extends BookForIllustrationPlan {}
 
 export function IllustrationPromptDisplay(book: IllustrationPromptDisplayProps) {
   const promptText = prompts.illustrationPlan(book);

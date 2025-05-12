@@ -5,14 +5,13 @@ import { streamText } from "ai";
 import { createStreamableValue } from "ai/rsc";
 import { books } from "@/books";
 import { BookContent } from "@/features/book-content/core";
-import { prompts } from "../prompts";
+import { prompts } from "./prompts";
 
 const isDevEnvironment = () => {
   return process.env.NODE_ENV === "development";
 };
 
 export async function generateIllustrationPlan(bookId: string) {
-  // 開発環境でない場合は例外を投げる
   if (!isDevEnvironment()) {
     throw new Error("この機能は開発環境でのみ利用可能です");
   }

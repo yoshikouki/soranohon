@@ -1,8 +1,8 @@
-export interface IllustrationPlanRequest {
+// 使用される本データの型定義
+export interface BookForIllustrationPlan {
   bookId: string;
-  sceneCount?: number;
-  prompt?: string;
-  stylePreference?: string;
+  title: string;
+  contentWithTags: string;
 }
 
 export interface IllustrationScene {

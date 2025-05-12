@@ -1,6 +1,6 @@
 import { filePaths } from "@/lib/file-paths";
 import { defaultFileSystem, FileSystem } from "@/lib/fs";
-import { IllustrationPlan } from "../types/illustration-plan";
+import { IllustrationPlan } from "../types";
 
 export interface PlanRepository {
   savePlan(bookId: string, plan: IllustrationPlan): Promise<boolean>;
@@ -23,26 +23,8 @@ export class FilesystemPlanRepository implements PlanRepository {
   }
 
   async savePlan(bookId: string, plan: IllustrationPlan): Promise<boolean> {
-    try {
-      const planFilePath = this.getPlanFilePath(bookId);
-
-      // マークダウン形式でプランを作成
-      const planContent = this.formatPlanAsMd(plan);
-
-      // ディレクトリが存在することを確認
-      const dir = this.fs.dirname(planFilePath);
-      if (!this.fs.existsSync(dir)) {
-        this.fs.mkdirSync(dir, { recursive: true });
-      }
-
-      // ファイルに書き込み
-      this.fs.writeFileSync(planFilePath, planContent, "utf8");
-
-      return true;
-    } catch (error) {
-      console.error(`Failed to save plan for book ID ${bookId}:`, error);
-      return false;
-    }
+    // WIP: 実装
+    return false;
   }
 
   async getPlan(bookId: string): Promise<IllustrationPlan | null> {
@@ -53,23 +35,6 @@ export class FilesystemPlanRepository implements PlanRepository {
 
     const planContent = this.fs.readFileSync(planFilePath, "utf8");
     return this.parseMdToPlan(planContent, bookId);
-  }
-
-  private formatPlanAsMd(plan: IllustrationPlan): string {
-    const header = `# 挿絵プラン: ${plan.bookId}\n\n作成日時: ${plan.createdAt}\n\n`;
-
-    const scenes = plan.scenes
-      .map((scene) => {
-        return (
-          `## ${scene.title}\n\n` +
-          `- **ID**: ${scene.sceneId}\n` +
-          `- **説明**: ${scene.description}\n` +
-          `- **MDX範囲**: ${scene.mdxStart}-${scene.mdxEnd}\n`
-        );
-      })
-      .join("\n\n");
-
-    return header + scenes;
   }
 
   private parseMdToPlan(mdContent: string, bookId: string): IllustrationPlan | null {

@@ -3,7 +3,6 @@ import { Textarea } from "@/components/ui/textarea";
 interface MdxEditorProps {
   contents: string;
   contentsWithoutTags: string;
-  onChange?: (content: string) => void;
 }
 
 export const MdxEditor = ({ contents, contentsWithoutTags }: MdxEditorProps) => {
