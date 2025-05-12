@@ -1,7 +1,7 @@
 "use client";
 
-import { Check, Copy } from "lucide-react";
-import { useState } from "react";
+import { CopyIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { prompts } from "../services/prompt-templates";
@@ -12,15 +12,12 @@ interface IllustrationPromptDisplayProps {
 }
 
 export function IllustrationPromptDisplay({ bookId, title }: IllustrationPromptDisplayProps) {
-  const [copied, setCopied] = useState(false);
-
   const promptText = prompts.illustrationPlan({ bookId, title });
 
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(promptText);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      toast.success("クリップボードにコピーしました");
     } catch (err) {
       console.error("クリップボードへのコピーに失敗しました", err);
     }
@@ -36,8 +33,8 @@ export function IllustrationPromptDisplay({ bookId, title }: IllustrationPromptD
           onClick={copyToClipboard}
           className="flex items-center gap-1"
         >
-          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          {copied ? "コピーしました" : "コピー"}
+          <CopyIcon className="h-4 w-4" />
+          コピー
         </Button>
       </div>
       <div className="whitespace-pre-wrap rounded-md bg-muted p-3 text-sm">{promptText}</div>
