@@ -80,7 +80,7 @@ function getLocalPathFromUrl(url: string): string {
 /**
  * CSVファイルを処理して文字数を追加する
  */
-async function processCSV(): Promise<void> {
+export async function processCSV(): Promise<void> {
   console.log(`CSVファイル ${csvPath} を処理します...`);
 
   // CSVファイルを読み込む
@@ -113,19 +113,3 @@ async function processCSV(): Promise<void> {
 
   console.log(`文字数データを追加したCSVを ${outputPath} に保存しました。`);
 }
-
-/**
- * メイン処理
- */
-async function main() {
-  try {
-    await processCSV();
-    console.log("処理が完了しました。");
-  } catch (error) {
-    console.error("処理中にエラーが発生しました:", error);
-    process.exit(1);
-  }
-}
-
-// スクリプト実行
-main();

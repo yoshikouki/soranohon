@@ -31,7 +31,7 @@ interface AozoraRecord {
 /**
  * ZIPアーカイブからCSVデータを直接読み込んで処理する
  */
-async function processZipFile(): Promise<void> {
+export async function processZipFile(): Promise<void> {
   console.log(`ZIPファイル ${zipFilePath} から直接データを処理します...`);
 
   const directory = await unzipper.Open.file(zipFilePath);
@@ -75,19 +75,3 @@ async function processZipFile(): Promise<void> {
 
   console.log(`児童書かつ著作権なしのデータを ${outputPath} に保存しました。`);
 }
-
-/**
- * メイン処理
- */
-async function main() {
-  try {
-    await processZipFile();
-    console.log("処理が完了しました。");
-  } catch (error) {
-    console.error("処理中にエラーが発生しました:", error);
-    process.exit(1);
-  }
-}
-
-// スクリプト実行
-main();
