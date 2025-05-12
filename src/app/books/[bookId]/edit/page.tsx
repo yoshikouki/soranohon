@@ -3,8 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { books } from "@/books";
 import { BookContent } from "@/features/book-content/core";
-import { generateIllustrationPlan } from "@/features/illustration-generator/actions/generate-illustration-plan";
-import { IllustrationPlanForm } from "@/features/illustration-generator/components/illustration-plan-form";
+import { IllustrationPlanDisplay } from "@/features/illustration-generator/components/illustration-plan-display";
 import { MdxEditor } from "@/features/illustration-generator/components/mdx-editor";
 import { paths } from "@/lib/paths";
 
@@ -62,7 +61,7 @@ export default async function BookEditPage({
       <div className="grid grid-cols-1 gap-6">
         <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
           <h2 className="mb-4 font-semibold text-xl">挿絵計画の作成</h2>
-          <IllustrationPlanForm bookId={bookId} generateAction={generateIllustrationPlan} />
+          <IllustrationPlanDisplay book={book} />
         </div>
 
         <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
