@@ -3,10 +3,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { Textarea } from "@/components/ui/textarea";
 import { IllustrationPlan, IllustrationPlanRequest } from "../types/illustration-plan";
 
 interface IllustrationPlanFormProps {
@@ -18,9 +14,6 @@ interface IllustrationPlanFormProps {
 
 export function IllustrationPlanForm({ bookId, generateAction }: IllustrationPlanFormProps) {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [sceneCount, setSceneCount] = useState<number>(10);
-  const [stylePreference, setStylePreference] = useState<string>("");
-  const [prompt, setPrompt] = useState<string>("");
   const [plan, setPlan] = useState<IllustrationPlan | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,14 +21,9 @@ export function IllustrationPlanForm({ bookId, generateAction }: IllustrationPla
     setIsGenerating(true);
 
     try {
-      const request: IllustrationPlanRequest = {
+      const result = await generateAction({
         bookId,
-        sceneCount,
-        stylePreference,
-        prompt,
-      };
-
-      const result = await generateAction(request);
+      });
       setPlan(result.plan);
     } catch (error) {
       console.error("Failed to generate illustration plan:", error);
@@ -47,43 +35,6 @@ export function IllustrationPlanForm({ bookId, generateAction }: IllustrationPla
   return (
     <div className="flex flex-col gap-6">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="sceneCount">シーン数</Label>
-          <div className="flex items-center gap-4">
-            <Slider
-              id="sceneCount"
-              min={1}
-              max={20}
-              step={1}
-              value={[sceneCount]}
-              onValueChange={(value) => setSceneCount(value[0])}
-              className="flex-grow"
-            />
-            <span className="w-8 text-center">{sceneCount}</span>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="stylePreference">スタイル指定</Label>
-          <Input
-            id="stylePreference"
-            placeholder="例: 日本画風、水彩画風、アニメ風"
-            value={stylePreference}
-            onChange={(e) => setStylePreference(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="prompt">追加プロンプト</Label>
-          <Textarea
-            id="prompt"
-            placeholder="特別な指示があれば入力してください"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            className="min-h-20"
-          />
-        </div>
-
         <Button type="submit" className="w-full" disabled={isGenerating}>
           {isGenerating ? "生成中..." : "挿絵計画を生成"}
         </Button>
