@@ -92,7 +92,7 @@ export class FilesystemPlanRepository implements PlanRepository {
           charaName: { name: "chara-name", value: $(elem).find("chara-name").text() },
           charaAge: {
             name: "chara-age",
-            value: parseInt($(elem).find("chara-age").text(), 10) || 0,
+            value: $(elem).find("chara-age").text(),
           },
           charaSex: { name: "chara-sex", value: $(elem).find("chara-sex").text() },
           charaAppearance: {

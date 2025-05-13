@@ -52,7 +52,7 @@ export type IllustrationPlanSchema = {
 export type CharacterSchema = {
   name: "chara";
   charaName: { name: "chara-name"; value: string };
-  charaAge: { name: "chara-age"; value: number };
+  charaAge: { name: "chara-age"; value: string };
   charaSex: { name: "chara-sex"; value: string };
   charaAppearance: { name: "chara-appearance"; value: string };
   charaDescription: { name: "chara-description"; value: string };
