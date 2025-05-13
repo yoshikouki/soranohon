@@ -5,11 +5,11 @@ import {
   convertHtmlUrlToFilePath,
   getAozoraBunkoHtmlUrl,
 } from "@/lib/aozorabunko-card-lists/get-aozora-bunko-html-url";
-import { initLogger } from "@/lib/logger";
+import { defaultLogger } from "@/lib/logger";
 import { processHtmlFile } from "./html2mdx";
 
 async function main() {
-  const logger = initLogger();
+  const logger = defaultLogger;
   logger.info("Starting to refresh MDX files for all books in src/books/index.ts...");
   const bookIds = Object.keys(books);
   logger.info(`Found ${bookIds.length} book(s) to process.`);
@@ -37,7 +37,7 @@ async function main() {
 
 if (require.main === module) {
   main().catch((err) => {
-    const logger = initLogger();
+    const logger = defaultLogger;
     const errorMessage = err instanceof Error ? err.message : String(err);
     logger.error(`Critical error in refresh-mdx script: ${errorMessage}`);
     if (err instanceof Error && err.stack) {

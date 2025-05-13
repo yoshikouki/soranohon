@@ -1,7 +1,7 @@
 import * as path from "path";
 import { CsvParser, defaultCsvParser } from "@/lib/csv";
 import { defaultFileSystem, FileSystem } from "@/lib/fs";
-import { initLogger, Logger } from "@/lib/logger";
+import { defaultLogger, Logger } from "@/lib/logger";
 
 // CSVファイルパスの定数
 const CSV_FILE_PATH = path.join(__dirname, "data", "childrens-books-without-copyright.csv");
@@ -25,7 +25,7 @@ export interface AozoraRecord {
 export function loadCsvData(
   fs: FileSystem = defaultFileSystem,
   csvParser: CsvParser = defaultCsvParser,
-  logger: Logger = initLogger(),
+  logger: Logger = defaultLogger,
   csvFilePath: string = CSV_FILE_PATH,
 ): AozoraRecord[] {
   // CSVファイルが存在しない場合は空配列を返す
@@ -78,7 +78,7 @@ export function getAozoraBunkoCardUrl(
   bookId: string,
   fs: FileSystem = defaultFileSystem,
   csvParser: CsvParser = defaultCsvParser,
-  logger: Logger = initLogger(),
+  logger: Logger = defaultLogger,
   csvFilePath: string = CSV_FILE_PATH,
 ): string {
   // bookIdからカード番号部分を抽出（例: "59835_72466" -> "59835"）
