@@ -16,14 +16,15 @@ export interface BookMeta {
 
 export class AozoraBunkoHtml {
   private readonly html: string;
-  // biome-ignore lint/suspicious/noExplicitAny: cheerio.Cheerio<Element> 型が存在しないため回避策として any を使用
-  private readonly mainText: any;
-  private readonly $: cheerio.CheerioAPI;
 
   private constructor(html: string) {
     this.html = html;
-    this.$ = cheerio.load(html);
-    this.mainText = this.extractMainText();
+    // コンストラクタでmain_text要素の存在を確認
+    const $ = cheerio.load(html);
+    const mainText = $(".main_text");
+    if (!mainText.length) {
+      throw new Error("main_text div not found");
+    }
   }
 
   static async read(htmlProvider: () => Promise<string>): Promise<AozoraBunkoHtml> {
@@ -32,13 +33,12 @@ export class AozoraBunkoHtml {
   }
 
   extractBookMeta(htmlPath?: string): BookMeta {
+    const $ = cheerio.load(this.html);
     const id = htmlPath ? path.basename(htmlPath, ".html") : "";
-    const title =
-      this.$("h1.title").text() || this.$('meta[name="DC.Title"]').attr("content") || "";
-    const creator =
-      this.$("h2.author").text() || this.$('meta[name="DC.Creator"]').attr("content") || "";
-    const translator = this.$("h2.translator").text() || undefined;
-    const bibliographyRaw = this.$(".bibliographical_information")
+    const title = $("h1.title").text() || $('meta[name="DC.Title"]').attr("content") || "";
+    const creator = $("h2.author").text() || $('meta[name="DC.Creator"]').attr("content") || "";
+    const translator = $("h2.translator").text() || undefined;
+    const bibliographyRaw = $(".bibliographical_information")
       .text()
       .split(/\r?\n/)
       .map((line) => line.trim())
@@ -130,19 +130,8 @@ export class AozoraBunkoHtml {
     }
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: cheerio.Cheerio<Element> 型が存在しないため回避策として any を使用
-  private extractMainText(): any {
-    const main = this.$(".main_text");
-
-    if (!main.length) {
-      throw new Error("main_text div not found");
-    }
-
-    return main;
-  }
-
   private extractLines(): string[] {
-    const $ = cheerio.load("");
+    const $ = cheerio.load(this.html);
     const lines: string[] = [];
     let prevIsBr = false;
 
@@ -196,11 +185,12 @@ export class AozoraBunkoHtml {
       prevIsBr = false;
     };
 
-    this.mainText.contents().each((_, el) => {
+    const mainText = $(".main_text");
+    mainText.contents().each((_, el) => {
       if (
         el.type === "tag" &&
         el.name === "div" &&
-        this.isJisageOrStyledDiv(this.$(el).toString())
+        this.isJisageOrStyledDiv($(el).toString())
       ) {
         if (lines.length > 0 && lines[lines.length - 1] !== "<br />") {
           lines.push("<br />");
