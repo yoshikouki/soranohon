@@ -142,7 +142,7 @@ export class AozoraBunkoHtml {
         this.isJisageOrStyledDiv($(element).toString())
       ) {
         const children = $(element).contents();
-        children.each((_, child) => {
+        children.each((_, child: AnyNode) => {
           processElement(child);
         });
         return;
@@ -186,7 +186,7 @@ export class AozoraBunkoHtml {
     };
 
     const mainText = $(".main_text");
-    mainText.contents().each((_, el) => {
+    mainText.contents().each((_, el: AnyNode) => {
       if (
         el.type === "tag" &&
         el.name === "div" &&
