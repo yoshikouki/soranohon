@@ -8,7 +8,7 @@ import { getMdxOutputPath } from "@/lib/aozorabunko/path";
 import { RubyTags } from "@/lib/aozorabunko/ruby-tags";
 import { getAozoraBunkoCardUrl } from "@/lib/aozorabunko-card-lists/get-book-card-url";
 import { defaultFileSystem } from "@/lib/fs";
-import { defaultLogger, Logger } from "@/lib/logger";
+import { Logger, logger } from "@/lib/logger";
 
 interface CommandLineOptions {
   inputHtml: string;
@@ -40,14 +40,14 @@ function parseCommandLineArgs(args: string[]): CommandLineOptions {
  */
 function processInputPath(
   input: string,
-  logger: Logger = defaultLogger,
+  customLogger: Logger = logger,
 ): { inputPath: string; sourceType: "file" | "url" } {
   if (!isUrl(input)) {
     return { inputPath: input, sourceType: "file" };
   }
 
   const inputPath = convertUrlToFilePath(input);
-  logger.info(`URL detected. Attempting to read from local path: ${inputPath}`);
+  customLogger.info(`URL detected. Attempting to read from local path: ${inputPath}`);
 
   return { inputPath, sourceType: "url" };
 }
@@ -112,10 +112,10 @@ function generateBookEntry(meta: ReturnType<AozoraBunkoHtml["extractBookMeta"]>)
 export async function processHtmlFile(
   inputHtmlPath: string,
   outputMdxPath?: string,
-  logger: Logger = defaultLogger,
+  customLogger: Logger = logger,
   fileSystem: FileSystem = defaultFileSystem,
 ) {
-  const { inputPath } = processInputPath(inputHtmlPath, logger);
+  const { inputPath } = processInputPath(inputHtmlPath, customLogger);
   const outPath = outputMdxPath || getMdxOutputPath(inputPath);
 
   const aozoraBunkoHtml = await AozoraBunkoHtml.read(async () => {
@@ -127,9 +127,9 @@ export async function processHtmlFile(
   let existingBookContent: BookContent | null = null;
   try {
     existingBookContent = await BookContent.readFile(outPath);
-    logger.info(`Found existing MDX file: ${outPath}`);
+    customLogger.info(`Found existing MDX file: ${outPath}`);
   } catch (_error) {
-    logger.info(`No existing MDX file found at: ${outPath}`);
+    customLogger.info(`No existing MDX file found at: ${outPath}`);
   }
 
   const existingRubyTags = RubyTags.extract(existingBookContent);
@@ -143,10 +143,10 @@ export async function processHtmlFile(
   const mdx = bookContent.toMdx();
 
   fileSystem.writeFileSync(outPath, mdx, "utf-8");
-  logger.info(`Converted: ${inputPath} -> ${outPath}`);
+  customLogger.info(`Converted: ${inputPath} -> ${outPath}`);
 
   const meta = aozoraBunkoHtml.extractBookMeta(inputPath);
-  logger.info(generateBookEntry(meta));
+  customLogger.info(generateBookEntry(meta));
 }
 
 async function main() {

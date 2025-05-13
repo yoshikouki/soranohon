@@ -39,33 +39,4 @@ export const initLogger = (console: Console): Logger => ({
   },
 });
 
-export const defaultLogger = initLogger(console);
-
-export function createCategoryLogger(
-  category: string,
-  baseLogger: Logger = defaultLogger,
-): Logger {
-  return {
-    debug: (message: string, ...args: unknown[]) =>
-      baseLogger.debug(`[${category}] ${message}`, ...args),
-    info: (message: string, ...args: unknown[]) =>
-      baseLogger.info(`[${category}] ${message}`, ...args),
-    warn: (message: string, ...args: unknown[]) =>
-      baseLogger.warn(`[${category}] ${message}`, ...args),
-    error: (message: string, ...args: unknown[]) =>
-      baseLogger.error(`[${category}] ${message}`, ...args),
-    log: (level: LogLevel, message: string, ...args: unknown[]) =>
-      baseLogger.log(level, `[${category}] ${message}`, ...args),
-  };
-}
-
-export const log = {
-  debug: (message: string, ...args: unknown[]) => defaultLogger.debug(message, ...args),
-  info: (message: string, ...args: unknown[]) => defaultLogger.info(message, ...args),
-  warn: (message: string, ...args: unknown[]) => defaultLogger.warn(message, ...args),
-  error: (message: string, ...args: unknown[]) => defaultLogger.error(message, ...args),
-  log: (level: LogLevel, message: string, ...args: unknown[]) =>
-    defaultLogger.log(level, message, ...args),
-
-  category: (category: string) => createCategoryLogger(category),
-};
+export const logger = initLogger(console);

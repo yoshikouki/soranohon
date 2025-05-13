@@ -1,7 +1,7 @@
 import * as path from "path";
 import { CsvParser, defaultCsvParser } from "@/lib/csv";
 import { defaultFileSystem, FileSystem } from "@/lib/fs";
-import { defaultLogger, Logger } from "@/lib/logger";
+import { Logger, logger } from "@/lib/logger";
 
 // CSVファイルパスの定数
 const CSV_FILE_PATH = path.join(__dirname, "data", "childrens-books-without-copyright.csv");
@@ -25,7 +25,7 @@ export interface AozoraRecord {
 export function loadCsvData(
   fs: FileSystem = defaultFileSystem,
   csvParser: CsvParser = defaultCsvParser,
-  logger: Logger = defaultLogger,
+  customLogger: Logger = logger,
   csvFilePath: string = CSV_FILE_PATH,
 ): AozoraRecord[] {
   // CSVファイルが存在しない場合は空配列を返す
@@ -50,7 +50,7 @@ export function loadCsvData(
 
     if (validRecords.length < records.length) {
       const invalidCount = records.length - validRecords.length;
-      logger.error(
+      customLogger.error(
         `無効なレコードが${invalidCount}件除外されました（作品IDフィールドがありません）`,
       );
     }
@@ -59,7 +59,7 @@ export function loadCsvData(
   } catch (error) {
     // CSVパース時のエラーをログに記録し、安全に処理
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error(`CSVデータの読み込みエラー: ${errorMessage}`);
+    customLogger.error(`CSVデータの読み込みエラー: ${errorMessage}`);
     return [];
   }
 }
@@ -78,7 +78,7 @@ export function getAozoraBunkoCardUrl(
   bookId: string,
   fs: FileSystem = defaultFileSystem,
   csvParser: CsvParser = defaultCsvParser,
-  logger: Logger = defaultLogger,
+  customLogger: Logger = logger,
   csvFilePath: string = CSV_FILE_PATH,
 ): string {
   // bookIdからカード番号部分を抽出（例: "59835_72466" -> "59835"）
@@ -89,12 +89,12 @@ export function getAozoraBunkoCardUrl(
   // 有効なカード番号かチェック
   if (!cardNumber) {
     const errorMessage = `不正なbookId形式です: ${bookId}`;
-    logger.error(errorMessage);
+    customLogger.error(errorMessage);
     throw new Error(errorMessage);
   }
 
   // CSVデータをロード
-  const records = loadCsvData(fs, csvParser, logger, csvFilePath);
+  const records = loadCsvData(fs, csvParser, customLogger, csvFilePath);
 
   // 作品IDが一致するレコードを検索
   // CSVでは作品IDが「059521」のように先頭にゼロがついた形式で保存されているため、
@@ -121,6 +121,6 @@ export function getAozoraBunkoCardUrl(
 
   // レコードが見つからない場合はエラーをスロー
   const errorMessage = `bookId が図書リストから見つかりません: ${bookId}`;
-  logger.error(errorMessage);
+  customLogger.error(errorMessage);
   throw new Error(errorMessage);
 }

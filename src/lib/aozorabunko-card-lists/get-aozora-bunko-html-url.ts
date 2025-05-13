@@ -1,7 +1,7 @@
 import * as path from "path";
 import { CsvParser, defaultCsvParser } from "@/lib/csv";
 import { defaultFileSystem, FileSystem } from "@/lib/fs";
-import { defaultLogger, Logger } from "@/lib/logger";
+import { Logger, logger } from "@/lib/logger";
 import { loadCsvData } from "./get-book-card-url";
 
 // CSVファイルパスの定数
@@ -21,7 +21,7 @@ export function getAozoraBunkoHtmlUrl(
   bookId: string,
   fs: FileSystem = defaultFileSystem,
   csvParser: CsvParser = defaultCsvParser,
-  logger: Logger = defaultLogger,
+  customLogger: Logger = logger,
   csvFilePath: string = CSV_FILE_PATH,
 ): string {
   // bookIdからカード番号部分を抽出（例: "59835_72466" -> "59835"）
@@ -30,12 +30,12 @@ export function getAozoraBunkoHtmlUrl(
   // 有効なカード番号かチェック
   if (!cardNumber) {
     const errorMessage = `不正なbookId形式です: ${bookId}`;
-    logger.error(errorMessage);
+    customLogger.error(errorMessage);
     throw new Error(errorMessage);
   }
 
   // CSVデータをロード
-  const records = loadCsvData(fs, csvParser, logger, csvFilePath);
+  const records = loadCsvData(fs, csvParser, customLogger, csvFilePath);
 
   // 作品IDが一致するレコードを検索
   // CSVでは作品IDが「059521」のように先頭にゼロがついた形式で保存されているため、
@@ -62,7 +62,7 @@ export function getAozoraBunkoHtmlUrl(
 
   // HTMLファイルのURLが見つからない場合はエラーをスロー
   const errorMessage = `bookId に対応するHTMLファイルURLが見つかりません: ${bookId}`;
-  logger.error(errorMessage);
+  customLogger.error(errorMessage);
   throw new Error(errorMessage);
 }
 
