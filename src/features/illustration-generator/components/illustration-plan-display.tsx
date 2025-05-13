@@ -6,6 +6,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { BookContent } from "@/features/book-content/core";
+import { logger } from "@/lib/logger";
 import { FilesystemPlanRepository } from "../repository/plan-repository";
 import { IllustrationPromptDisplay } from "./illustration-prompt-display";
 import { PlanDisplay } from "./plan-display";
@@ -25,7 +26,7 @@ export async function IllustrationPlanDisplay({
   const plan = await filesystemPlanRepository.getPlan(book.id);
   const bookContent = await BookContent.readFileByBookId(book.id);
   if (!bookContent) {
-    console.error(`MDX content not found for book ID: ${book.id}`);
+    logger.error(`MDX content not found for book ID: ${book.id}`);
     return <>Not Found</>;
   }
 
