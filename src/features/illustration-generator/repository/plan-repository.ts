@@ -8,6 +8,7 @@ import {
   IllustrationPlan,
   IllustrationPlanSchema,
   KeyVisualCharaSchema,
+  KeyVisualSchema,
   SceneCharaSchema,
   SceneSchema,
 } from "../types";
@@ -89,7 +90,10 @@ export class FilesystemPlanRepository implements PlanRepository {
         characters.push({
           name: "chara",
           charaName: { name: "chara-name", value: $(elem).find("chara-name").text() },
-          charaAge: { name: "chara-age", value: $(elem).find("chara-age").text() },
+          charaAge: {
+            name: "chara-age",
+            value: parseInt($(elem).find("chara-age").text(), 10) || 0,
+          },
           charaSex: { name: "chara-sex", value: $(elem).find("chara-sex").text() },
           charaAppearance: {
             name: "chara-appearance",
@@ -181,7 +185,7 @@ export class FilesystemPlanRepository implements PlanRepository {
         });
       });
 
-      const keyVisual = {
+      const keyVisual: KeyVisualSchema = {
         name: "key-visual",
         keyVisualTitle: { name: "key-visual-title", value: $("key-visual-title").text() },
         keyVisualLocation: {

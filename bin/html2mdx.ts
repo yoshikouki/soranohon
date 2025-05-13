@@ -7,7 +7,7 @@ import { detectAndDecode } from "@/lib/aozorabunko/encoding";
 import { getMdxOutputPath } from "@/lib/aozorabunko/path";
 import { RubyTags } from "@/lib/aozorabunko/ruby-tags";
 import { getAozoraBunkoCardUrl } from "@/lib/aozorabunko-card-lists/get-book-card-url";
-import { defaultFileSystem } from "@/lib/fs";
+import { defaultFileSystem, FileSystem } from "@/lib/fs";
 import { Logger, logger } from "@/lib/logger";
 
 interface CommandLineOptions {
