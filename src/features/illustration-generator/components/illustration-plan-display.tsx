@@ -47,13 +47,11 @@ export async function IllustrationPlanDisplay({
 
       {plan ? (
         <div className="space-y-8">
-          {plan.plan && <PlanDisplay plan={plan.plan} />}
-
           <Accordion type="single" collapsible>
             <AccordionItem value="raw-plan" className="border-0">
               <AccordionTrigger className="rounded-md px-4 py-2 text-primary hover:bg-muted/20">
                 <div className="flex w-full items-center justify-between">
-                  <span className="font-medium text-sm">XML計画データ</span>
+                  <span className="font-medium text-sm">計画生データ</span>
                   <span className="pr-4 text-muted-foreground text-xs">
                     {plan.rawPlan.length.toLocaleString()}文字
                   </span>
@@ -68,6 +66,8 @@ export async function IllustrationPlanDisplay({
               </AccordionContent>
             </AccordionItem>
           </Accordion>
+
+          {plan.plan && <PlanDisplay plan={plan.plan} />}
         </div>
       ) : (
         <div className="space-y-4 rounded-lg bg-muted/30 p-6">
