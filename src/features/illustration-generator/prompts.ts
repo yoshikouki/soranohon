@@ -52,7 +52,7 @@ export const prompts = {
 <character-count>{登場人物の数}</character-count>
 <scenes>
 <scene>
-<scene-no>{n}</scene-no>
+<scene-index>{n}</scene-index>
 <scene-title>{短いタイトル}</scene-title>
 <scene-location>{場所}</scene-location>
 <scene-time>{時間}</scene-time>
