@@ -1,10 +1,10 @@
+import { PencilIcon } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { books } from "@/books";
 import { BookContent } from "@/features/book-content/core";
 import { IllustrationPlanDisplay } from "@/features/illustration-generator/components/illustration-plan-display";
-import { MdxEditor } from "@/features/illustration-generator/components/mdx-editor";
 import { paths } from "@/lib/paths";
 
 export async function generateMetadata({
@@ -49,7 +49,10 @@ export default async function BookEditPage({
   return (
     <main className="flex h-full flex-col p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="font-bold text-3xl">{title}の編集</h1>
+        <h1 className="font-bold text-3xl">
+          <PencilIcon className="mr-2 inline-block" />
+          {title}
+        </h1>
         <Link
           href={paths.books.detail(bookId)}
           className="rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/80"
@@ -60,14 +63,11 @@ export default async function BookEditPage({
 
       <div className="grid grid-cols-1 gap-6">
         <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-          <h2 className="mb-4 font-semibold text-xl">挿絵計画の作成</h2>
-          <IllustrationPlanDisplay book={book} />
-        </div>
-
-        <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-          <MdxEditor
-            contents={bookContent.toMdx()}
-            contentsWithoutTags={bookContent.toStringWithoutTags()}
+          <h2 className="mb-4 font-semibold text-xl">挿絵計画</h2>
+          <IllustrationPlanDisplay
+            book={book}
+            contentsLength={bookContent.toMdx().length}
+            contentsWithoutTagsLength={bookContent.toStringWithoutTags().length}
           />
         </div>
       </div>
