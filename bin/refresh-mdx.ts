@@ -39,7 +39,7 @@ if (require.main === module) {
     const errorMessage = err instanceof Error ? err.message : String(err);
     logger.error(`Critical error in refresh-mdx script: ${errorMessage}`);
     if (err instanceof Error && err.stack) {
-      console.error(err.stack);
+      logger.error(err.stack);
     }
     process.exit(1);
   });

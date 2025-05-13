@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { BookContent } from "@/features/book-content/core";
+import { logger } from "@/lib/logger";
 import { AozoraBunkoHtml } from "./aozora-bunko-html";
 import { RubyTags } from "./ruby-tags";
 
@@ -197,8 +198,8 @@ describe("AozoraBunkoHtml", () => {
       const generatedMdx = newBookContent.toMdx();
 
       // 修正後の動作確認：生成されたMDXにルビタグが含まれている
-      console.log("Original MDX: " + existingMdx);
-      console.log("Generated MDX: " + generatedMdx);
+      logger.debug("Original MDX: " + existingMdx);
+      logger.debug("Generated MDX: " + generatedMdx);
 
       // この時点で既にルビが保持されていることを確認（修正後）
       expect(generatedMdx).toContain("<ruby>冬<rt>ふゆ</rt></ruby>");
@@ -229,7 +230,7 @@ describe("AozoraBunkoHtml", () => {
 
       // 段落の整形方法を確認
       const mdx = bookContent.toMdx();
-      console.log("Generated paragraph MDX:", mdx);
+      logger.debug("Generated paragraph MDX:", mdx);
 
       // 期待される動作: 複数行のテキストが1つの段落として整形される
       // 改行があっても改行文字を保持し、段落は1つとして扱われる
@@ -276,8 +277,8 @@ describe("AozoraBunkoHtml", () => {
 
       // MDXに変換（現在の実装では画像タグは失われるはず）
       const generatedMdx = newBookContent.toMdx();
-      console.log("Original MDX with image:", existingMdx);
-      console.log("Generated MDX:", generatedMdx);
+      logger.debug("Original MDX with image:", existingMdx);
+      logger.debug("Generated MDX:", generatedMdx);
 
       // 期待される動作: 画像タグが保持される
       // 現状の問題: 画像タグが失われる

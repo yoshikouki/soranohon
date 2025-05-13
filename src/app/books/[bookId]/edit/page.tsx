@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { books } from "@/books";
 import { BookContent } from "@/features/book-content/core";
 import { IllustrationPlanDisplay } from "@/features/illustration-generator/components/illustration-plan-display";
+import { logger } from "@/lib/logger";
 import { paths } from "@/lib/paths";
 
 export async function generateMetadata({
@@ -29,18 +30,18 @@ export default async function BookEditPage({
   const { bookId } = await params;
   const book = books[bookId as keyof typeof books];
   if (!book?.mdx) {
-    console.error(`Invalid book data for ID: ${bookId}`);
+    logger.error(`Invalid book data for ID: ${bookId}`);
     return notFound();
   }
   const isDevelopment = process.env.NODE_ENV === "development";
   if (!isDevelopment) {
-    console.error("Development mode only");
+    logger.error("Development mode only");
     notFound();
   }
 
   const bookContent = await BookContent.readFileByBookId(bookId);
   if (!bookContent) {
-    console.error(`MDX content not found for book ID: ${bookId}`);
+    logger.error(`MDX content not found for book ID: ${bookId}`);
     notFound();
   }
 

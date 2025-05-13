@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { logger } from "@/lib/logger";
 import { paths } from "@/lib/paths";
 import { prompts } from "../prompts";
 import { BookForIllustrationPlan } from "../types";
@@ -20,12 +21,12 @@ export function IllustrationPromptDisplay(book: IllustrationPromptDisplayProps) 
     id: `illustration-plan-${book.bookId}`,
     initialInput: promptText,
     onError: (error) => {
-      console.error("挿絵計画の生成に失敗しました", error);
+      logger.error("挿絵計画の生成に失敗しました", error);
       toast.error("挿絵計画の生成に失敗しました");
     },
     onFinish: (result) => {
       toast.success("挿絵計画を生成しました");
-      console.log("Illustration Plan Result", result);
+      logger.info("Illustration Plan Result", result);
     },
   });
   const isLoading = status === "submitted" || status === "streaming";
@@ -35,7 +36,7 @@ export function IllustrationPromptDisplay(book: IllustrationPromptDisplayProps) 
       await navigator.clipboard.writeText(promptText);
       toast.success("クリップボードにコピーしました");
     } catch (err) {
-      console.error("クリップボードへのコピーに失敗しました", err);
+      logger.error("クリップボードへのコピーに失敗しました", err);
     }
   };
 

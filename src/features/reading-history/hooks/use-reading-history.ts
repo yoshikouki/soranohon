@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 import {
   addReadingHistoryEntry,
   clearReadingHistory,
@@ -24,7 +25,7 @@ export function useReadingHistory() {
   // エラーハンドリング共通処理
   const handleError = useCallback((err: unknown, message: string) => {
     const errorObj = err instanceof Error ? err : new Error(String(err));
-    console.error(message, errorObj);
+    logger.error(message, errorObj);
     setError(errorObj);
     toast.error(message);
     return errorObj;
@@ -90,7 +91,7 @@ export function useReadingHistory() {
         fetchHistory();
         return true;
       } catch (err) {
-        console.error("Failed to record book access:", err);
+        logger.error("Failed to record book access:", err);
         return false;
       }
     },

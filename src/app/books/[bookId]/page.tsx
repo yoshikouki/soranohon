@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { books } from "@/books";
 import { Paragraph } from "@/features/book-viewer/paragraph";
 import { StickyImage } from "@/features/book-viewer/sticky-image";
+import { logger } from "@/lib/logger";
 import { paths } from "@/lib/paths";
 import { cn } from "@/lib/utils";
 import { BookVisitRecorder } from "./book-visit-recorder";
@@ -34,12 +35,12 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
   const { bookId } = await params;
   const book = books[bookId as keyof typeof books];
   if (!book?.mdx) {
-    console.error(`Invalid book data for ID: ${bookId}`);
+    logger.error(`Invalid book data for ID: ${bookId}`);
     return notFound();
   }
   const mod = await book.mdx();
   if (!isMdxModule(mod)) {
-    console.error(`Invalid MDX module for book: ${bookId}`);
+    logger.error(`Invalid MDX module for book: ${bookId}`);
     return notFound();
   }
 

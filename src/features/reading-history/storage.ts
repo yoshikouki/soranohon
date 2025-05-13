@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import { logger } from "@/lib/logger";
 import { readingHistoryEntrySchema, readingHistorySchema } from "./schema";
 import { ReadingHistoryEntry, ReadingSession } from "./types";
 
@@ -19,7 +20,7 @@ function isStorageAvailable(): boolean {
     localStorage.removeItem(testKey);
     return true;
   } catch (error) {
-    console.error("LocalStorage is not available:", error);
+    logger.error("LocalStorage is not available:", error);
     return false;
   }
 }
@@ -30,7 +31,7 @@ function isStorageAvailable(): boolean {
  */
 export function getReadingHistory(): ReadingHistoryEntry[] {
   if (!isStorageAvailable()) {
-    console.warn("LocalStorage is not available, returning empty history");
+    logger.warn("LocalStorage is not available, returning empty history");
     return [];
   }
 
@@ -60,7 +61,7 @@ export function getReadingHistory(): ReadingHistoryEntry[] {
 
       // 配列でない場合は初期化
       if (!Array.isArray(parsedData)) {
-        console.warn("Invalid reading history format, resetting");
+        logger.warn("Invalid reading history format, resetting");
         localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
         return [];
       }
@@ -117,7 +118,7 @@ export function getReadingHistory(): ReadingHistoryEntry[] {
               if (validationResult.success) {
                 return validationResult.data;
               }
-              console.warn("Migrated entry validation failed:", validationResult.error);
+              logger.warn("Migrated entry validation failed:", validationResult.error);
               return null;
             }
 
@@ -126,10 +127,10 @@ export function getReadingHistory(): ReadingHistoryEntry[] {
             if (validationResult.success) {
               return validationResult.data;
             }
-            console.warn("Existing entry validation failed:", validationResult.error);
+            logger.warn("Existing entry validation failed:", validationResult.error);
             return null;
           } catch (error) {
-            console.warn("Entry processing failed:", error);
+            logger.warn("Entry processing failed:", error);
             return null;
           }
         })
@@ -137,7 +138,7 @@ export function getReadingHistory(): ReadingHistoryEntry[] {
 
       // 形式不正なエントリーがあった場合は修正したデータで上書き
       if (migratedEntries.length !== parsedData.length) {
-        console.warn("Some reading history entries are invalid, filtering them out");
+        logger.warn("Some reading history entries are invalid, filtering them out");
         localStorage.setItem(STORAGE_KEY, JSON.stringify(migratedEntries));
       }
 
@@ -148,13 +149,13 @@ export function getReadingHistory(): ReadingHistoryEntry[] {
         return Number.isNaN(dateA) || Number.isNaN(dateB) ? 0 : dateB - dateA;
       });
     } catch (parseError) {
-      console.error("Failed to parse reading history:", parseError);
+      logger.error("Failed to parse reading history:", parseError);
       // パースエラーの場合はデータを初期化
       localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
       return [];
     }
   } catch (error) {
-    console.error("Failed to get reading history from localStorage:", error);
+    logger.error("Failed to get reading history from localStorage:", error);
     return [];
   }
 }
@@ -173,7 +174,7 @@ export function addReadingHistoryEntry(
   progress?: number,
 ): void {
   if (!isStorageAvailable()) {
-    console.warn("LocalStorage is not available, skipping add operation");
+    logger.warn("LocalStorage is not available, skipping add operation");
     return;
   }
 
@@ -215,7 +216,7 @@ export function addReadingHistoryEntry(
     // エントリーのバリデーション
     const validationResult = readingHistoryEntrySchema.safeParse(newEntry);
     if (!validationResult.success) {
-      console.error("Entry validation failed:", validationResult.error);
+      logger.error("Entry validation failed:", validationResult.error);
       throw new Error("入力データが不正です");
     }
 
@@ -228,13 +229,13 @@ export function addReadingHistoryEntry(
     // エントリー配列全体の検証
     const entriesValidation = readingHistorySchema.safeParse(newEntries);
     if (!entriesValidation.success) {
-      console.error("Entries validation failed:", entriesValidation.error);
+      logger.error("Entries validation failed:", entriesValidation.error);
       throw new Error("履歴データの更新に失敗しました");
     }
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entriesValidation.data));
   } catch (error) {
-    console.error("Failed to add reading history to localStorage:", error);
+    logger.error("Failed to add reading history to localStorage:", error);
     throw new Error(
       `読書履歴の追加に失敗しました: ${error instanceof Error ? error.message : String(error)}`,
     );
@@ -247,7 +248,7 @@ export function addReadingHistoryEntry(
  */
 export function removeReadingHistoryEntry(bookId: string): void {
   if (!isStorageAvailable()) {
-    console.warn("LocalStorage is not available, skipping remove operation");
+    logger.warn("LocalStorage is not available, skipping remove operation");
     return;
   }
 
@@ -258,13 +259,13 @@ export function removeReadingHistoryEntry(bookId: string): void {
     // エントリー配列全体の検証
     const entriesValidation = readingHistorySchema.safeParse(filteredEntries);
     if (!entriesValidation.success) {
-      console.error("Entries validation failed:", entriesValidation.error);
+      logger.error("Entries validation failed:", entriesValidation.error);
       throw new Error("履歴データの更新に失敗しました");
     }
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entriesValidation.data));
   } catch (error) {
-    console.error("Failed to remove reading history from localStorage:", error);
+    logger.error("Failed to remove reading history from localStorage:", error);
     throw new Error(
       `読書履歴の削除に失敗しました: ${error instanceof Error ? error.message : String(error)}`,
     );
@@ -276,7 +277,7 @@ export function removeReadingHistoryEntry(bookId: string): void {
  */
 export function clearReadingHistory(): void {
   if (!isStorageAvailable()) {
-    console.warn("LocalStorage is not available, skipping clear operation");
+    logger.warn("LocalStorage is not available, skipping clear operation");
     return;
   }
 
@@ -285,7 +286,7 @@ export function clearReadingHistory(): void {
     // 空の配列で初期化
     localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
   } catch (error) {
-    console.error("Failed to clear reading history from localStorage:", error);
+    logger.error("Failed to clear reading history from localStorage:", error);
     throw new Error(
       `読書履歴のクリアに失敗しました: ${error instanceof Error ? error.message : String(error)}`,
     );
@@ -304,7 +305,7 @@ export function updateReadingSession(
   updates: Partial<Omit<ReadingSession, "sessionId" | "startedAt">>,
 ): boolean {
   if (!isStorageAvailable()) {
-    console.warn("LocalStorage is not available, skipping session update");
+    logger.warn("LocalStorage is not available, skipping session update");
     return false;
   }
 
@@ -313,14 +314,14 @@ export function updateReadingSession(
     const bookEntry = entries.find((e) => e.bookId === bookId);
 
     if (!bookEntry) {
-      console.warn(`Book with ID ${bookId} not found in reading history`);
+      logger.warn(`Book with ID ${bookId} not found in reading history`);
       return false;
     }
 
     // セッションを見つける
     const sessionIndex = bookEntry.sessions.findIndex((s) => s.sessionId === sessionId);
     if (sessionIndex === -1) {
-      console.warn(`Session with ID ${sessionId} not found for book ${bookId}`);
+      logger.warn(`Session with ID ${sessionId} not found for book ${bookId}`);
       return false;
     }
 
@@ -340,7 +341,7 @@ export function updateReadingSession(
       readingHistoryEntrySchema.shape.sessions.element.safeParse(updatedSession);
 
     if (!sessionValidation.success) {
-      console.error("Session validation failed:", sessionValidation.error);
+      logger.error("Session validation failed:", sessionValidation.error);
       return false;
     }
 
@@ -361,7 +362,7 @@ export function updateReadingSession(
     // エントリーのバリデーション
     const entryValidation = readingHistoryEntrySchema.safeParse(updatedEntry);
     if (!entryValidation.success) {
-      console.error("Entry validation failed:", entryValidation.error);
+      logger.error("Entry validation failed:", entryValidation.error);
       return false;
     }
 
@@ -371,7 +372,7 @@ export function updateReadingSession(
     // エントリー配列全体の検証
     const entriesValidation = readingHistorySchema.safeParse(updatedEntries);
     if (!entriesValidation.success) {
-      console.error("Entries validation failed:", entriesValidation.error);
+      logger.error("Entries validation failed:", entriesValidation.error);
       return false;
     }
 
@@ -379,7 +380,7 @@ export function updateReadingSession(
 
     return true;
   } catch (error) {
-    console.error("Failed to update reading session:", error);
+    logger.error("Failed to update reading session:", error);
     return false;
   }
 }
@@ -391,7 +392,7 @@ export function updateReadingSession(
  */
 export function removeReadingSession(bookId: string, sessionId: string): boolean {
   if (!isStorageAvailable()) {
-    console.warn("LocalStorage is not available, skipping session removal");
+    logger.warn("LocalStorage is not available, skipping session removal");
     return false;
   }
 
@@ -400,7 +401,7 @@ export function removeReadingSession(bookId: string, sessionId: string): boolean
     const bookEntry = entries.find((e) => e.bookId === bookId);
 
     if (!bookEntry) {
-      console.warn(`Book with ID ${bookId} not found in reading history`);
+      logger.warn(`Book with ID ${bookId} not found in reading history`);
       return false;
     }
 
@@ -415,7 +416,7 @@ export function removeReadingSession(bookId: string, sessionId: string): boolean
 
     // セッションが見つからない場合
     if (filteredSessions.length === bookEntry.sessions.length) {
-      console.warn(`Session with ID ${sessionId} not found for book ${bookId}`);
+      logger.warn(`Session with ID ${sessionId} not found for book ${bookId}`);
       return false;
     }
 
@@ -430,7 +431,7 @@ export function removeReadingSession(bookId: string, sessionId: string): boolean
     // エントリーのバリデーション
     const entryValidation = readingHistoryEntrySchema.safeParse(updatedEntry);
     if (!entryValidation.success) {
-      console.error("Entry validation failed:", entryValidation.error);
+      logger.error("Entry validation failed:", entryValidation.error);
       return false;
     }
 
@@ -440,7 +441,7 @@ export function removeReadingSession(bookId: string, sessionId: string): boolean
     // エントリー配列全体の検証
     const entriesValidation = readingHistorySchema.safeParse(updatedEntries);
     if (!entriesValidation.success) {
-      console.error("Entries validation failed:", entriesValidation.error);
+      logger.error("Entries validation failed:", entriesValidation.error);
       return false;
     }
 
@@ -448,7 +449,7 @@ export function removeReadingSession(bookId: string, sessionId: string): boolean
 
     return true;
   } catch (error) {
-    console.error("Failed to remove reading session:", error);
+    logger.error("Failed to remove reading session:", error);
     return false;
   }
 }
@@ -465,7 +466,7 @@ export function getCurrentDate(customDate?: Date): Date {
   const maxValidYear = currentYear + 1; // 1年先までは許容
 
   if (now.getFullYear() > maxValidYear) {
-    console.warn(`日付が不正です: ${now.toISOString()}, 年を${currentYear}に修正します`);
+    logger.warn(`日付が不正です: ${now.toISOString()}, 年を${currentYear}に修正します`);
     now.setFullYear(currentYear);
   }
 

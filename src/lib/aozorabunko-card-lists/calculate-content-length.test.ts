@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { logger } from "../logger";
 import { getContentLength } from "./calculate-content-length";
 
 // readFileSyncAsUtf8のモック関数
@@ -44,8 +45,8 @@ describe("getContentLength", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockReadFileSyncAsUtf8.mockClear();
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(logger, "warn").mockImplementation(() => {});
+    vi.spyOn(logger, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -68,7 +69,7 @@ describe("getContentLength", () => {
     const length = getContentLength("/path/to/no-main-text.html", mockReadFileSyncAsUtf8);
 
     expect(length).toBe(0);
-    expect(console.warn).toHaveBeenCalledWith(
+    expect(logger.warn).toHaveBeenCalledWith(
       expect.stringContaining("本文要素 (.main_text) が見つかりません"),
     );
     expect(mockReadFileSyncAsUtf8).toHaveBeenCalledWith("/path/to/no-main-text.html");
@@ -82,7 +83,7 @@ describe("getContentLength", () => {
     const length = getContentLength("/path/to/non-existent-file.html", mockReadFileSyncAsUtf8);
 
     expect(length).toBe(0);
-    expect(console.error).toHaveBeenCalledWith(
+    expect(logger.error).toHaveBeenCalledWith(
       expect.stringContaining("文字数計算中にエラーが発生しました"),
       expect.anything(),
     );
@@ -98,7 +99,7 @@ describe("getContentLength", () => {
     const length = getContentLength("/path/to/empty.html", mockReadFileSyncAsUtf8);
 
     expect(length).toBe(0);
-    expect(console.error).toHaveBeenCalledWith(
+    expect(logger.error).toHaveBeenCalledWith(
       expect.stringContaining("文字数計算中にエラーが発生しました"),
       expect.anything(),
     );

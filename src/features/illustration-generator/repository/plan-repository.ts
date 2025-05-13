@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio";
 import { filePaths } from "@/lib/file-paths";
 import { defaultFileSystem, FileSystem } from "@/lib/fs";
+import { logger } from "@/lib/logger";
 import { regex } from "@/lib/regex";
 import {
   CharacterSchema,
@@ -51,7 +52,7 @@ export class FilesystemPlanRepository implements PlanRepository {
         plan: this.parseIllustrationPlanXML(planContent),
       };
     } catch (error) {
-      console.error(`getPlan error: ${error}`);
+      logger.error(`getPlan error: ${error}`);
       return null;
     }
   }
@@ -59,9 +60,7 @@ export class FilesystemPlanRepository implements PlanRepository {
   private extractIllustrationPlanXml(rawPlan: string): string {
     const illustrationPlanXml = rawPlan.match(regex.illustrationPlan);
     if (!illustrationPlanXml) {
-      console.error(
-        `Invalid plan format: <plan>...</plan> not found: ${rawPlan.slice(0, 100)}`,
-      );
+      logger.error(`Invalid plan format: <plan>...</plan> not found: ${rawPlan.slice(0, 100)}`);
     }
     return illustrationPlanXml?.[0] || rawPlan;
   }
@@ -69,7 +68,7 @@ export class FilesystemPlanRepository implements PlanRepository {
   private parseIllustrationPlanXML(mdContent: string): IllustrationPlanSchema | null {
     const planMatch = mdContent.match(regex.illustrationPlan);
     if (!planMatch) {
-      console.error("Plan content not found in the file");
+      logger.error("Plan content not found in the file");
       return null;
     }
 
@@ -216,7 +215,7 @@ export class FilesystemPlanRepository implements PlanRepository {
         },
       };
     } catch (error) {
-      console.error(`解析エラー: ${error}`);
+      logger.error(`解析エラー: ${error}`);
       return null;
     }
   }

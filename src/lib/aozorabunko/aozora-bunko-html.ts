@@ -3,6 +3,7 @@ import type { AnyNode, Element } from "domhandler";
 import * as path from "path";
 import { BookContent } from "@/features/book-content/core";
 import { defaultFileSystem } from "@/lib/fs";
+import { logger } from "@/lib/logger";
 import { RubyTags } from "./ruby-tags";
 
 export interface BookMeta {
@@ -86,7 +87,7 @@ export class AozoraBunkoHtml {
             }
           } catch (e) {
             // ファイルが存在しないか読み込みエラー（新規の場合）
-            console.error(`Failed to read original MDX file: ${originalMdxPath}`, e);
+            logger.error(`Failed to read original MDX file: ${originalMdxPath}`, e);
           }
         }
 

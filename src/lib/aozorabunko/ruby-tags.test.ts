@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BookContent } from "@/features/book-content/core";
+import { logger } from "@/lib/logger";
 import { RubyTags } from "./ruby-tags";
 
 describe("RubyTags", () => {
@@ -338,7 +339,7 @@ describe("RubyTags", () => {
 
       // rubyMapの内容を確認（状態確認）
       const rubyMap = existingRubyTags.getRubyMap();
-      console.log("RubyMap entries:", Array.from(rubyMap.entries()));
+      logger.debug("RubyMap entries:", Array.from(rubyMap.entries()));
 
       // 新規HTML読み込みシミュレーション (HTML parsing -> BookContent)
       const newBookContent = new BookContent();
@@ -349,9 +350,9 @@ describe("RubyTags", () => {
       const result = existingRubyTags.addRubyTagsWithPreservation(convertedMdx);
 
       // 比較
-      console.log("Original MDX: " + existingMdx);
-      console.log("HTML->MDX   : " + convertedMdx);
-      console.log("Final MDX   : " + result);
+      logger.debug("Original MDX: " + existingMdx);
+      logger.debug("HTML->MDX   : " + convertedMdx);
+      logger.debug("Final MDX   : " + result);
 
       // 単一漢字「冬」「雪」「降」のそれぞれにルビが適用されているか
       expect(result).toContain("<ruby>冬<rt>ふゆ</rt></ruby>");

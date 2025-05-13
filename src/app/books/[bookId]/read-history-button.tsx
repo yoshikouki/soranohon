@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useReadingHistory } from "@/features/reading-history/hooks/use-reading-history";
+import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 
 type ReadHistoryButtonProps = {
@@ -56,7 +57,7 @@ export function ReadHistoryButton({
         toast.success(message);
       }
     } catch (error) {
-      console.error("Failed to add to reading history:", error);
+      logger.error("Failed to add to reading history:", error);
       toast.error("読書履歴への追加に失敗しました");
     } finally {
       setIsLoading(false);

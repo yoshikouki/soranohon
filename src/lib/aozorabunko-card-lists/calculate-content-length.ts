@@ -4,6 +4,7 @@ import { stringify } from "csv-stringify/sync";
 import { readFileSync, writeFileSync } from "fs";
 import * as path from "path";
 import { decode } from "../aozorabunko/encoding";
+import { logger } from "../logger";
 import { regex } from "../regex";
 
 // パス設定
@@ -43,7 +44,7 @@ export function getContentLength(
     const mainTextElement = $(".main_text");
 
     if (mainTextElement.length === 0) {
-      console.warn(`本文要素 (.main_text) が見つかりません: ${htmlPath}`);
+      logger.warn(`本文要素 (.main_text) が見つかりません: ${htmlPath}`);
       return 0;
     }
 
@@ -55,7 +56,7 @@ export function getContentLength(
     const cleanedContent = contentWithoutTags.replace(/\s+/g, "");
     return cleanedContent.length;
   } catch (error) {
-    console.error(`文字数計算中にエラーが発生しました: ${htmlPath}`, error);
+    logger.error(`文字数計算中にエラーが発生しました: ${htmlPath}`, error);
     return 0;
   }
 }
@@ -75,7 +76,7 @@ function getLocalPathFromUrl(url: string): string {
  * CSVファイルを処理して文字数を追加する
  */
 export async function processCSV(): Promise<void> {
-  console.log(`CSVファイル ${csvPath} を処理します...`);
+  logger.info(`CSVファイル ${csvPath} を処理します...`);
 
   // CSVファイルを読み込む
   const csvContent = readFileSync(csvPath, "utf-8");
@@ -84,18 +85,18 @@ export async function processCSV(): Promise<void> {
     skip_empty_lines: true,
   }) as AozoraRecord[];
 
-  console.log(`CSVデータを読み込みました。レコード数: ${records.length}`);
+  logger.info(`CSVデータを読み込みました。レコード数: ${records.length}`);
 
   // 各レコードに文字数を追加
   const recordsWithLength = records.map((record: AozoraRecord, index: number) => {
     const htmlUrl = record["XHTML/HTMLファイルURL"];
     if (!htmlUrl) {
-      console.warn(`レコード ${index + 1}: HTMLファイルURLがありません`);
+      logger.warn(`レコード ${index + 1}: HTMLファイルURLがありません`);
       return { ...record, コンテンツ文字数: "0" };
     }
 
     const localPath = getLocalPathFromUrl(htmlUrl);
-    console.log(`処理中 [${index + 1}/${records.length}]: ${record.作品名} (${localPath})`);
+    logger.info(`処理中 [${index + 1}/${records.length}]: ${record.作品名} (${localPath})`);
 
     const contentLength = getContentLength(localPath);
     return { ...record, コンテンツ文字数: contentLength.toString() };
@@ -105,7 +106,7 @@ export async function processCSV(): Promise<void> {
   const output = stringify(recordsWithLength, { header: true });
   writeFileSync(outputPath, output);
 
-  console.log(`文字数データを追加したCSVを ${outputPath} に保存しました。`);
+  logger.info(`文字数データを追加したCSVを ${outputPath} に保存しました。`);
 }
 
 const readFileSyncAsUtf8 = (path: string) => {

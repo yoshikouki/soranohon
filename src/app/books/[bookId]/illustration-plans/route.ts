@@ -4,6 +4,7 @@ import { books } from "@/books";
 import { BookContent } from "@/features/book-content/core";
 import { prompts } from "@/features/illustration-generator/prompts";
 import { FilesystemPlanRepository } from "@/features/illustration-generator/repository/plan-repository";
+import { logger } from "@/lib/logger";
 
 const isDevEnvironment = () => {
   return process.env.NODE_ENV === "development";
@@ -43,14 +44,14 @@ export async function POST(
       model: usingModel.model,
       prompt: illustrationPlanPrompt,
       onFinish: async (result) => {
-        console.log(
+        logger.info(
           `Model Usage: Generate Illustration Plan: ${result.usage} (${usingModel.name})`,
         );
         const planRepository = new FilesystemPlanRepository();
         await planRepository.savePlan(bookId, result.text);
       },
       onError: (error) => {
-        console.error("挿絵計画生成エラー:", error);
+        logger.error("挿絵計画生成エラー:", error);
       },
     });
 
@@ -59,7 +60,7 @@ export async function POST(
       sendReasoning: true,
     });
   } catch (error) {
-    console.error("挿絵計画生成エラー:", error);
+    logger.error("挿絵計画生成エラー:", error);
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

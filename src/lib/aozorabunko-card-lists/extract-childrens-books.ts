@@ -2,6 +2,7 @@ import { parse } from "csv-parse/sync";
 import { stringify } from "csv-stringify/sync";
 import { writeFileSync } from "fs";
 import * as unzipper from "unzipper";
+import { logger } from "../logger";
 
 // パス設定
 const zipFilePath = "./src/lib/aozorabunko-card-lists/data/list_person_all_extended_utf8.zip";
@@ -32,7 +33,7 @@ interface AozoraRecord {
  * ZIPアーカイブからCSVデータを直接読み込んで処理する
  */
 export async function processZipFile(): Promise<void> {
-  console.log(`ZIPファイル ${zipFilePath} から直接データを処理します...`);
+  logger.info(`ZIPファイル ${zipFilePath} から直接データを処理します...`);
 
   const directory = await unzipper.Open.file(zipFilePath);
 
@@ -45,7 +46,7 @@ export async function processZipFile(): Promise<void> {
     throw new Error(`ZIPファイル内に ${csvFileName} が見つかりません`);
   }
 
-  console.log(`ZIPファイル内の ${csvEntry.path} を処理します...`);
+  logger.info(`ZIPファイル内の ${csvEntry.path} を処理します...`);
 
   // CSVデータをメモリに読み込む
   const content = await csvEntry.buffer();
@@ -59,19 +60,19 @@ export async function processZipFile(): Promise<void> {
     skip_records_with_error: true,
   }) as AozoraRecord[];
 
-  console.log(`ZIPファイルからCSVデータを読み込みました。レコード数: ${records.length}`);
+  logger.info(`ZIPファイルからCSVデータを読み込みました。レコード数: ${records.length}`);
 
   // 児童書かつ著作権なしのデータをフィルタリング
   const filteredRecords = records.filter((record: AozoraRecord) => {
     return record.分類番号?.startsWith("NDC K") && record.作品著作権フラグ === "なし";
   });
 
-  console.log(`全レコード数: ${records.length}`);
-  console.log(`抽出レコード数: ${filteredRecords.length}`);
+  logger.info(`全レコード数: ${records.length}`);
+  logger.info(`抽出レコード数: ${filteredRecords.length}`);
 
   // 結果をCSV形式で保存
   const output = stringify(filteredRecords, { header: true });
   writeFileSync(outputPath, output);
 
-  console.log(`児童書かつ著作権なしのデータを ${outputPath} に保存しました。`);
+  logger.info(`児童書かつ著作権なしのデータを ${outputPath} に保存しました。`);
 }

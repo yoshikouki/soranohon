@@ -4,6 +4,7 @@
 
 import { constants } from "fs";
 import { access, readFile } from "fs/promises";
+import { logger } from "./logger";
 
 // 既存のルビタグを抽出する正規表現
 // 4つのパターンに対応:
@@ -68,7 +69,7 @@ export async function extractExistingRubyTags(
     }
   }
   if (process.env.NODE_ENV !== "test") {
-    console.log(`Found ${existingRubyTags.size} existing ruby tags`);
+    logger.info(`Found ${existingRubyTags.size} existing ruby tags`);
   }
 
   return { existingMdx, existingRubyTags, fileExists };

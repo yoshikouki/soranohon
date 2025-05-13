@@ -25,7 +25,7 @@ function parseCommandLineArgs(args: string[]): CommandLineOptions {
   const outputMdx = fileArgs[1] || "";
 
   if (!inputHtml) {
-    console.error("Usage: bun run ./bin/html2mdx.ts <input.html> [output.mdx]");
+    logger.error("Usage: bun run ./bin/html2mdx.ts <input.html> [output.mdx]");
     process.exit(1);
   }
 
@@ -156,7 +156,7 @@ async function main() {
 
 if (require.main === module) {
   main().catch((err) => {
-    console.error("Error:", err.message);
+    logger.error(`Error: ${err.message}`);
     process.exit(1);
   });
 }
