@@ -1,7 +1,7 @@
 import * as path from "path";
 import { CsvParser, defaultCsvParser } from "@/lib/csv";
 import { defaultFileSystem, FileSystem } from "@/lib/fs";
-import { defaultLogger, Logger } from "@/lib/logger";
+import { initLogger, Logger } from "@/lib/logger";
 import { loadCsvData } from "./get-book-card-url";
 
 // CSVファイルパスの定数
@@ -21,7 +21,7 @@ export function getAozoraBunkoHtmlUrl(
   bookId: string,
   fs: FileSystem = defaultFileSystem,
   csvParser: CsvParser = defaultCsvParser,
-  logger: Logger = defaultLogger,
+  logger: Logger = initLogger(),
   csvFilePath: string = CSV_FILE_PATH,
 ): string {
   // bookIdからカード番号部分を抽出（例: "59835_72466" -> "59835"）

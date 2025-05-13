@@ -8,7 +8,7 @@ import { getMdxOutputPath } from "@/lib/aozorabunko/path";
 import { RubyTags } from "@/lib/aozorabunko/ruby-tags";
 import { getAozoraBunkoCardUrl } from "@/lib/aozorabunko-card-lists/get-book-card-url";
 import { defaultFileSystem } from "@/lib/fs";
-import { defaultLogger, Logger } from "@/lib/logger";
+import { initLogger, Logger } from "@/lib/logger";
 
 interface CommandLineOptions {
   inputHtml: string;
@@ -40,7 +40,7 @@ function parseCommandLineArgs(args: string[]): CommandLineOptions {
  */
 function processInputPath(
   input: string,
-  logger: Logger = defaultLogger,
+  logger: Logger = initLogger(),
 ): { inputPath: string; sourceType: "file" | "url" } {
   if (!isUrl(input)) {
     return { inputPath: input, sourceType: "file" };
@@ -110,7 +110,7 @@ function generateBookEntry(meta: ReturnType<AozoraBunkoHtml["extractBookMeta"]>)
 }
 
 export async function processHtmlFile(inputHtmlPath: string, outputMdxPath?: string) {
-  const logger = defaultLogger;
+  const logger = initLogger();
   const fileSystem = defaultFileSystem;
 
   const { inputPath } = processInputPath(inputHtmlPath, logger);
