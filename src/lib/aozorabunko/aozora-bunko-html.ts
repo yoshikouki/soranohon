@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import type { AnyNode, Element } from "domhandler";
+import type { AnyNode } from "domhandler";
 import * as path from "path";
 import { BookContent } from "@/features/book-content/core";
 import { defaultFileSystem } from "@/lib/fs";
@@ -16,7 +16,8 @@ export interface BookMeta {
 
 export class AozoraBunkoHtml {
   private readonly html: string;
-  private readonly mainText: cheerio.Cheerio<Element>;
+  // biome-ignore lint/suspicious/noExplicitAny: cheerio.Cheerio<Element> 型が存在しないため回避策として any を使用
+  private readonly mainText: any;
   private readonly $: cheerio.CheerioAPI;
 
   private constructor(html: string) {
@@ -129,7 +130,8 @@ export class AozoraBunkoHtml {
     }
   }
 
-  private extractMainText(): cheerio.Cheerio<Element> {
+  // biome-ignore lint/suspicious/noExplicitAny: cheerio.Cheerio<Element> 型が存在しないため回避策として any を使用
+  private extractMainText(): any {
     const main = this.$(".main_text");
 
     if (!main.length) {
