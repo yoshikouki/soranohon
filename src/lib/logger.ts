@@ -39,4 +39,19 @@ export const initLogger = (console: Console): Logger => ({
   },
 });
 
-export const logger = initLogger(console);
+const initTestLogger = (): Logger => ({
+  debug: () => {},
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+  log: () => {},
+});
+
+const isTestEnvironment = (): boolean => {
+  if (typeof process !== "undefined" && process.env) {
+    return process.env.NODE_ENV === "test" || Boolean(process.env.VITEST);
+  }
+  return false;
+};
+
+export const logger = isTestEnvironment() ? initTestLogger() : initLogger(console);
