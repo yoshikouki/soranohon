@@ -1,7 +1,14 @@
 import { Book } from "@/books";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { BookContent } from "@/features/book-content/core";
 import { FilesystemPlanRepository } from "../repository/plan-repository";
 import { IllustrationPromptDisplay } from "./illustration-prompt-display";
+import { PlanDisplay } from "./plan-display";
 
 interface IllustrationPlanDisplayProps {
   book: Book;
@@ -23,37 +30,58 @@ export async function IllustrationPlanDisplay({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-8">
-        <div>物語の文字数</div>
-        <div>タグ込み: {contentsLength.toLocaleString()}</div>
-        <div>タグなし: {contentsWithoutTagsLength.toLocaleString()}</div>
-      </div>
-      {plan ? (
-        <div className="space-y-2">
-          <div className="flex items-end justify-between gap-8">
-            <h3 className="font-semibold text-lg">現在の挿絵計画</h3>
-            <div className="text-muted-foreground text-sm">
-              {plan.rawPlan.length.toLocaleString()}
-            </div>
+    <div className="space-y-8">
+      <div className="rounded-lg bg-muted/30 p-4">
+        <div className="grid grid-cols-3 text-sm">
+          <div className="font-medium text-primary">物語の文字数</div>
+          <div>
+            <span className="text-muted-foreground text-xs">タグ込み:</span>{" "}
+            <span className="font-medium">{contentsLength.toLocaleString()}</span>
           </div>
-          <div className="rounded-md border border-border bg-muted p-4">
-            <pre className="max-h-96 overflow-x-auto whitespace-pre-wrap text-sm">
-              {plan.rawPlan}
-            </pre>
+          <div>
+            <span className="text-muted-foreground text-xs">タグなし:</span>{" "}
+            <span className="font-medium">{contentsWithoutTagsLength.toLocaleString()}</span>
           </div>
         </div>
+      </div>
+
+      {plan ? (
+        <div className="space-y-8">
+          {plan.plan && <PlanDisplay plan={plan.plan} />}
+
+          <Accordion type="single" collapsible>
+            <AccordionItem value="raw-plan" className="border-0">
+              <AccordionTrigger className="rounded-md px-4 py-2 text-primary hover:bg-muted/20">
+                <div className="flex w-full items-center justify-between">
+                  <span className="font-medium text-sm">XML計画データ</span>
+                  <span className="pr-4 text-muted-foreground text-xs">
+                    {plan.rawPlan.length.toLocaleString()}文字
+                  </span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="rounded-lg bg-muted/30 p-4">
+                  <pre className="max-h-96 overflow-x-auto whitespace-pre-wrap text-muted-foreground text-xs">
+                    {plan.rawPlan}
+                  </pre>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
       ) : (
-        <div className="space-y-2">
-          <h3 className="font-semibold text-lg">挿絵計画</h3>
+        <div className="space-y-4 rounded-lg bg-muted/30 p-6">
+          <h3 className="font-medium text-primary">挿絵計画がありません</h3>
           <p className="text-muted-foreground text-sm">
-            現在、挿絵計画は作成されていません。下のフォームから作成できます。
+            現在、挿絵計画は作成されていません。以下のフォームから作成できます。
           </p>
-          <IllustrationPromptDisplay
-            bookId={book.id}
-            title={book.title}
-            contentWithTags={bookContent.toStringWithoutTags()}
-          />
+          <div className="pt-4">
+            <IllustrationPromptDisplay
+              bookId={book.id}
+              title={book.title}
+              contentWithTags={bookContent.toStringWithoutTags()}
+            />
+          </div>
         </div>
       )}
     </div>

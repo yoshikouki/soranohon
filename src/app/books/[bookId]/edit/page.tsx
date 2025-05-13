@@ -47,8 +47,8 @@ export default async function BookEditPage({
   const title = book.title;
 
   return (
-    <main className="flex h-full flex-col p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <main className="flex h-full flex-col space-y-6 p-6">
+      <div className="flex items-center justify-between">
         <h1 className="font-bold text-3xl">
           <PencilIcon className="mr-2 inline-block" />
           {title}
@@ -62,14 +62,12 @@ export default async function BookEditPage({
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-          <h2 className="mb-4 font-semibold text-xl">挿絵計画</h2>
-          <IllustrationPlanDisplay
-            book={book}
-            contentsLength={bookContent.toMdx().length}
-            contentsWithoutTagsLength={bookContent.toStringWithoutTags().length}
-          />
-        </div>
+        <h2 className="font-semibold text-xl">挿絵計画</h2>
+        <IllustrationPlanDisplay
+          book={book}
+          contentsLength={bookContent.toMdx().length}
+          contentsWithoutTagsLength={bookContent.toStringWithoutTags().length}
+        />
       </div>
     </main>
   );
