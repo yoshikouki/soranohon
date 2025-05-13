@@ -28,8 +28,8 @@ export function PlanDisplay({ plan }: PlanDisplayProps) {
           </span>
         </h4>
         <div className="space-y-6">
-          {characters.children.map((character, index) => (
-            <div key={index} className="space-y-2 bg-background p-4">
+          {characters.children.map((character) => (
+            <div key={character.charaName.value} className="space-y-2 bg-background p-4">
               <h5 className="font-semibold text-foreground text-md">
                 {character.charaName.value}
                 <span className="font-normal text-muted-foreground text-sm">
@@ -73,8 +73,8 @@ export function PlanDisplay({ plan }: PlanDisplayProps) {
           <div className="space-y-2">
             <p className="text-primary/70 text-xs">登場キャラクター</p>
             <div className="space-y-2">
-              {keyVisual.keyVisualCharacters.children.map((character, index) => (
-                <div key={index} className="text-sm">
+              {keyVisual.keyVisualCharacters.children.map((character) => (
+                <div key={character.keyVisualCharaName.value} className="text-sm">
                   <span className="font-medium">{character.keyVisualCharaName.value}</span>
                   <span className="text-muted-foreground">
                     {" "}

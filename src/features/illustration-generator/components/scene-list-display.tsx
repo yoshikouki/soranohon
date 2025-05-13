@@ -11,8 +11,8 @@ export function SceneListDisplay({ scenes }: SceneListDisplayProps) {
         シーン <span className="text-muted-foreground text-sm">({scenes.length}場面)</span>
       </h4>
       <div className="space-y-8">
-        {scenes.map((scene, index) => (
-          <div key={index} className="space-y-4 bg-background p-4">
+        {scenes.map((scene) => (
+          <div key={`scene-${scene.sceneIndex.value}`} className="space-y-4 bg-background p-4">
             <div className="flex items-baseline">
               <span className="pr-2 font-semibold text-primary text-sm">
                 #{scene.sceneIndex.value}
@@ -34,8 +34,11 @@ export function SceneListDisplay({ scenes }: SceneListDisplayProps) {
             <div className="space-y-2">
               <p className="text-primary/70 text-xs">登場キャラクター</p>
               <div className="space-y-2">
-                {scene.sceneCharacters.children.map((character, index) => (
-                  <div key={index} className="text-sm">
+                {scene.sceneCharacters.children.map((character) => (
+                  <div
+                    key={`${scene.sceneIndex.value}-${character.sceneCharaName.value}`}
+                    className="text-sm"
+                  >
                     <span className="font-medium">{character.sceneCharaName.value}</span>
                     <span className="text-muted-foreground">
                       {" "}
