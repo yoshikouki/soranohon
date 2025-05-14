@@ -5,6 +5,7 @@ import { prompts } from "@/features/illustration-generator/prompts";
 import { FilesystemIllustrationRepository } from "@/features/illustration-generator/repository/illustration-repository";
 import { FilesystemPlanRepository } from "@/features/illustration-generator/repository/plan-repository";
 import { logger } from "@/lib/logger";
+import { urls } from "@/lib/paths";
 
 const isDevEnvironment = () => {
   return process.env.NODE_ENV === "development";
@@ -41,14 +42,12 @@ export async function POST(
     return Response.json({ error: "生成タイプが指定されていません" }, { status: 400 });
   }
 
-  // 挿絵計画を取得
   const planRepository = new FilesystemPlanRepository();
   const plan = await planRepository.getPlan(bookId);
   if (!plan || !plan.plan) {
     return Response.json({ error: "挿絵計画が見つかりません" }, { status: 404 });
   }
 
-  // プロンプトを生成
   let prompt: string;
   if (data.type === "key-visual") {
     prompt = prompts.keyVisual({
@@ -67,7 +66,12 @@ export async function POST(
       return Response.json({ error: `シーンが見つかりません: ${sceneIndex}` }, { status: 404 });
     }
 
-    prompt = prompts.scene(scene, plan.plan.plan.style.value);
+    const repository = new FilesystemIllustrationRepository();
+    const hasKeyVisual = repository.hasKeyVisual(bookId);
+
+    const keyVisualUrl = hasKeyVisual ? urls.images.books.keyVisual(bookId) : undefined;
+
+    prompt = prompts.scene(scene, plan.plan.plan.style.value, keyVisualUrl);
   } else {
     return Response.json({ error: "不明な生成タイプです" }, { status: 400 });
   }
@@ -110,7 +114,6 @@ export async function POST(
   } catch (error) {
     logger.error("挿絵生成エラー:", error);
 
-    // OpenAIのAPI制限エラーの場合
     if (error instanceof Error && error.message.includes("rate limit")) {
       return Response.json(
         {
@@ -121,7 +124,6 @@ export async function POST(
       );
     }
 
-    // コンテンツポリシー違反のエラーの場合
     if (error instanceof Error && error.message.toLowerCase().includes("content policy")) {
       return Response.json(
         {

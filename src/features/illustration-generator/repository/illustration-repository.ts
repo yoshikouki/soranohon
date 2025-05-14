@@ -17,6 +17,7 @@ export interface IllustrationRepository {
     options?: SaveOptions,
   ): Promise<string>;
   getIllustrationPath(bookId: string, options?: SaveOptions): string;
+  hasKeyVisual(bookId: string): boolean;
 }
 
 export class FilesystemIllustrationRepository implements IllustrationRepository {
@@ -24,6 +25,11 @@ export class FilesystemIllustrationRepository implements IllustrationRepository 
 
   constructor(fs: FileSystem = defaultFileSystem) {
     this.fs = fs;
+  }
+
+  hasKeyVisual(bookId: string): boolean {
+    const keyVisualPath = this.getPublicFilePath(bookId);
+    return this.fs.existsSync(keyVisualPath);
   }
 
   private ensureDirectoryExists(directoryPath: string): void {

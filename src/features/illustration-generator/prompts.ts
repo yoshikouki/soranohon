@@ -174,7 +174,7 @@ ${plan.keyVisual.keyVisualNotes.value ?? ""}
    * SceneSchema は XML パース結果なので `.value` を介して取り出す。
    * ※ `.sceneCharacters.children` は最大 3 人想定。
    */
-  scene: (scene: SceneSchema, style: string): string =>
+  scene: (scene: SceneSchema, style: string, keyVisualImageUrl?: string): string =>
     `
 # 青空文庫 児童文学 シーン${scene.sceneIndex.value} イラスト制作依頼
 あなたは **熟練の絵本イラストレーター** です。
@@ -198,12 +198,12 @@ ${scene.sceneCharacters.children
 ## 出力仕様
 - アスペクト比 : 1:1（正方形）
 - ビジュアルスタイル : ${style}
-- キャラ造形   : 統一感のあるデザイン
+- キャラ造形   : 統一感のあるデザイン${keyVisualImageUrl ? `\n- キャラ参照   : 添付のキービジュアル画像を参照して同じキャラクターデザインを維持する` : ""}
 - 年齢層       : 5〜8 歳児向け、優しいタッチ
 - 安全性       : 暴力的表現、過激な感情/動作、ネガティブ表現を避ける
 - NegativePrompt: "no text, no watermark, no extreme shadow, no weapon, no blood, no violence, no extreme emotion, no fear"
 
 ## 演出メモ
-${scene.sceneNotes.value}
+${scene.sceneNotes.value}${keyVisualImageUrl ? `\n\n## 重要: 添付のキービジュアル画像を参照して、キャラクターの外見・衣装・スタイルを一貫させてください` : ""}
 `.trim(),
 } as const;
