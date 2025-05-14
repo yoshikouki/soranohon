@@ -75,11 +75,13 @@ export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
             alt={keyVisual.keyVisualTitle.value}
             fill
             className="object-cover"
-            onError={() => (
-              <div className="flex h-full w-full items-center justify-center bg-background">
-                <p className="text-muted-foreground">画像が見つかりません</p>
-              </div>
-            )}
+            onError={() => {
+              const selector = `img[alt="${keyVisual.keyVisualTitle.value}"]`;
+              const img = document.querySelector(selector);
+              if (img && img instanceof HTMLImageElement) {
+                img.style.display = "none";
+              }
+            }}
           />
         </div>
 

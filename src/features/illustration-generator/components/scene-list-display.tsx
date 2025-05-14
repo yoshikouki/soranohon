@@ -42,10 +42,11 @@ export function SceneListDisplay({ bookId, scenes }: SceneListDisplayProps) {
                 className="object-cover"
                 onError={() => {
                   // エラー時に表示するプレースホルダー画像を設定
-                  const img = document.querySelector(
-                    `img[alt="シーン${scene.sceneIndex.value}: ${scene.sceneTitle.value}"]`,
-                  );
-                  if (img) img.style.display = "none";
+                  const selector = `img[alt="シーン${scene.sceneIndex.value}: ${scene.sceneTitle.value}"]`;
+                  const img = document.querySelector(selector);
+                  if (img && img instanceof HTMLImageElement) {
+                    img.style.display = "none";
+                  }
                 }}
               />
             </div>
