@@ -1,6 +1,9 @@
-import { BookForIllustrationPlan } from "./types";
+import { IllustrationPlanSchema, SceneSchema, BookForIllustrationPlan } from "./types";
 
 export const prompts = {
+  /**
+   * 挿絵計画生成プロンプト
+   */
   illustrationPlan: (book: BookForIllustrationPlan): string =>
     `
 # 青空文庫 児童文学 挿絵計画作成依頼
@@ -107,4 +110,19 @@ ${book.contentWithTags}
 
 # 挿絵計画
 `.trim(),
+
+  /**
+   * キービジュアル生成プロンプト
+   */
+  keyVisual: (plan: IllustrationPlanSchema): string => {
+    const { style, keyVisual } = plan.plan;
+    return `${style.value}スタイルで、${keyVisual.keyVisualTitle.value}。場所: ${keyVisual.keyVisualLocation.value}、時間: ${keyVisual.keyVisualTime.value}、状況: ${keyVisual.keyVisualSituation.value}、カメラアングル: ${keyVisual.keyVisualCamera.value}、色・照明: ${keyVisual.keyVisualColorLighting.value}。${keyVisual.keyVisualNotes.value}`;
+  },
+
+  /**
+   * シーン画像生成プロンプト
+   */
+  scene: (scene: SceneSchema, style: string): string => {
+    return `${style}スタイルで、シーン${scene.sceneIndex.value}: ${scene.sceneTitle.value}。場所: ${scene.sceneLocation.value}、時間: ${scene.sceneTime.value}、状況: ${scene.sceneSituation.value}、カメラアングル: ${scene.sceneCamera.value}、色・照明: ${scene.sceneColorLighting.value}。${scene.sceneNotes.value}`;
+  },
 } as const;

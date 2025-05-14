@@ -2,15 +2,17 @@
 
 import Image from "next/image";
 import { paths } from "@/lib/paths";
+import { prompts } from "../prompts";
 import { SceneSchema } from "../types";
 import { GenerateIllustrationButton } from "./generate-illustration-button";
 
 interface SceneListDisplayProps {
   bookId: string;
   scenes: SceneSchema[];
+  style: string;
 }
 
-export function SceneListDisplay({ bookId, scenes }: SceneListDisplayProps) {
+export function SceneListDisplay({ bookId, scenes, style }: SceneListDisplayProps) {
   return (
     <div className="space-y-4">
       <h4 className="font-semibold text-foreground text-lg">
@@ -28,7 +30,7 @@ export function SceneListDisplay({ bookId, scenes }: SceneListDisplayProps) {
               </div>
               <GenerateIllustrationButton
                 bookId={bookId}
-                prompt={`シーン${scene.sceneIndex.value}: ${scene.sceneTitle.value}。場所: ${scene.sceneLocation.value}、時間: ${scene.sceneTime.value}、状況: ${scene.sceneSituation.value}、カメラアングル: ${scene.sceneCamera.value}、色・照明: ${scene.sceneColorLighting.value}。${scene.sceneNotes.value}`}
+                prompt={prompts.scene(scene, style)}
                 sceneId={`scene-${scene.sceneIndex.value}`}
                 label={`シーン${scene.sceneIndex.value}画像生成`}
               />

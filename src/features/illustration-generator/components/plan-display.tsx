@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { paths } from "@/lib/paths";
 import { IllustrationPlanSchema } from "../types";
+import { prompts } from "../prompts";
 import { GenerateIllustrationButton } from "./generate-illustration-button";
 import { SceneListDisplay } from "./scene-list-display";
 
@@ -64,7 +65,7 @@ export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
           <h4 className="font-semibold text-foreground text-lg">キービジュアル</h4>
           <GenerateIllustrationButton
             bookId={bookId}
-            prompt={`${style.value}スタイルで、${keyVisual.keyVisualTitle.value}。場所: ${keyVisual.keyVisualLocation.value}、時間: ${keyVisual.keyVisualTime.value}、状況: ${keyVisual.keyVisualSituation.value}、カメラアングル: ${keyVisual.keyVisualCamera.value}、色・照明: ${keyVisual.keyVisualColorLighting.value}。${keyVisual.keyVisualNotes.value}`}
+            prompt={prompts.keyVisual(plan)}
             label="キービジュアル生成"
           />
         </div>
@@ -140,7 +141,7 @@ export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
         </div>
       </div>
 
-      <SceneListDisplay bookId={bookId} scenes={scenes.children} />
+      <SceneListDisplay bookId={bookId} scenes={scenes.children} style={style.value} />
     </div>
   );
 }
