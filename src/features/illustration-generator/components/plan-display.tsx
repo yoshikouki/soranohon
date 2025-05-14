@@ -75,6 +75,7 @@ export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
             alt={keyVisual.keyVisualTitle.value}
             fill
             className="object-cover"
+            unoptimized
             onError={() => {
               const selector = `img[alt="${keyVisual.keyVisualTitle.value}"]`;
               const img = document.querySelector(selector);
