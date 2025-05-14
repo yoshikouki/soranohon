@@ -10,6 +10,7 @@ export const paths = {
     root: () => "/books",
     detail: (bookId: string) => `/books/${bookId}`,
     illustrationPlans: (bookId: string) => `/books/${bookId}/illustration-plans`,
+    illustrations: (bookId: string) => `/books/${bookId}/illustrations`,
   },
   images: {
     books: {

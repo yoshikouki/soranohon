@@ -1,0 +1,113 @@
+import path from "path";
+import sharp from "sharp";
+import { filePaths } from "@/lib/file-paths";
+import { defaultFileSystem, FileSystem } from "@/lib/fs";
+import { logger } from "@/lib/logger";
+
+interface SaveOptions {
+  sceneId?: string;
+  filename?: string;
+}
+
+export interface IllustrationRepository {
+  saveIllustration(
+    bookId: string,
+    imageData: Uint8Array | string,
+    options?: SaveOptions,
+  ): Promise<string>;
+  getIllustrationPath(bookId: string, options?: SaveOptions): string;
+}
+
+export class FilesystemIllustrationRepository implements IllustrationRepository {
+  private fs: FileSystem;
+
+  constructor(fs: FileSystem = defaultFileSystem) {
+    this.fs = fs;
+  }
+
+  private ensureDirectoryExists(directoryPath: string): void {
+    try {
+      if (!this.fs.existsSync(directoryPath)) {
+        logger.info(`Creating directory: ${directoryPath}`);
+        this.fs.mkdirSync(directoryPath, { recursive: true });
+        logger.info(`Directory created: ${directoryPath}`);
+      }
+    } catch (error) {
+      logger.error(`Error creating directory ${directoryPath}: ${error}`);
+      throw new Error(`ディレクトリの作成に失敗しました: ${directoryPath}`);
+    }
+  }
+
+  getIllustrationPath(bookId: string, options?: SaveOptions): string {
+    if (options?.sceneId) {
+      // シーンIDが指定されている場合はシーン画像のパスを返す
+      const sceneIndex = parseInt(options.sceneId.replace(/[^0-9]/g, ""), 10);
+      return filePaths.books.images.scene(bookId, sceneIndex);
+    } else if (options?.filename) {
+      // ファイル名が指定されている場合はカスタム画像のパスを返す
+      return filePaths.books.images.custom(bookId, options.filename);
+    } else {
+      // 何も指定されていない場合はキービジュアルのパスを返す
+      return filePaths.books.images.keyVisual(bookId);
+    }
+  }
+
+  private getPublicFilePath(bookId: string, options?: SaveOptions): string {
+    const baseDir = this.fs.getCwd();
+    if (options?.sceneId) {
+      const sceneIndex = parseInt(options.sceneId.replace(/[^0-9]/g, ""), 10);
+      return this.fs.join(
+        baseDir,
+        filePaths.books.publicPaths.scene(bookId, sceneIndex).replace(/^\.\//, ""),
+      );
+    } else if (options?.filename) {
+      return this.fs.join(
+        baseDir,
+        filePaths.books.publicPaths.custom(bookId, options.filename).replace(/^\.\//, ""),
+      );
+    } else {
+      return this.fs.join(
+        baseDir,
+        filePaths.books.publicPaths.keyVisual(bookId).replace(/^\.\//, ""),
+      );
+    }
+  }
+
+  async saveIllustration(
+    bookId: string,
+    imageData: Uint8Array | string,
+    options?: SaveOptions,
+  ): Promise<string> {
+    try {
+      // 本のIDごとのメインディレクトリを先に作成
+      const bookDirPath = path.join(this.fs.getCwd(), "public", "images", "books", bookId);
+      this.ensureDirectoryExists(bookDirPath);
+
+      // 実際のファイルパスを取得
+      const filePath = this.getPublicFilePath(bookId, options);
+      const dirPath = path.dirname(filePath);
+
+      // ディレクトリが存在しない場合は作成（ネストされたディレクトリ用）
+      this.ensureDirectoryExists(dirPath);
+
+      logger.info(`Saving illustration to file: ${filePath}`);
+
+      // 画像データが文字列（Base64）の場合はデコード
+      const buffer =
+        typeof imageData === "string"
+          ? Buffer.from(imageData.replace(/^data:image\/\w+;base64,/, ""), "base64")
+          : Buffer.from(imageData);
+
+      // WebP形式で保存
+      await sharp(buffer).webp({ quality: 90 }).toFile(filePath);
+
+      logger.info(`Illustration saved to: ${filePath}`);
+
+      // Webから参照するパスを返す
+      return this.getIllustrationPath(bookId, options);
+    } catch (error) {
+      logger.error(`Failed to save illustration: ${error}`);
+      throw new Error(`画像の保存に失敗しました: ${error}`);
+    }
+  }
+}

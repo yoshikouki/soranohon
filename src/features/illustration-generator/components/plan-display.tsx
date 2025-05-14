@@ -1,12 +1,19 @@
+"use client";
+
+import Image from "next/image";
+import { filePaths } from "@/lib/file-paths";
 import { IllustrationPlanSchema } from "../types";
+import { GenerateIllustrationButton } from "./generate-illustration-button";
 import { SceneListDisplay } from "./scene-list-display";
 
 interface PlanDisplayProps {
   plan: IllustrationPlanSchema;
+  bookId: string;
 }
 
-export function PlanDisplay({ plan }: PlanDisplayProps) {
+export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
   const { theme, style, characters, scenes, keyVisual } = plan.plan;
+
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
@@ -53,7 +60,29 @@ export function PlanDisplay({ plan }: PlanDisplayProps) {
       </div>
 
       <div className="space-y-4">
-        <h4 className="font-semibold text-foreground text-lg">キービジュアル</h4>
+        <div className="flex items-center justify-between">
+          <h4 className="font-semibold text-foreground text-lg">キービジュアル</h4>
+          <GenerateIllustrationButton
+            bookId={bookId}
+            prompt={`${style.value}スタイルで、${keyVisual.keyVisualTitle.value}。場所: ${keyVisual.keyVisualLocation.value}、時間: ${keyVisual.keyVisualTime.value}、状況: ${keyVisual.keyVisualSituation.value}、カメラアングル: ${keyVisual.keyVisualCamera.value}、色・照明: ${keyVisual.keyVisualColorLighting.value}。${keyVisual.keyVisualNotes.value}`}
+            label="キービジュアル生成"
+          />
+        </div>
+
+        <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-lg">
+          <Image
+            src={filePaths.books.images.keyVisual(bookId)}
+            alt={keyVisual.keyVisualTitle.value}
+            fill
+            className="object-cover"
+            onError={() => (
+              <div className="flex h-full w-full items-center justify-center bg-background">
+                <p className="text-muted-foreground">画像が見つかりません</p>
+              </div>
+            )}
+          />
+        </div>
+
         <div className="space-y-4 bg-background p-4">
           <h5 className="font-semibold text-foreground text-md">
             {keyVisual.keyVisualTitle.value}
@@ -109,7 +138,7 @@ export function PlanDisplay({ plan }: PlanDisplayProps) {
         </div>
       </div>
 
-      <SceneListDisplay scenes={scenes.children} />
+      <SceneListDisplay bookId={bookId} scenes={scenes.children} />
     </div>
   );
 }

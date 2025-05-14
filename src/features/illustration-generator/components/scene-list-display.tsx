@@ -1,10 +1,16 @@
+"use client";
+
+import Image from "next/image";
+import { filePaths } from "@/lib/file-paths";
 import { SceneSchema } from "../types";
+import { GenerateIllustrationButton } from "./generate-illustration-button";
 
 interface SceneListDisplayProps {
+  bookId: string;
   scenes: SceneSchema[];
 }
 
-export function SceneListDisplay({ scenes }: SceneListDisplayProps) {
+export function SceneListDisplay({ bookId, scenes }: SceneListDisplayProps) {
   return (
     <div className="space-y-4">
       <h4 className="font-semibold text-foreground text-lg">
@@ -13,11 +19,35 @@ export function SceneListDisplay({ scenes }: SceneListDisplayProps) {
       <div className="space-y-8">
         {scenes.map((scene) => (
           <div key={`scene-${scene.sceneIndex.value}`} className="space-y-4 bg-background p-4">
-            <div className="flex items-baseline">
-              <span className="pr-2 font-semibold text-primary text-sm">
-                #{scene.sceneIndex.value}
-              </span>
-              <h5 className="font-semibold text-md">{scene.sceneTitle.value}</h5>
+            <div className="flex items-center justify-between">
+              <div className="flex items-baseline">
+                <span className="pr-2 font-semibold text-primary text-sm">
+                  #{scene.sceneIndex.value}
+                </span>
+                <h5 className="font-semibold text-md">{scene.sceneTitle.value}</h5>
+              </div>
+              <GenerateIllustrationButton
+                bookId={bookId}
+                prompt={`シーン${scene.sceneIndex.value}: ${scene.sceneTitle.value}。場所: ${scene.sceneLocation.value}、時間: ${scene.sceneTime.value}、状況: ${scene.sceneSituation.value}、カメラアングル: ${scene.sceneCamera.value}、色・照明: ${scene.sceneColorLighting.value}。${scene.sceneNotes.value}`}
+                sceneId={`scene-${scene.sceneIndex.value}`}
+                label={`シーン${scene.sceneIndex.value}画像生成`}
+              />
+            </div>
+
+            <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-lg">
+              <Image
+                src={filePaths.books.images.scene(bookId, scene.sceneIndex.value)}
+                alt={`シーン${scene.sceneIndex.value}: ${scene.sceneTitle.value}`}
+                fill
+                className="object-cover"
+                onError={() => {
+                  // エラー時に表示するプレースホルダー画像を設定
+                  const img = document.querySelector(
+                    `img[alt="シーン${scene.sceneIndex.value}: ${scene.sceneTitle.value}"]`,
+                  );
+                  if (img) img.style.display = "none";
+                }}
+              />
             </div>
 
             <div className="grid grid-cols-1 gap-4">
