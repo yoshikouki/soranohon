@@ -1,4 +1,4 @@
-import { IllustrationPlanSchema, SceneSchema, BookForIllustrationPlan } from "./types";
+import { BookForIllustrationPlan, IllustrationPlanSchema, SceneSchema } from "./types";
 
 export const prompts = {
   /**

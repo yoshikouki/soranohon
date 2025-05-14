@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { paths } from "@/lib/paths";
 import { IllustrationPlanSchema } from "../types";
-import { prompts } from "../prompts";
 import { GenerateIllustrationButton } from "./generate-illustration-button";
 import { SceneListDisplay } from "./scene-list-display";
 
@@ -65,7 +64,7 @@ export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
           <h4 className="font-semibold text-foreground text-lg">キービジュアル</h4>
           <GenerateIllustrationButton
             bookId={bookId}
-            prompt={prompts.keyVisual(plan)}
+            type="key-visual"
             label="キービジュアル生成"
           />
         </div>

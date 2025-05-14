@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { paths } from "@/lib/paths";
-import { prompts } from "../prompts";
 import { SceneSchema } from "../types";
 import { GenerateIllustrationButton } from "./generate-illustration-button";
 
@@ -12,7 +11,7 @@ interface SceneListDisplayProps {
   style: string;
 }
 
-export function SceneListDisplay({ bookId, scenes, style }: SceneListDisplayProps) {
+export function SceneListDisplay({ bookId, scenes }: SceneListDisplayProps) {
   return (
     <div className="space-y-4">
       <h4 className="font-semibold text-foreground text-lg">
@@ -30,7 +29,7 @@ export function SceneListDisplay({ bookId, scenes, style }: SceneListDisplayProp
               </div>
               <GenerateIllustrationButton
                 bookId={bookId}
-                prompt={prompts.scene(scene, style)}
+                type="scene"
                 sceneId={`scene-${scene.sceneIndex.value}`}
                 label={`シーン${scene.sceneIndex.value}画像生成`}
               />

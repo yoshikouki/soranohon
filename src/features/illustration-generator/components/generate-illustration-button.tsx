@@ -7,19 +7,19 @@ import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
 import { paths } from "@/lib/paths";
 
-interface GenerateIllustrationButtonProps {
+type GenerateIllustrationButtonProps = {
   bookId: string;
-  prompt: string;
+  type?: "key-visual" | "scene";
   sceneId?: string;
   label?: string;
   variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive" | null;
   size?: "default" | "sm" | "lg" | "icon" | null;
   className?: string;
-}
+};
 
 export function GenerateIllustrationButton({
   bookId,
-  prompt,
+  type = "key-visual",
   sceneId,
   label = "画像生成",
   variant = "default",
@@ -29,10 +29,8 @@ export function GenerateIllustrationButton({
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGenerateIllustration = async () => {
-    if (!prompt || prompt.trim() === "") {
-      toast.error("プロンプトが指定されていません");
-      return;
-    }
+    // sceneIdがあればsceneタイプとして扱う
+    const illustrationType = sceneId ? "scene" : type;
 
     setIsLoading(true);
     try {
@@ -42,7 +40,7 @@ export function GenerateIllustrationButton({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          prompt,
+          type: illustrationType,
           sceneId,
         }),
       });

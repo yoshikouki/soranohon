@@ -2,13 +2,9 @@
 import { readFile } from "fs/promises";
 import * as process from "process";
 import { BookContent } from "@/features/book-content/core";
-import { AozoraBunkoHtml } from "@/lib/aozorabunko/aozora-bunko-html";
-import { detectAndDecode } from "@/lib/aozorabunko/encoding";
-import { getMdxOutputPath } from "@/lib/aozorabunko/path";
-import { RubyTags } from "@/lib/aozorabunko/ruby-tags";
-import { getAozoraBunkoCardUrl } from "@/lib/aozorabunko-card-lists/get-book-card-url";
-import { defaultFileSystem, FileSystem } from "@/lib/fs";
-import { Logger, logger } from "@/lib/logger";
+import { AozoraBunkoHtml, detectAndDecode, getMdxOutputPath, RubyTags } from "@soranohon/aozorabunko";
+import { getAozoraBunkoCardUrl } from "@soranohon/aozorabunko-card-lists";
+import { defaultFileSystem, FileSystem, Logger, logger } from "@soranohon/core-utils";
 
 interface CommandLineOptions {
   inputHtml: string;
