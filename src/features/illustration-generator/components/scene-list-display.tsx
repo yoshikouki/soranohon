@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { filePaths } from "@/lib/file-paths";
+import { paths } from "@/lib/paths";
 import { SceneSchema } from "../types";
 import { GenerateIllustrationButton } from "./generate-illustration-button";
 
@@ -36,7 +36,7 @@ export function SceneListDisplay({ bookId, scenes }: SceneListDisplayProps) {
 
             <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-lg">
               <Image
-                src={filePaths.books.images.scene(bookId, scene.sceneIndex.value)}
+                src={paths.images.books.scene(bookId, scene.sceneIndex.value)}
                 alt={`シーン${scene.sceneIndex.value}: ${scene.sceneTitle.value}`}
                 fill
                 className="object-cover"

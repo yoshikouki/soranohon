@@ -14,6 +14,10 @@ export const paths = {
   },
   images: {
     books: {
+      keyVisual: (bookId: string) => `/images/books/${bookId}/key-visual.webp`,
+      scene: (bookId: string, sceneIndex: number) =>
+        `/images/books/${bookId}/scene-${sceneIndex}.webp`,
+      custom: (bookId: string, filename: string) => `/images/books/${bookId}/${filename}.webp`,
       scenes: (bookId: string, sceneNumber: number) =>
         `/images/books/${bookId}/scene-${sceneNumber}.webp`,
     },

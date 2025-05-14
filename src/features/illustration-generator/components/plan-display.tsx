@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { filePaths } from "@/lib/file-paths";
+import { paths } from "@/lib/paths";
 import { IllustrationPlanSchema } from "../types";
 import { GenerateIllustrationButton } from "./generate-illustration-button";
 import { SceneListDisplay } from "./scene-list-display";
@@ -71,7 +71,7 @@ export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
 
         <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-lg">
           <Image
-            src={filePaths.books.images.keyVisual(bookId)}
+            src={paths.images.books.keyVisual(bookId)}
             alt={keyVisual.keyVisualTitle.value}
             fill
             className="object-cover"

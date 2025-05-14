@@ -3,6 +3,7 @@ import sharp from "sharp";
 import { filePaths } from "@/lib/file-paths";
 import { defaultFileSystem, FileSystem } from "@/lib/fs";
 import { logger } from "@/lib/logger";
+import { paths } from "@/lib/paths";
 
 interface SaveOptions {
   sceneId?: string;
@@ -42,13 +43,13 @@ export class FilesystemIllustrationRepository implements IllustrationRepository 
     if (options?.sceneId) {
       // シーンIDが指定されている場合はシーン画像のパスを返す
       const sceneIndex = parseInt(options.sceneId.replace(/[^0-9]/g, ""), 10);
-      return filePaths.books.images.scene(bookId, sceneIndex);
+      return paths.images.books.scene(bookId, sceneIndex);
     } else if (options?.filename) {
       // ファイル名が指定されている場合はカスタム画像のパスを返す
-      return filePaths.books.images.custom(bookId, options.filename);
+      return paths.images.books.custom(bookId, options.filename);
     } else {
       // 何も指定されていない場合はキービジュアルのパスを返す
-      return filePaths.books.images.keyVisual(bookId);
+      return paths.images.books.keyVisual(bookId);
     }
   }
 
