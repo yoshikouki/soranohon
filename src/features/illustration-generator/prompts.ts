@@ -36,6 +36,10 @@ export const prompts = {
 - 文化的背景や時代設定を尊重する挿絵を心がけてください
 - 子どもの想像力を刺激しつつ、テキストを補完する挿絵を目指してください
 - 各挿絵は物語を進める上で意味のある瞬間を捉えるようにしてください
+- 安全性のために以下の表現は避けてください：
+  - 暴力的な描写（刀剣・武器で切る/刺す・血など）
+  - 過激な感情表現（激しい怒り、極度の恐怖など）
+  - 過激な動作表現（切り開く、突き刺すなど）
 
 ## 回答フォーマット
 挿絵計画は以下のフォーマットを厳守してください。
@@ -155,7 +159,8 @@ ${
 - アスペクト比 : 1:1（正方形）
 - ビジュアルスタイル : ${plan.style.value}
 - 年齢層       : 5〜8 歳児向け、優しいタッチ
-- NegativePrompt: "no text, no watermark, no extreme shadow"
+- 安全性       : 暴力的表現、過激な感情/動作、ネガティブ表現を避ける
+- NegativePrompt: "no text, no watermark, no extreme shadow, no weapon, no blood, no violence, no extreme emotion, no fear"
 
 ## 演出メモ
 ${plan.keyVisual.keyVisualNotes.value ?? ""}
@@ -195,7 +200,8 @@ ${scene.sceneCharacters.children
 - ビジュアルスタイル : ${style}
 - キャラ造形   : 統一感のあるデザイン
 - 年齢層       : 5〜8 歳児向け、優しいタッチ
-- NegativePrompt: "no text, no watermark, no extreme shadow"
+- 安全性       : 暴力的表現、過激な感情/動作、ネガティブ表現を避ける
+- NegativePrompt: "no text, no watermark, no extreme shadow, no weapon, no blood, no violence, no extreme emotion, no fear"
 
 ## 演出メモ
 ${scene.sceneNotes.value}
