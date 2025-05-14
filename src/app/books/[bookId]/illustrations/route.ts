@@ -78,6 +78,7 @@ export async function POST(
 
   const usingModel = models.gptImage1;
   try {
+    logger.info(`Image generation started for book ID: ${bookId}`);
     const result = await generateImage({
       model: usingModel.model,
       prompt,
