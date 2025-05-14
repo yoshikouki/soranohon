@@ -45,7 +45,7 @@ describe("getAozoraBunkoCardUrl", () => {
     return [logger, messages];
   };
 
-  it("存在するbookIdの図書カードURLを正しく取得する", () => {
+  it("存在するbookIdの図書カードURLを取得する", () => {
     const mockFs = createMockFileSystem();
     const mockCsvParser = createMockCsvParser();
     const [mockLogger] = createMockLogger();

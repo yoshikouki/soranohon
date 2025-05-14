@@ -53,7 +53,7 @@ describe("getContentLength", () => {
     vi.restoreAllMocks();
   });
 
-  it("HTMLファイルから正しく文字数を計算する", () => {
+  it("HTMLファイルから文字数を計算する", () => {
     mockReadFileSyncAsUtf8.mockReturnValueOnce(validHtmlContent);
 
     const length = getContentLength("/path/to/valid.html", mockReadFileSyncAsUtf8);
@@ -75,7 +75,7 @@ describe("getContentLength", () => {
     expect(mockReadFileSyncAsUtf8).toHaveBeenCalledWith("/path/to/no-main-text.html");
   });
 
-  it("存在しないファイルパスの場合はエラーをログ出力して0を返す", () => {
+  it("存在しないファイルパスの場合はエラーログを出力して0を返す", () => {
     mockReadFileSyncAsUtf8.mockImplementationOnce(() => {
       throw new Error("ENOENT: no such file or directory");
     });
@@ -90,7 +90,7 @@ describe("getContentLength", () => {
     expect(mockReadFileSyncAsUtf8).toHaveBeenCalledWith("/path/to/non-existent-file.html");
   });
 
-  it("HTMLファイルの内容が空の場合はパースエラーとなり0を返す", () => {
+  it("空のHTMLファイルはパースエラーとなり0を返す", () => {
     // パースエラーをシミュレートするためにmockを実装
     mockReadFileSyncAsUtf8.mockImplementationOnce(() => {
       throw new Error("Parse Error: empty HTML");

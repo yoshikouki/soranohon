@@ -3,7 +3,7 @@ import { convertHtmlUrlToFilePath, getAozoraBunkoHtmlUrl } from "./get-aozora-bu
 import * as getBookCardUrl from "./get-book-card-url";
 
 describe("getAozoraBunkoHtmlUrl", () => {
-  it("CSVファイルから正しくHTMLファイルURLを取得できること", () => {
+  it("CSVファイルからHTMLファイルURLを取得する", () => {
     // モックデータを準備
     const mockRecords = [
       {
@@ -24,7 +24,7 @@ describe("getAozoraBunkoHtmlUrl", () => {
     expect(result).toBe("https://www.aozora.gr.jp/cards/001091/files/59835_72466.html");
   });
 
-  it("先頭にゼロがある作品IDでも正しくHTMLファイルURLを取得できること", () => {
+  it("先頭にゼロがある作品IDでもHTMLファイルURLを取得する", () => {
     // モックデータを準備
     const mockRecords = [
       {
@@ -45,7 +45,7 @@ describe("getAozoraBunkoHtmlUrl", () => {
     expect(result).toBe("https://www.aozora.gr.jp/cards/001091/files/59835_72466.html");
   });
 
-  it("存在しない作品IDの場合はエラーをスローすること", () => {
+  it("存在しない作品IDの場合はエラーをスローする", () => {
     // モックデータを準備（空の配列）
     vi.spyOn(getBookCardUrl, "loadCsvData").mockReturnValue([]);
 
@@ -53,14 +53,14 @@ describe("getAozoraBunkoHtmlUrl", () => {
     expect(() => getAozoraBunkoHtmlUrl("99999_99999")).toThrow();
   });
 
-  it("不正なbookId形式の場合はエラーをスローすること", () => {
+  it("不正なbookId形式の場合はエラーをスローする", () => {
     // 不正なbookId
     expect(() => getAozoraBunkoHtmlUrl("invalid-id")).toThrow();
   });
 });
 
 describe("convertHtmlUrlToFilePath", () => {
-  it("正しいURLからファイルパスに変換できること", () => {
+  it("URLからファイルパスに変換する", () => {
     const url = "https://www.aozora.gr.jp/cards/001091/files/59835_72466.html";
     const expected =
       "/Users/yoshikouki/src/github.com/aozorabunko/aozorabunko/cards/001091/files/59835_72466.html";
@@ -68,13 +68,13 @@ describe("convertHtmlUrlToFilePath", () => {
     expect(convertHtmlUrlToFilePath(url)).toBe(expected);
   });
 
-  it("青空文庫以外のURLの場合はエラーをスローすること", () => {
+  it("青空文庫以外のURLの場合はエラーをスローする", () => {
     const url = "https://example.com/test.html";
 
     expect(() => convertHtmlUrlToFilePath(url)).toThrow();
   });
 
-  it("不正なURL形式の場合はエラーをスローすること", () => {
+  it("不正なURL形式の場合はエラーをスローする", () => {
     const url = "not-a-url";
 
     expect(() => convertHtmlUrlToFilePath(url)).toThrow();

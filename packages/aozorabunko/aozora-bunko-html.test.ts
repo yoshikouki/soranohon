@@ -25,7 +25,7 @@ describe("AozoraBunkoHtml", () => {
   `;
 
   describe("read", () => {
-    it("HTMLから正しくインスタンスを作成できる", async () => {
+    it("HTMLからインスタンスを正しく作成する", async () => {
       const htmlProvider = vi.fn().mockResolvedValue(basicHtml);
       const instance = await AozoraBunkoHtml.read(htmlProvider);
 
@@ -33,7 +33,7 @@ describe("AozoraBunkoHtml", () => {
       expect(instance).toBeInstanceOf(AozoraBunkoHtml);
     });
 
-    it("main_text要素がない場合にエラーをスローする", async () => {
+    it("main_text要素が存在しない場合はエラーをスローする", async () => {
       const htmlWithoutMainText = "<html><body>No main text here</body></html>";
       const htmlProvider = vi.fn().mockResolvedValue(htmlWithoutMainText);
 
@@ -44,7 +44,7 @@ describe("AozoraBunkoHtml", () => {
   });
 
   describe("extractBookMeta", () => {
-    it("HTMLからメタデータを正しく抽出できる", async () => {
+    it("HTMLからメタデータを抽出する", async () => {
       const htmlProvider = vi.fn().mockResolvedValue(basicHtml);
       const instance = await AozoraBunkoHtml.read(htmlProvider);
       const meta = instance.extractBookMeta("59835_72466.html");
@@ -58,7 +58,7 @@ describe("AozoraBunkoHtml", () => {
       });
     });
 
-    it("メタデータが不完全な場合にデフォルト値を使用する", async () => {
+    it("メタデータ不完全時はデフォルト値を使用する", async () => {
       const incompleteHtml = `
         <html>
           <body>
@@ -81,7 +81,7 @@ describe("AozoraBunkoHtml", () => {
   });
 
   describe("convertToBookContent", () => {
-    it("HTMLからBookContentを正しく生成できる", async () => {
+    it("HTMLからBookContentを生成する", async () => {
       const html = `
         <html>
           <body>
@@ -116,8 +116,7 @@ describe("AozoraBunkoHtml", () => {
       expect(bookContent.contents[3]).toBe("（これは注釈です。）");
     });
 
-    // 既存ルビタグの保持に関するテスト - リファクタリングによる問題を再現
-    it("既存のルビマップを使用して単一漢字のルビを正しく保持する", async () => {
+    it("既存ルビマップを使って単一漢字のルビを保持する", async () => {
       // 青空文庫のHTMLから変換されるであろうコンテンツ（ルビなし）
       const html = `
         <html>
@@ -157,9 +156,8 @@ describe("AozoraBunkoHtml", () => {
       expect(result).toContain("<ruby>天<rt>てん</rt></ruby>");
     });
 
-    // リファクタリングによるルビ処理の修正を確認するテスト
-    it("bin/html2mdxの改善後の動作確認：ルビが保持される", async () => {
-      // ステップ1: 現在の白雪姫MDXを模したサンプル
+    it("HTML変換後もルビタグが保持される", async () => {
+      // ステップ1: 既存のMDXコンテンツ（ルビ付き）
       const existingMdx =
         "むかしむかし、<ruby>冬<rt>ふゆ</rt></ruby>のさなかのことでした。<ruby>雪<rt>ゆき</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>っていました。";
 
@@ -174,7 +172,7 @@ describe("AozoraBunkoHtml", () => {
         </html>
       `;
 
-      // ステップ3: bin/html2mdx.tsの処理をシミュレート
+      // ステップ3: 処理をシミュレート
       const existingBookContent = new BookContent(existingMdx);
       const existingRubyTags = RubyTags.extract(existingBookContent);
 
@@ -186,8 +184,7 @@ describe("AozoraBunkoHtml", () => {
       // テスト用にbookIdパターンを含む段落を追加
       newBookContent.addParagraph("test_59835_72466");
 
-      // AozoraBunkoHtml.convertToBookContentを呼び出す
-      // 修正後は既存のルビタグを使用して単一漢字のルビが保持される
+      // 変換処理
       instance.convertToBookContent({
         bookContent: newBookContent,
         existingRubyTags: existingRubyTags,
@@ -196,17 +193,13 @@ describe("AozoraBunkoHtml", () => {
       // MDXに変換
       const generatedMdx = newBookContent.toMdx();
 
-      // 修正後の動作確認：生成されたMDXにルビタグが含まれている
-
-      // この時点で既にルビが保持されていることを確認（修正後）
+      // ルビタグが保持されているかを確認
       expect(generatedMdx).toContain("<ruby>冬<rt>ふゆ</rt></ruby>");
       expect(generatedMdx).toContain("<ruby>雪<rt>ゆき</rt></ruby>");
       expect(generatedMdx).toContain("<ruby>降<rt>ふ</rt></ruby>");
     });
 
-    // 段落整形の問題を確認するテスト
-    it("段落の整形問題: 改行を含む複合段落の処理", async () => {
-      // 問題を再現するHTMLコンテンツ (赤ずきんの例)
+    it("改行を含む複合段落を処理する", async () => {
       const html = `
         <html>
           <body>
@@ -278,7 +271,7 @@ describe("AozoraBunkoHtml", () => {
       );
     });
 
-    it("字下げdivを正しく処理する", async () => {
+    it("字下げdivを処理する", async () => {
       const html = `
         <html>
           <body>
@@ -306,7 +299,7 @@ describe("AozoraBunkoHtml", () => {
       );
     });
 
-    it("ルビタグを正しく処理する", async () => {
+    it("ルビタグを処理する", async () => {
       const html = `
         <html>
           <body>
@@ -328,7 +321,7 @@ describe("AozoraBunkoHtml", () => {
       );
     });
 
-    it("引用符内の改行を一つの段落として処理する", async () => {
+    it("引用符内の改行を一つの段落にする", async () => {
       const html = `
         <html>
           <body>
@@ -353,7 +346,7 @@ describe("AozoraBunkoHtml", () => {
       );
     });
 
-    it("複数のHTMLタグが混在する場合を正しく処理する", async () => {
+    it("複数のHTMLタグが混在する場合を処理する", async () => {
       const html = `
         <html>
           <body>
@@ -380,7 +373,7 @@ describe("AozoraBunkoHtml", () => {
       expect(content.includes("これは右寄せの段落です")).toBe(true);
     });
 
-    it("入れ子になったdivを正しく処理する", async () => {
+    it("入れ子になったdivを処理する", async () => {
       const html = `
         <html>
           <body>
