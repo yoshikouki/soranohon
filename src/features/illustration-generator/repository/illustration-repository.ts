@@ -47,14 +47,11 @@ export class FilesystemIllustrationRepository implements IllustrationRepository 
 
   getIllustrationPath(bookId: string, options?: SaveOptions): string {
     if (options?.sceneId) {
-      // シーンIDが指定されている場合はシーン画像のパスを返す
       const sceneIndex = parseInt(options.sceneId.replace(/[^0-9]/g, ""), 10);
       return paths.images.books.scene(bookId, sceneIndex);
     } else if (options?.filename) {
-      // ファイル名が指定されている場合はカスタム画像のパスを返す
       return paths.images.books.custom(bookId, options.filename);
     } else {
-      // 何も指定されていない場合はキービジュアルのパスを返す
       return paths.images.books.keyVisual(bookId);
     }
   }
@@ -86,31 +83,24 @@ export class FilesystemIllustrationRepository implements IllustrationRepository 
     options?: SaveOptions,
   ): Promise<string> {
     try {
-      // 本のIDごとのメインディレクトリを先に作成
       const bookDirPath = path.join(this.fs.getCwd(), "public", "images", "books", bookId);
       this.ensureDirectoryExists(bookDirPath);
 
-      // 実際のファイルパスを取得
       const filePath = this.getPublicFilePath(bookId, options);
       const dirPath = path.dirname(filePath);
-
-      // ディレクトリが存在しない場合は作成（ネストされたディレクトリ用）
       this.ensureDirectoryExists(dirPath);
 
       logger.info(`Saving illustration to file: ${filePath}`);
 
-      // 画像データが文字列（Base64）の場合はデコード
       const buffer =
         typeof imageData === "string"
           ? Buffer.from(imageData.replace(/^data:image\/\w+;base64,/, ""), "base64")
           : Buffer.from(imageData);
 
-      // WebP形式で保存
       await sharp(buffer).webp({ quality: 90 }).toFile(filePath);
 
       logger.info(`Illustration saved to: ${filePath}`);
 
-      // Webから参照するパスを返す
       return this.getIllustrationPath(bookId, options);
     } catch (error) {
       logger.error(`Failed to save illustration: ${error}`);

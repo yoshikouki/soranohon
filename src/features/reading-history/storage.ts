@@ -349,17 +349,13 @@ export function updateReadingSession(
     const updatedSessions = [...bookEntry.sessions];
     updatedSessions[sessionIndex] = sessionValidation.data;
 
-    // エントリーを更新
     const updatedEntry = {
       ...bookEntry,
       sessions: updatedSessions,
-      // いずれかのセッションが完了している場合はtrueに
       completed: updatedSessions.some((s) => s.completed),
-      // 最終アクセス日時を更新（セッション終了時）
       lastReadAt: updates.endedAt || bookEntry.lastReadAt,
     };
 
-    // エントリーのバリデーション
     const entryValidation = readingHistoryEntrySchema.safeParse(updatedEntry);
     if (!entryValidation.success) {
       logger.error("Entry validation failed:", entryValidation.error);
@@ -420,15 +416,12 @@ export function removeReadingSession(bookId: string, sessionId: string): boolean
       return false;
     }
 
-    // エントリーを更新
     const updatedEntry = {
       ...bookEntry,
       sessions: filteredSessions,
-      // いずれかのセッションが完了している場合はtrueに
       completed: filteredSessions.some((s) => s.completed),
     };
 
-    // エントリーのバリデーション
     const entryValidation = readingHistoryEntrySchema.safeParse(updatedEntry);
     if (!entryValidation.success) {
       logger.error("Entry validation failed:", entryValidation.error);
