@@ -1,10 +1,11 @@
-import { decode } from "@packages/aozorabunko";
-import { logger, regex } from "@packages/core-utils";
 import * as cheerio from "cheerio";
 import { parse } from "csv-parse/sync";
 import { stringify } from "csv-stringify/sync";
 import { readFileSync, writeFileSync } from "fs";
 import * as path from "path";
+import { logger } from "../../src/lib/logger";
+import { regex } from "../../src/lib/regex";
+import { decode } from "../aozorabunko";
 
 // パス設定
 const csvPath = "./packages/aozorabunko-card-lists/data/childrens-books-without-copyright.csv";

@@ -4,8 +4,8 @@ import {
   convertHtmlUrlToFilePath,
   getAozoraBunkoHtmlUrl,
 } from "@packages/aozorabunko-card-lists";
-import { logger } from "@packages/core-utils";
 import { books } from "@/books";
+import { logger } from "../src/lib/logger";
 import { processHtmlFile } from "./html2mdx";
 
 async function main() {

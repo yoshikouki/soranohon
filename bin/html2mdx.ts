@@ -6,10 +6,11 @@ import {
   RubyTags,
 } from "@packages/aozorabunko";
 import { getAozoraBunkoCardUrl } from "@packages/aozorabunko-card-lists";
-import { defaultFileSystem, FileSystem, Logger, logger } from "@packages/core-utils";
 import { readFile } from "fs/promises";
 import * as process from "process";
 import { BookContent } from "@/features/book-content/core";
+import { defaultFileSystem, FileSystem } from "../src/lib/fs";
+import { Logger, logger } from "../src/lib/logger";
 
 interface CommandLineOptions {
   inputHtml: string;

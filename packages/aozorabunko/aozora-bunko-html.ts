@@ -1,7 +1,8 @@
-import { defaultFileSystem, logger } from "@packages/core-utils";
 import * as cheerio from "cheerio";
 import type { AnyNode } from "domhandler";
 import * as path from "path";
+import { defaultFileSystem } from "../../src/lib/fs";
+import { logger } from "../../src/lib/logger";
 import { BookContentInterface, SimpleBookContent } from "./book-content-interface";
 import { RubyTags } from "./ruby-tags";
 

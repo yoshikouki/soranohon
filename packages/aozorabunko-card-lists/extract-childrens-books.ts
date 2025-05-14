@@ -1,8 +1,8 @@
-import { logger } from "@packages/core-utils";
 import { parse } from "csv-parse/sync";
 import { stringify } from "csv-stringify/sync";
 import { writeFileSync } from "fs";
 import * as unzipper from "unzipper";
+import { logger } from "../../src/lib/logger";
 
 // パス設定
 const zipFilePath = "./packages/aozorabunko-card-lists/data/list_person_all_extended_utf8.zip";
