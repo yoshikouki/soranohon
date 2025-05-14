@@ -153,6 +153,7 @@ ${
 
 ## 出力仕様
 - アスペクト比 : 1:1（正方形）
+- ビジュアルスタイル : ${plan.style.value}
 - 年齢層       : 5〜8 歳児向け、優しいタッチ
 - NegativePrompt: "no text, no watermark, no extreme shadow"
 
@@ -190,9 +191,9 @@ ${scene.sceneCharacters.children
   .join("\\n")}
 
 ## 出力仕様
-- アスペクト比 : 1:1（正方形）、解像度 2048×2048 以上
+- アスペクト比 : 1:1（正方形）
 - ビジュアルスタイル : ${style}
-- キャラ造形   : illustrationPlan のキャラメモと一貫
+- キャラ造形   : 統一感のあるデザイン
 - 年齢層       : 5〜8 歳児向け、優しいタッチ
 - NegativePrompt: "no text, no watermark, no extreme shadow"
 
