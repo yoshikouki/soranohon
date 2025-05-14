@@ -1,5 +1,5 @@
-import { google } from "@ai-sdk/google";
-import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { experimental_generateImage as generateImage } from "ai";
 import { books } from "@/books";
 import { prompts } from "@/features/illustration-generator/prompts";
 import { FilesystemIllustrationRepository } from "@/features/illustration-generator/repository/illustration-repository";
@@ -11,9 +11,9 @@ const isDevEnvironment = () => {
 };
 
 const models = {
-  geminiFlash: {
-    name: "gemini-2.0-flash-preview-image-generation",
-    model: google("gemini-2.0-flash-preview-image-generation"),
+  gptImage1: {
+    name: "gpt-image-1",
+    model: openai.image("gpt-image-1"),
   },
 };
 
@@ -72,26 +72,25 @@ export async function POST(
     return Response.json({ error: "不明な生成タイプです" }, { status: 400 });
   }
 
-  const usingModel = models.geminiFlash;
+  const usingModel = models.gptImage1;
   try {
-    const result = await generateText({
+    const result = await generateImage({
       model: usingModel.model,
-      providerOptions: {
-        google: { responseModalities: ["TEXT", "IMAGE"] },
-      },
       prompt,
+      aspectRatio: "1:1",
+      providerOptions: {
+        openai: {
+          quality: "high",
+          output_format: "webp",
+        },
+      },
     });
 
-    let image: Uint8Array | null = null;
-    for (const file of result.files) {
-      if (file.mimeType.startsWith("image/")) {
-        image = file.uint8Array;
-        break;
-      }
-    }
-    if (!image) {
+    if (!result.image.uint8Array) {
       throw new Error("画像の生成に失敗しました");
     }
+
+    const image = result.image.uint8Array;
     logger.info(`Image generation successful. Preparing to save image for book ID: ${bookId}`);
 
     const repository = new FilesystemIllustrationRepository();
@@ -110,6 +109,30 @@ export async function POST(
     );
   } catch (error) {
     logger.error("挿絵生成エラー:", error);
+
+    // OpenAIのAPI制限エラーの場合
+    if (error instanceof Error && error.message.includes("rate limit")) {
+      return Response.json(
+        {
+          error: error.message,
+          message: "APIレート制限に達しました。しばらく時間をおいて再試行してください。",
+        },
+        { status: 429 },
+      );
+    }
+
+    // コンテンツポリシー違反のエラーの場合
+    if (error instanceof Error && error.message.toLowerCase().includes("content policy")) {
+      return Response.json(
+        {
+          error: error.message,
+          message:
+            "生成リクエストがコンテンツポリシーに違反しています。プロンプトを修正してください。",
+        },
+        { status: 400 },
+      );
+    }
+
     return Response.json(
       {
         error: (error as Error).message,
