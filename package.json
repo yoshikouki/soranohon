@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "PORT=8888 next dev",
     "build": "next build",
-    "build:test": "NEXT_DIST_DIR=.next-build next build",
+    "build:test": "NEXT_DIST_DIR=.next-build next build && git checkout -- tsconfig.json || git checkout -- tsconfig.json",
     "start": "next start",
     "lint:next": "next lint",
     "lint": "biome check .",
