@@ -114,25 +114,52 @@ ${book.contentWithTags}
 
   /**
    * キービジュアル生成プロンプト
+   *
+   * illustrationPlan の <theme>, <style>, および <key-visual> 要素を抜粋して
+   * モデルに渡す。raw XML 全体は渡さないことで安全システムのリジェクトを回避する。
    */
-  keyVisual: ({ plan: { rawPlan }, book }: { plan: IllustrationPlan; book: Book }): string =>
-    `
+  keyVisual: ({ plan: _plan, book }: { plan: IllustrationPlan; book: Book }): string => {
+    const plan = _plan.plan?.plan;
+    if (!plan) {
+      throw new Error("plan が見つかりません");
+    }
+
+    return `
 # 青空文庫 児童文学 キービジュアル制作依頼
 あなたは **熟練の絵本イラストレーター** です。
-絵本『${book.title}』を象徴する 1 枚絵を描いてください。
+絵本『${book.title}』を象徴する 1 枚絵（正方形）を描いてください。
+
+## 作品トーン
+- テーマ : ${plan.theme.value ?? "児童文学"}
+- スタイル: ${plan.style.value ?? "やわらかな手描き風"}
+
+## シーン概要
+- タイトル  : ${plan.keyVisual.keyVisualTitle.value ?? "キービジュアル"}
+- 場所      : ${plan.keyVisual.keyVisualLocation.value ?? "舞台"}
+- 時間帯    : ${plan.keyVisual.keyVisualTime.value ?? "時間帯不明"}
+- シチュエーション: ${plan.keyVisual.keyVisualSituation.value ?? "象徴的シーン"}
+- カメラ／構図    : ${plan.keyVisual.keyVisualCamera.value ?? "標準構図"}
+- カラー／光源    : ${plan.keyVisual.keyVisualColorLighting.value ?? "柔らかい色彩"}
+
+## 登場キャラクター
+${
+  plan.keyVisual.keyVisualCharacters.children
+    .map(
+      (c) =>
+        `- **${c.keyVisualCharaName.value}**｜外見: ${c.keyVisualCharaAppearance.value}｜感情: ${c.keyVisualCharaEmotion.value}`,
+    )
+    .join("\\n") ?? "- （キャラクター情報なし）"
+}
 
 ## 出力仕様
-- アスペクト比: **1:1（正方形）**
-- 背景小物  : 物語の世界観を補足する要素のみ
-- キャラ造形: illustrationPlan のキャラメモと一貫させる
-- 年齢層    : 5〜8 歳の児童が見る前提で優しいタッチ
-- 子どもの想像力を刺激しつつテキストを補完する挿絵
-- 文化的背景や時代設定を尊重する挿絵
-- 挿絵は紙ではなく Web アプリケーションで表示される
+- アスペクト比 : 1:1（正方形）
+- 年齢層       : 5〜8 歳児向け、優しいタッチ
+- NegativePrompt: "no text, no watermark, no extreme shadow"
 
-## 要件
-${rawPlan}
-`.trim(),
+## 演出メモ
+${plan.keyVisual.keyVisualNotes.value ?? ""}
+`.trim();
+  },
 
   /**
    * シーン画像生成プロンプト
