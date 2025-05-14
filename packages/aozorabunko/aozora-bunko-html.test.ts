@@ -100,13 +100,8 @@ describe("AozoraBunkoHtml", () => {
       const htmlProvider = vi.fn().mockResolvedValue(html);
       const instance = await AozoraBunkoHtml.read(htmlProvider);
 
-      // BookContentオブジェクトを作成
       const bookContent = new BookContent();
-
-      // 変換を実行
       instance.convertToBookContent({ bookContent });
-
-      // 期待される段落数と内容を確認
       expect(bookContent.contents.length).toBe(4);
       expect(bookContent.contents[0]).toBe(
         "これは最初の段落です。<br />これは同じ段落の続きです。",
@@ -117,7 +112,6 @@ describe("AozoraBunkoHtml", () => {
     });
 
     it("既存ルビマップを使って単一漢字のルビを保持する", async () => {
-      // 青空文庫のHTMLから変換されるであろうコンテンツ（ルビなし）
       const html = `
         <html>
           <body>
@@ -128,7 +122,6 @@ describe("AozoraBunkoHtml", () => {
         </html>
       `;
 
-      // 既存のMDXコンテンツ（ルビ付き）
       const existingMdx =
         "むかしむかし、<ruby>冬<rt>ふゆ</rt></ruby>のさなかのことでした。<ruby>雪<rt>ゆき</rt></ruby>が、<ruby>鳥<rt>とり</rt></ruby>の<ruby>羽<rt>はね</rt></ruby>のように、ヒラヒラと<ruby>天<rt>てん</rt></ruby>からふっていました。";
       const existingBookContent = new BookContent(existingMdx);
@@ -139,16 +132,13 @@ describe("AozoraBunkoHtml", () => {
 
       const bookContent = new BookContent();
 
-      // 既存ルビマップを使用して変換
       instance.convertToBookContent({
         bookContent,
         existingRubyTags,
       });
 
-      // 変換後のコンテンツで、単一漢字のルビが保持されているかを確認
       const result = existingRubyTags.addRubyTagsWithPreservation(bookContent.toMdx());
 
-      // 期待される結果（すべての単一漢字にルビが適用されている）
       expect(result).toContain("<ruby>冬<rt>ふゆ</rt></ruby>");
       expect(result).toContain("<ruby>雪<rt>ゆき</rt></ruby>");
       expect(result).toContain("<ruby>鳥<rt>とり</rt></ruby>");
@@ -157,11 +147,9 @@ describe("AozoraBunkoHtml", () => {
     });
 
     it("HTML変換後もルビタグが保持される", async () => {
-      // ステップ1: 既存のMDXコンテンツ（ルビ付き）
       const existingMdx =
         "むかしむかし、<ruby>冬<rt>ふゆ</rt></ruby>のさなかのことでした。<ruby>雪<rt>ゆき</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>っていました。";
 
-      // ステップ2: HTMLからの読み込みをシミュレート
       const html = `
         <html>
           <body>
@@ -172,28 +160,20 @@ describe("AozoraBunkoHtml", () => {
         </html>
       `;
 
-      // ステップ3: 処理をシミュレート
       const existingBookContent = new BookContent(existingMdx);
       const existingRubyTags = RubyTags.extract(existingBookContent);
 
       const htmlProvider = vi.fn().mockResolvedValue(html);
       const instance = await AozoraBunkoHtml.read(htmlProvider);
 
-      // 新しいBookContentインスタンスを作成（HTMLから変換）
       const newBookContent = new BookContent();
-      // テスト用にbookIdパターンを含む段落を追加
       newBookContent.addParagraph("test_59835_72466");
-
-      // 変換処理
       instance.convertToBookContent({
         bookContent: newBookContent,
         existingRubyTags: existingRubyTags,
       });
 
-      // MDXに変換
       const generatedMdx = newBookContent.toMdx();
-
-      // ルビタグが保持されているかを確認
       expect(generatedMdx).toContain("<ruby>冬<rt>ふゆ</rt></ruby>");
       expect(generatedMdx).toContain("<ruby>雪<rt>ゆき</rt></ruby>");
       expect(generatedMdx).toContain("<ruby>降<rt>ふ</rt></ruby>");

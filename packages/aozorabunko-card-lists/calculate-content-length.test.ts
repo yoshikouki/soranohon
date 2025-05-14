@@ -91,7 +91,6 @@ describe("getContentLength", () => {
   });
 
   it("空のHTMLファイルはパースエラーとなり0を返す", () => {
-    // パースエラーをシミュレートするためにmockを実装
     mockReadFileSyncAsUtf8.mockImplementationOnce(() => {
       throw new Error("Parse Error: empty HTML");
     });
