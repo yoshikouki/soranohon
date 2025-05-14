@@ -51,7 +51,10 @@ export async function POST(
   // プロンプトを生成
   let prompt: string;
   if (data.type === "key-visual") {
-    prompt = prompts.keyVisual(plan.plan);
+    prompt = prompts.keyVisual({
+      plan: plan,
+      book,
+    });
   } else if (data.type === "scene") {
     if (!data.sceneId) {
       return Response.json({ error: "シーンIDが指定されていません" }, { status: 400 });
@@ -68,9 +71,6 @@ export async function POST(
   } else {
     return Response.json({ error: "不明な生成タイプです" }, { status: 400 });
   }
-
-  // 開発用にプロンプトをログに出力
-  logger.debug(`生成プロンプト: ${prompt}`);
 
   const usingModel = models.geminiFlash;
   try {

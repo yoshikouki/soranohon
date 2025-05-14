@@ -1,4 +1,5 @@
-import { BookForIllustrationPlan, IllustrationPlanSchema, SceneSchema } from "./types";
+import { Book } from "@/books";
+import { BookForIllustrationPlan, IllustrationPlan, SceneSchema } from "./types";
 
 export const prompts = {
   /**
@@ -114,15 +115,61 @@ ${book.contentWithTags}
   /**
    * キービジュアル生成プロンプト
    */
-  keyVisual: (plan: IllustrationPlanSchema): string => {
-    const { style, keyVisual } = plan.plan;
-    return `${style.value}スタイルで、${keyVisual.keyVisualTitle.value}。場所: ${keyVisual.keyVisualLocation.value}、時間: ${keyVisual.keyVisualTime.value}、状況: ${keyVisual.keyVisualSituation.value}、カメラアングル: ${keyVisual.keyVisualCamera.value}、色・照明: ${keyVisual.keyVisualColorLighting.value}。${keyVisual.keyVisualNotes.value}`;
-  },
+  keyVisual: ({ plan: { rawPlan }, book }: { plan: IllustrationPlan; book: Book }): string =>
+    `
+# 青空文庫 児童文学 キービジュアル制作依頼
+あなたは **熟練の絵本イラストレーター** です。
+絵本『${book.title}』を象徴する 1 枚絵を描いてください。
+
+## 出力仕様
+- アスペクト比: **1:1（正方形）**
+- 背景小物  : 物語の世界観を補足する要素のみ
+- キャラ造形: illustrationPlan のキャラメモと一貫させる
+- 年齢層    : 5〜8 歳の児童が見る前提で優しいタッチ
+- 子どもの想像力を刺激しつつテキストを補完する挿絵
+- 文化的背景や時代設定を尊重する挿絵
+- 挿絵は紙ではなく Web アプリケーションで表示される
+
+## 要件
+${rawPlan}
+`.trim(),
 
   /**
    * シーン画像生成プロンプト
+   *
+   * `style` には illustrationPlan の <style> 値をそのまま渡す想定。
+   * SceneSchema は XML パース結果なので `.value` を介して取り出す。
+   * ※ `.sceneCharacters.children` は最大 3 人想定。
    */
-  scene: (scene: SceneSchema, style: string): string => {
-    return `${style}スタイルで、シーン${scene.sceneIndex.value}: ${scene.sceneTitle.value}。場所: ${scene.sceneLocation.value}、時間: ${scene.sceneTime.value}、状況: ${scene.sceneSituation.value}、カメラアングル: ${scene.sceneCamera.value}、色・照明: ${scene.sceneColorLighting.value}。${scene.sceneNotes.value}`;
-  },
+  scene: (scene: SceneSchema, style: string): string =>
+    `
+# 青空文庫 児童文学 シーン${scene.sceneIndex.value} イラスト制作依頼
+あなたは **熟練の絵本イラストレーター** です。
+以下の要件を満たすシーン「${scene.sceneTitle.value}」のイラストを描いてください。
+
+## シーン概要
+- 場所          : ${scene.sceneLocation.value}
+- 時間帯        : ${scene.sceneTime.value}
+- シチュエーション: ${scene.sceneSituation.value}
+- カメラ／構図  : ${scene.sceneCamera.value}
+- カラー／光源  : ${scene.sceneColorLighting.value}
+
+## 登場キャラクター
+${scene.sceneCharacters.children
+  .map(
+    (c) =>
+      `- **${c.sceneCharaName.value}**｜外見: ${c.sceneCharaAppearance.value}｜感情: ${c.sceneCharaEmotion.value}`,
+  )
+  .join("\\n")}
+
+## 出力仕様
+- アスペクト比 : 1:1（正方形）、解像度 2048×2048 以上
+- ビジュアルスタイル : ${style}
+- キャラ造形   : illustrationPlan のキャラメモと一貫
+- 年齢層       : 5〜8 歳児向け、優しいタッチ
+- NegativePrompt: "no text, no watermark, no extreme shadow"
+
+## 演出メモ
+${scene.sceneNotes.value}
+`.trim(),
 } as const;
