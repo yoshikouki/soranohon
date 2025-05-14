@@ -1,10 +1,15 @@
 #!/usr/bin/env bun
+import {
+  AozoraBunkoHtml,
+  detectAndDecode,
+  getMdxOutputPath,
+  RubyTags,
+} from "@packages/aozorabunko";
+import { getAozoraBunkoCardUrl } from "@packages/aozorabunko-card-lists";
+import { defaultFileSystem, FileSystem, Logger, logger } from "@packages/core-utils";
 import { readFile } from "fs/promises";
 import * as process from "process";
 import { BookContent } from "@/features/book-content/core";
-import { AozoraBunkoHtml, detectAndDecode, getMdxOutputPath, RubyTags } from "@soranohon/aozorabunko";
-import { getAozoraBunkoCardUrl } from "@soranohon/aozorabunko-card-lists";
-import { defaultFileSystem, FileSystem, Logger, logger } from "@soranohon/core-utils";
 
 interface CommandLineOptions {
   inputHtml: string;

@@ -1,0 +1,9 @@
+{
+  "name": "@soranohon/aozorabunko",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "dependencies": {
+    "@soranohon/core-utils": "0.1.0"
+  }
+}

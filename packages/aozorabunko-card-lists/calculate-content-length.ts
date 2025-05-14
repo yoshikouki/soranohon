@@ -1,14 +1,13 @@
+import { decode } from "@packages/aozorabunko";
+import { logger, regex } from "@packages/core-utils";
 import * as cheerio from "cheerio";
 import { parse } from "csv-parse/sync";
 import { stringify } from "csv-stringify/sync";
 import { readFileSync, writeFileSync } from "fs";
 import * as path from "path";
-import { decode } from "../aozorabunko/encoding";
-import { logger } from "../logger";
-import { regex } from "../regex";
 
 // パス設定
-const csvPath = "./src/lib/aozorabunko-card-lists/data/childrens-books-without-copyright.csv";
+const csvPath = "./packages/aozorabunko-card-lists/data/childrens-books-without-copyright.csv";
 const aozoraPath = process.env.AOZORA_PATH || "~/src/github.com/aozorabunko/aozorabunko";
 const outputPath = csvPath; // 元のCSVファイルに上書き
 

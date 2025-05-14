@@ -1,4 +1,4 @@
-import { processCSV } from "../src/lib/aozorabunko-card-lists/calculate-content-length";
+import { processCSV } from "@packages/aozorabunko-card-lists";
 
 /**
  * メイン処理

@@ -19,7 +19,11 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@packages/*": ["./packages/*"],
+      "@soranohon/core-utils": ["./packages/core-utils"],
+      "@soranohon/aozorabunko": ["./packages/aozorabunko"],
+      "@soranohon/aozorabunko-card-lists": ["./packages/aozorabunko-card-lists"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

@@ -68,7 +68,7 @@
 抽出スクリプトを作成しました。実行方法：
 
 ```bash
-bun run ./src/lib/aozorabunko-card-lists/extract-childrens-books.ts
+bun run ./packages/aozorabunko-card-lists/extract-childrens-books.ts
 ```
 
 # 文字数の計算

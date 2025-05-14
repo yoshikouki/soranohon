@@ -1,4 +1,4 @@
-import { BookContent } from "@/features/book-content/core";
+import { BookContentInterface } from "./book-content-interface";
 
 // ルビタグを抽出する正規表現
 const rubyTagRegex = /<ruby>(?:[\s\S])*?<rt>(?:[\s\S])*?<\/rt>(?:[\s\S])*?<\/ruby>/g;
@@ -18,7 +18,7 @@ export class RubyTags {
   }
 
   // ファクトリーメソッド - BookContentからルビを抽出
-  static extract(bookContent: BookContent | null): RubyTags {
+  static extract(bookContent: BookContentInterface | null): RubyTags {
     if (!bookContent) return new RubyTags();
 
     const mdx = bookContent.toMdx();

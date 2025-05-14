@@ -1,11 +1,11 @@
 #!/usr/bin/env bun
 
-import { books } from "@/books";
 import {
   convertHtmlUrlToFilePath,
   getAozoraBunkoHtmlUrl,
-} from "@/lib/aozorabunko-card-lists/get-aozora-bunko-html-url";
-import { logger } from "@/lib/logger";
+} from "@packages/aozorabunko-card-lists";
+import { logger } from "@packages/core-utils";
+import { books } from "@/books";
 import { processHtmlFile } from "./html2mdx";
 
 async function main() {

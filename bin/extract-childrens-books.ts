@@ -1,4 +1,4 @@
-import { processZipFile } from "../src/lib/aozorabunko-card-lists/extract-childrens-books";
+import { processZipFile } from "@packages/aozorabunko-card-lists";
 
 /**
  * メイン処理

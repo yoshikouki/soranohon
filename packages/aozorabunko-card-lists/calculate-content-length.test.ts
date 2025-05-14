@@ -1,5 +1,5 @@
+import { logger } from "@packages/core-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { logger } from "../logger";
 import { getContentLength } from "./calculate-content-length";
 
 // readFileSyncAsUtf8のモック関数

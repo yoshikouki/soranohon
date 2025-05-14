@@ -1,14 +1,14 @@
+import { logger } from "@packages/core-utils";
 import { parse } from "csv-parse/sync";
 import { stringify } from "csv-stringify/sync";
 import { writeFileSync } from "fs";
 import * as unzipper from "unzipper";
-import { logger } from "../logger";
 
 // パス設定
-const zipFilePath = "./src/lib/aozorabunko-card-lists/data/list_person_all_extended_utf8.zip";
+const zipFilePath = "./packages/aozorabunko-card-lists/data/list_person_all_extended_utf8.zip";
 const csvFileName = "list_person_all_extended_utf8.csv";
 const outputPath =
-  "./src/lib/aozorabunko-card-lists/data/childrens-books-without-copyright.csv";
+  "./packages/aozorabunko-card-lists/data/childrens-books-without-copyright.csv";
 
 // レコードの型定義
 interface AozoraRecord {

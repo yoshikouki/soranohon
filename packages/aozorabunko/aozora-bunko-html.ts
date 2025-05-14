@@ -1,9 +1,8 @@
+import { defaultFileSystem, logger } from "@packages/core-utils";
 import * as cheerio from "cheerio";
 import type { AnyNode } from "domhandler";
 import * as path from "path";
-import { BookContent } from "@/features/book-content/core";
-import { defaultFileSystem } from "@/lib/fs";
-import { logger } from "@/lib/logger";
+import { BookContentInterface, SimpleBookContent } from "./book-content-interface";
 import { RubyTags } from "./ruby-tags";
 
 export interface BookMeta {
@@ -56,7 +55,7 @@ export class AozoraBunkoHtml {
   }
 
   convertToBookContent(options: {
-    bookContent: BookContent;
+    bookContent: BookContentInterface;
     existingRubyTags?: RubyTags;
   }): void {
     const { bookContent, existingRubyTags } = options;
@@ -77,7 +76,7 @@ export class AozoraBunkoHtml {
           try {
             if (defaultFileSystem.existsSync(originalMdxPath)) {
               const content = defaultFileSystem.readFileSync(originalMdxPath, "utf-8");
-              const originalMdx = new BookContent(content).toMdx();
+              const originalMdx = new SimpleBookContent(content).toMdx();
               const imageTagRegex = /!\[.*?\]\(.*?\)/g;
               const matches = originalMdx.match(imageTagRegex);
               if (matches) {

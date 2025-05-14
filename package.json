@@ -2,6 +2,9 @@
   "name": "soranohon",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "PORT=8888 next dev",
     "build": "next build",
