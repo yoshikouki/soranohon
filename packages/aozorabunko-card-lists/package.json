@@ -2,9 +2,5 @@
   "name": "@soranohon/aozorabunko-card-lists",
   "version": "0.1.0",
   "private": true,
-  "main": "index.ts",
-  "dependencies": {
-    "@soranohon/core-utils": "0.1.0",
-    "@soranohon/aozorabunko": "0.1.0"
-  }
+  "main": "index.ts"
 }

@@ -90,24 +90,10 @@
     "packages/aozorabunko": {
       "name": "@soranohon/aozorabunko",
       "version": "0.1.0",
-      "dependencies": {
-        "@soranohon/core-utils": "0.1.0",
-      },
     },
     "packages/aozorabunko-card-lists": {
       "name": "@soranohon/aozorabunko-card-lists",
       "version": "0.1.0",
-      "dependencies": {
-        "@soranohon/aozorabunko": "0.1.0",
-        "@soranohon/core-utils": "0.1.0",
-      },
-    },
-    "packages/core-utils": {
-      "name": "@soranohon/core-utils",
-      "version": "0.1.0",
-      "dependencies": {
-        "csv-parse": "^5.3.3",
-      },
     },
   },
   "packages": {
@@ -472,8 +458,6 @@
     "@soranohon/aozorabunko": ["@soranohon/aozorabunko@workspace:packages/aozorabunko"],
 
     "@soranohon/aozorabunko-card-lists": ["@soranohon/aozorabunko-card-lists@workspace:packages/aozorabunko-card-lists"],
-
-    "@soranohon/core-utils": ["@soranohon/core-utils@workspace:packages/core-utils"],
 
     "@standard-schema/utils": ["@standard-schema/utils@0.3.0", "", {}, "sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g=="],
 
