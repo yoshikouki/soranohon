@@ -123,13 +123,13 @@ ${book.contentWithTags}
    * モデルに渡す。キャラクターデザインはストーリーに登場する主要キャラクターの
    * 全身像を描画するための補助として使用する。
    */
-  characterDesign: ({ plan: _plan, book }: { plan: IllustrationPlan; book: Book }): string => {
+  characterDesign: ({ plan: _plan, book }: { plan: IllustrationPlan; book: Book }): Array<{ type: "text"; text: string }> => {
     const plan = _plan.plan?.plan;
     if (!plan) {
       throw new Error("plan が見つかりません");
     }
 
-    return `
+    const prompt = `
 # 青空文庫 児童文学 キャラクターデザイン制作依頼
 あなたは **熟練の絵本キャラクターデザイナー** です。
 絵本『${book.title}』の登場人物のキャラクターデザインを描いてください。
@@ -165,6 +165,8 @@ ${
 - 今後のシーン画像制作の参照として使用するため、キャラクターの特徴を忠実に表現してください
 - 複数のキャラクターがいる場合は、それぞれを並べて表示し、関係性がわかるように配置してください
 `.trim();
+
+    return [{ type: "text", text: prompt }];
   },
 
   /**
@@ -173,13 +175,13 @@ ${
    * illustrationPlan の <theme>, <style>, および <key-visual> 要素を抜粋して
    * モデルに渡す。raw XML 全体は渡さないことで安全システムのリジェクトを回避する。
    */
-  keyVisual: ({ plan: _plan, book }: { plan: IllustrationPlan; book: Book }): string => {
+  keyVisual: ({ plan: _plan, book, characterDesignImageUrl }: { plan: IllustrationPlan; book: Book; characterDesignImageUrl?: string }): string => {
     const plan = _plan.plan?.plan;
     if (!plan) {
       throw new Error("plan が見つかりません");
     }
 
-    return `
+    const prompt = `
 # 青空文庫 児童文学 キービジュアル制作依頼
 あなたは **熟練の絵本イラストレーター** です。
 絵本『${book.title}』を象徴する 1 枚絵（正方形）を描いてください。
@@ -214,8 +216,14 @@ ${
 - NegativePrompt: "no text, no watermark, no extreme shadow, no weapon, no blood, no violence, no extreme emotion, no fear"
 
 ## 演出メモ
-${plan.keyVisual.keyVisualNotes.value ?? ""}
+${plan.keyVisual.keyVisualNotes.value ?? ""}${characterDesignImageUrl ? `
+
+## 重要: キャラクターデザイン
+URL: ${characterDesignImageUrl}
+上記のURLのキャラクターデザインを参照して、キャラクターの外見・衣装・スタイルを徐ったかに維持してください。` : ""}
 `.trim();
+
+    return prompt;
   },
 
   /**
@@ -230,8 +238,8 @@ ${plan.keyVisual.keyVisualNotes.value ?? ""}
     style: string,
     keyVisualImageUrl?: string,
     characterDesignImageUrl?: string,
-  ): string =>
-    `
+  ): Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> => {
+    const prompt = `
 # 青空文庫 児童文学 シーン${scene.sceneIndex.value} イラスト制作依頼
 あなたは **熟練の絵本イラストレーター** です。
 以下の要件を満たすシーン「${scene.sceneTitle.value}」のイラストを描いてください。
@@ -261,5 +269,26 @@ ${scene.sceneCharacters.children
 
 ## 演出メモ
 ${scene.sceneNotes.value}${characterDesignImageUrl ? `\n\n## 重要: 添付のキャラクターデザイン画像を参照して、キャラクターの外見・衣装・スタイルを一貫させてください` : ""}${keyVisualImageUrl ? `\n\n## 重要: 添付のキービジュアル画像も参照して、ビジュアルスタイルを一貫させてください` : ""}
-`.trim(),
+`.trim();
+
+    const content: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
+      { type: "text", text: prompt },
+    ];
+
+    if (characterDesignImageUrl) {
+      content.push({ 
+        type: "image_url", 
+        image_url: { url: characterDesignImageUrl } 
+      });
+    }
+
+    if (keyVisualImageUrl) {
+      content.push({ 
+        type: "image_url", 
+        image_url: { url: keyVisualImageUrl } 
+      });
+    }
+
+    return content;
+  },
 } as const;

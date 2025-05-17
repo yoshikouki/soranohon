@@ -48,11 +48,16 @@ export async function POST(
     return Response.json({ error: "挿絵計画が見つかりません" }, { status: 404 });
   }
 
-  let prompt: string;
+  const repository = new FilesystemIllustrationRepository();
+  const hasCharacterDesign = repository.hasCharacterDesign(bookId);
+  const characterDesignUrl = hasCharacterDesign ? urls.images.books.characterDesign(bookId) : undefined;
+
+  let prompt: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }>;
   if (data.type === "key-visual") {
     prompt = prompts.keyVisual({
       plan: plan,
       book,
+      characterDesignImageUrl: characterDesignUrl,
     });
   } else if (data.type === "scene") {
     if (!data.sceneId) {
@@ -66,12 +71,10 @@ export async function POST(
       return Response.json({ error: `シーンが見つかりません: ${sceneIndex}` }, { status: 404 });
     }
 
-    const repository = new FilesystemIllustrationRepository();
     const hasKeyVisual = repository.hasKeyVisual(bookId);
-
     const keyVisualUrl = hasKeyVisual ? urls.images.books.keyVisual(bookId) : undefined;
 
-    prompt = prompts.scene(scene, plan.plan.plan.style.value, keyVisualUrl);
+    prompt = prompts.scene(scene, plan.plan.plan.style.value, keyVisualUrl, characterDesignUrl);
   } else if (data.type === "character-design") {
     prompt = prompts.characterDesign({
       plan: plan,
@@ -85,9 +88,12 @@ export async function POST(
   try {
     logger.info(`Image generation started for book ID: ${bookId}`);
 
+    // 画像生成APIはテキストプロンプトのみを受け付けるため、配列の最初の要素（テキスト）を使用
+    const promptText = prompt[0].text;
+    
     const result = await generateImage({
       model: usingModel.model,
-      prompt,
+      prompt: promptText,
       aspectRatio: "1:1",
       providerOptions: {
         openai: {
@@ -115,7 +121,7 @@ export async function POST(
         success: true,
         imagePath,
         message: "画像を生成しました",
-        prompt,
+        prompt: promptText,
       },
       { status: 200 },
     );
