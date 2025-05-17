@@ -5,6 +5,9 @@
 - Use immutable data structures
 - Separate side effects
 - Ensure type safety
+- 開発した機能ごとに git commit すること
+- `try-catch` は使用を禁止する。NEVER USE `try-catch`
+- コメントを書かない。コメントがなくとも意図が分かる命名や設計が一流。NEVER WRITE `// comments`
 
 ### Test-Driven Development (TDD)
 
