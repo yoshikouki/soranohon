@@ -38,6 +38,8 @@ bun run illustration:claude src/books/59835_72466.mdx
 ## Docs
 
 - [📝 要件定義](./docs/requirements.md) - プロジェクトの機能要件と技術要件
+- [📊 進捗管理](./docs/progress-tracking.md) - 開発進捗とタスクの管理
+- [🗺️ ロードマップ](./docs/roadmap.md) - 今後の開発計画とビジョン
 
 ## Directory Structure
 
