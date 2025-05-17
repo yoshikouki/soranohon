@@ -19,7 +19,7 @@ const models = {
 };
 
 interface IllustrationRequest {
-  type: "key-visual" | "scene";
+  type: "key-visual" | "scene" | "character-design";
   sceneId?: string;
 }
 
@@ -72,6 +72,11 @@ export async function POST(
     const keyVisualUrl = hasKeyVisual ? urls.images.books.keyVisual(bookId) : undefined;
 
     prompt = prompts.scene(scene, plan.plan.plan.style.value, keyVisualUrl);
+  } else if (data.type === "character-design") {
+    prompt = prompts.characterDesign({
+      plan: plan,
+      book,
+    });
   } else {
     return Response.json({ error: "不明な生成タイプです" }, { status: 400 });
   }
@@ -79,6 +84,7 @@ export async function POST(
   const usingModel = models.gptImage1;
   try {
     logger.info(`Image generation started for book ID: ${bookId}`);
+
     const result = await generateImage({
       model: usingModel.model,
       prompt,
@@ -101,6 +107,7 @@ export async function POST(
     const repository = new FilesystemIllustrationRepository();
     const imagePath = await repository.saveIllustration(bookId, image, {
       sceneId: data.sceneId,
+      type: data.type,
     });
 
     return Response.json(

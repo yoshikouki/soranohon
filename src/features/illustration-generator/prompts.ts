@@ -117,6 +117,57 @@ ${book.contentWithTags}
 `.trim(),
 
   /**
+   * キャラクターデザイン生成プロンプト
+   *
+   * illustrationPlan の <theme>, <style>, および <characters> 要素を抜粋して
+   * モデルに渡す。キャラクターデザインはストーリーに登場する主要キャラクターの
+   * 全身像を描画するための補助として使用する。
+   */
+  characterDesign: ({ plan: _plan, book }: { plan: IllustrationPlan; book: Book }): string => {
+    const plan = _plan.plan?.plan;
+    if (!plan) {
+      throw new Error("plan が見つかりません");
+    }
+
+    return `
+# 青空文庫 児童文学 キャラクターデザイン制作依頼
+あなたは **熟練の絵本キャラクターデザイナー** です。
+絵本『${book.title}』の登場人物のキャラクターデザインを描いてください。
+
+## 作品トーン
+- テーマ : ${plan.theme.value ?? "児童文学"}
+- スタイル: ${plan.style.value ?? "やわらかな手描き風"}
+
+## 出力目的
+この画像はキャラクターデザインの参照用で、今後のシーン画像制作の際に一貫性のあるキャラクター表現を実現するために使用します。
+全身が見える立ち姿で、キャラクターの特徴がわかりやすいポーズにしてください。
+
+## 登場キャラクター
+${
+  plan.characters.children
+    .map(
+      (c) =>
+        `- **${c.charaName.value}**｜年齢: ${c.charaAge.value}｜性別: ${c.charaSex.value}｜外見: ${c.charaAppearance.value}｜詳細: ${c.charaDescription.value}`,
+    )
+    .join("\n") || "- （キャラクター情報なし）"
+}
+
+## 出力仕様
+- ビジュアルスタイル : ${plan.style.value}
+- 表現内容   : 全身像、表情がわかる顔アップ、特徴的な衣装の詳細など
+- 背景    : シンプルな背景（キャラクターが見やすい無地や薄いグラデーション）
+- 年齢層  : 5〜8 歳児向け、優しいタッチ
+- 安全性  : 暴力的表現、過激な感情/動作、ネガティブ表現を避ける
+- NegativePrompt: "no text, no watermark, no extreme shadow, no weapon, no blood, no violence, no extreme emotion, no fear"
+
+## 演出メモ
+- キャラクターの個性や特徴を視覚的に表現してください
+- 今後のシーン画像制作の参照として使用するため、キャラクターの特徴を忠実に表現してください
+- 複数のキャラクターがいる場合は、それぞれを並べて表示し、関係性がわかるように配置してください
+`.trim();
+  },
+
+  /**
    * キービジュアル生成プロンプト
    *
    * illustrationPlan の <theme>, <style>, および <key-visual> 要素を抜粋して
@@ -152,7 +203,7 @@ ${
       (c) =>
         `- **${c.keyVisualCharaName.value}**｜外見: ${c.keyVisualCharaAppearance.value}｜感情: ${c.keyVisualCharaEmotion.value}`,
     )
-    .join("\\n") ?? "- （キャラクター情報なし）"
+    .join("\n") ?? "- （キャラクター情報なし）"
 }
 
 ## 出力仕様
@@ -174,7 +225,12 @@ ${plan.keyVisual.keyVisualNotes.value ?? ""}
    * SceneSchema は XML パース結果なので `.value` を介して取り出す。
    * ※ `.sceneCharacters.children` は最大 3 人想定。
    */
-  scene: (scene: SceneSchema, style: string, keyVisualImageUrl?: string): string =>
+  scene: (
+    scene: SceneSchema,
+    style: string,
+    keyVisualImageUrl?: string,
+    characterDesignImageUrl?: string,
+  ): string =>
     `
 # 青空文庫 児童文学 シーン${scene.sceneIndex.value} イラスト制作依頼
 あなたは **熟練の絵本イラストレーター** です。
@@ -193,17 +249,17 @@ ${scene.sceneCharacters.children
     (c) =>
       `- **${c.sceneCharaName.value}**｜外見: ${c.sceneCharaAppearance.value}｜感情: ${c.sceneCharaEmotion.value}`,
   )
-  .join("\\n")}
+  .join("\n")}
 
 ## 出力仕様
 - アスペクト比 : 1:1（正方形）
 - ビジュアルスタイル : ${style}
-- キャラ造形   : 統一感のあるデザイン${keyVisualImageUrl ? `\n- キャラ参照   : 添付のキービジュアル画像を参照して同じキャラクターデザインを維持する` : ""}
+- キャラ造形   : 統一感のあるデザイン${characterDesignImageUrl ? `\n- キャラ参照   : 添付のキャラクターデザイン画像を参照して同じキャラクターデザインを維持する` : ""}${keyVisualImageUrl ? `\n- キービジュアル参照 : 添付のキービジュアル画像も参照して同じビジュアルスタイルを維持する` : ""}
 - 年齢層       : 5〜8 歳児向け、優しいタッチ
 - 安全性       : 暴力的表現、過激な感情/動作、ネガティブ表現を避ける
 - NegativePrompt: "no text, no watermark, no extreme shadow, no weapon, no blood, no violence, no extreme emotion, no fear"
 
 ## 演出メモ
-${scene.sceneNotes.value}${keyVisualImageUrl ? `\n\n## 重要: 添付のキービジュアル画像を参照して、キャラクターの外見・衣装・スタイルを一貫させてください` : ""}
+${scene.sceneNotes.value}${characterDesignImageUrl ? `\n\n## 重要: 添付のキャラクターデザイン画像を参照して、キャラクターの外見・衣装・スタイルを一貫させてください` : ""}${keyVisualImageUrl ? `\n\n## 重要: 添付のキービジュアル画像も参照して、ビジュアルスタイルを一貫させてください` : ""}
 `.trim(),
 } as const;

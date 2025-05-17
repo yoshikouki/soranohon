@@ -8,6 +8,7 @@ import { paths } from "@/lib/paths";
 interface SaveOptions {
   sceneId?: string;
   filename?: string;
+  type?: "key-visual" | "scene" | "character-design";
 }
 
 export interface IllustrationRepository {
@@ -18,6 +19,7 @@ export interface IllustrationRepository {
   ): Promise<string>;
   getIllustrationPath(bookId: string, options?: SaveOptions): string;
   hasKeyVisual(bookId: string): boolean;
+  hasCharacterDesign(bookId: string): boolean;
 }
 
 export class FilesystemIllustrationRepository implements IllustrationRepository {
@@ -30,6 +32,11 @@ export class FilesystemIllustrationRepository implements IllustrationRepository 
   hasKeyVisual(bookId: string): boolean {
     const keyVisualPath = this.getPublicFilePath(bookId);
     return this.fs.existsSync(keyVisualPath);
+  }
+
+  hasCharacterDesign(bookId: string): boolean {
+    const characterDesignPath = this.getPublicFilePath(bookId, { type: "character-design" });
+    return this.fs.existsSync(characterDesignPath);
   }
 
   private ensureDirectoryExists(directoryPath: string): void {
@@ -46,7 +53,9 @@ export class FilesystemIllustrationRepository implements IllustrationRepository 
   }
 
   getIllustrationPath(bookId: string, options?: SaveOptions): string {
-    if (options?.sceneId) {
+    if (options?.type === "character-design") {
+      return paths.images.books.characterDesign(bookId);
+    } else if (options?.sceneId) {
       const sceneIndex = parseInt(options.sceneId.replace(/[^0-9]/g, ""), 10);
       return paths.images.books.scene(bookId, sceneIndex);
     } else if (options?.filename) {
@@ -58,7 +67,12 @@ export class FilesystemIllustrationRepository implements IllustrationRepository 
 
   private getPublicFilePath(bookId: string, options?: SaveOptions): string {
     const baseDir = this.fs.getCwd();
-    if (options?.sceneId) {
+    if (options?.type === "character-design") {
+      return this.fs.join(
+        baseDir,
+        filePaths.books.publicPaths.characterDesign(bookId).replace(/^\.\//, ""),
+      );
+    } else if (options?.sceneId) {
       const sceneIndex = parseInt(options.sceneId.replace(/[^0-9]/g, ""), 10);
       return this.fs.join(
         baseDir,

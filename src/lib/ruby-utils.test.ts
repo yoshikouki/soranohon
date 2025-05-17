@@ -7,10 +7,7 @@ import {
 } from "./ruby-utils";
 
 // fs.access と fs.readFile をモック化
-vi.mock("fs/promises", () => ({
-  access: vi.fn(),
-  readFile: vi.fn(),
-}));
+vi.mock("fs/promises");
 
 describe("extractExistingRubyTags", () => {
   beforeEach(() => {

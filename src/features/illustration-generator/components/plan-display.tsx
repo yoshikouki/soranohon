@@ -1,18 +1,72 @@
 "use client";
 
+import { Loader2Icon, PaintbrushIcon } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 import { paths } from "@/lib/paths";
 import { IllustrationPlanSchema } from "../types";
 import { GenerateIllustrationButton } from "./generate-illustration-button";
 import { SceneListDisplay } from "./scene-list-display";
 
+type BookWithoutMdx = {
+  id: string;
+  title: string;
+  creator: string;
+  translator: string | undefined;
+  bibliographyRaw: string;
+  aozoraBunkoUrl: string;
+};
+
 interface PlanDisplayProps {
   plan: IllustrationPlanSchema;
   bookId: string;
+  book: BookWithoutMdx;
 }
 
 export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
   const { theme, style, characters, scenes, keyVisual } = plan.plan;
+  const [isGeneratingDesign, setIsGeneratingDesign] = useState(false);
+  const [generatedDesignPath, setGeneratedDesignPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check if character design already exists
+    const checkExistingDesign = async () => {
+      try {
+        const designPath = paths.images.books.characterDesign(bookId);
+        const response = await fetch(designPath, { method: "HEAD" });
+        if (response.ok) {
+          setGeneratedDesignPath(designPath);
+        }
+      } catch {
+        // Design doesn't exist, which is fine
+      }
+    };
+    checkExistingDesign();
+  }, [bookId]);
+
+  const handleGenerateDesign = async () => {
+    setIsGeneratingDesign(true);
+    try {
+      const response = await fetch(`/books/${bookId}/illustrations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "character-design" }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate character design");
+      }
+
+      const data = await response.json();
+      setGeneratedDesignPath(data.imagePath);
+    } catch (error) {
+      logger.error("Failed to generate character design", { error });
+    } finally {
+      setIsGeneratingDesign(false);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -57,6 +111,42 @@ export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h4 className="font-semibold text-foreground text-lg">キャラクターデザイン</h4>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleGenerateDesign}
+            disabled={isGeneratingDesign}
+          >
+            {isGeneratingDesign ? (
+              <>
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                生成中...
+              </>
+            ) : (
+              <>
+                <PaintbrushIcon className="mr-2 h-4 w-4" />
+                デザイン生成
+              </>
+            )}
+          </Button>
+        </div>
+
+        {generatedDesignPath && (
+          <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+            <Image
+              src={generatedDesignPath}
+              alt="Character Design"
+              fill
+              className="object-cover"
+              unoptimized
+            />
+          </div>
+        )}
       </div>
 
       <div className="space-y-4">

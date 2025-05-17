@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { books } from "@/books";
 import { BookContent } from "@/features/book-content/core";
 import { IllustrationPlanDisplay } from "@/features/illustration-generator/components/illustration-plan-display";
+import { FilesystemPlanRepository } from "@/features/illustration-generator/repository/plan-repository";
 import { logger } from "@/lib/logger";
 import { paths } from "@/lib/paths";
 
@@ -46,6 +47,9 @@ export default async function BookEditPage({
   }
 
   const title = book.title;
+
+  const filesystemPlanRepository = new FilesystemPlanRepository();
+  const _plan = await filesystemPlanRepository.getPlan(bookId);
 
   return (
     <main className="flex h-full flex-col space-y-6 p-6">

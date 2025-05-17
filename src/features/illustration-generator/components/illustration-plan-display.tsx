@@ -68,7 +68,20 @@ export async function IllustrationPlanDisplay({
             </AccordionItem>
           </Accordion>
 
-          {plan.plan && <PlanDisplay plan={plan.plan} bookId={book.id} />}
+          {plan.plan && (
+            <PlanDisplay
+              plan={plan.plan}
+              bookId={book.id}
+              book={{
+                id: book.id,
+                title: book.title,
+                creator: book.creator,
+                translator: book.translator,
+                bibliographyRaw: book.bibliographyRaw,
+                aozoraBunkoUrl: book.aozoraBunkoUrl,
+              }}
+            />
+          )}
         </div>
       ) : (
         <div className="space-y-4 rounded-lg bg-muted/30 p-6">
