@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { books } from "@/books";
+import { BookViewer } from "@/features/book-viewer/book-viewer";
 import { Paragraph } from "@/features/book-viewer/paragraph";
 import { StickyImage } from "@/features/book-viewer/sticky-image";
 import { logger } from "@/lib/logger";
@@ -52,7 +53,7 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
           <h1 className="text-start font-bold text-3xl sm:text-4xl">{title}</h1>
         </div>
       </div>
-      <div
+      <BookViewer
         className={cn(
           "prose prose-xl max-w-3xl font-semibold leading-loose",
           "[&_rt]:font-normal [&_rt]:text-foreground/60 [&_rt]:text-sm",
@@ -65,7 +66,7 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
             img: StickyImage,
           }}
         />
-      </div>
+      </BookViewer>
       <div className="flex flex-col items-center gap-4 py-10 text-center">
         <Link
           href={paths.home()}

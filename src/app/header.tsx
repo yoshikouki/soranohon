@@ -1,3 +1,5 @@
+"use client";
+
 import { User2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,12 +10,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ViewerSettingsMenu } from "@/features/book-viewer/components/viewer-settings-menu";
 import { paths } from "@/lib/paths";
 
 export const Header = () => {
   return (
     <>
-      {/* 通常ヘッダー - スクロールで隠れる */}
       <header className="w-full">
         <div className="container flex h-16 max-w-screen-xl items-center px-4">
           <div className="flex items-center gap-6">
@@ -35,7 +37,6 @@ export const Header = () => {
         </div>
       </header>
 
-      {/* 固定ユーザーメニュー - 画面上部に固定表示 */}
       <div className="fixed top-0 right-0 z-20 flex items-center justify-center p-4">
         <nav>
           <DropdownMenu>
@@ -49,7 +50,10 @@ export const Header = () => {
                 <span className="sr-only">ユーザーメニュー</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className={"w-72"}>
+              <DropdownMenuItem>
+                <ViewerSettingsMenu />
+              </DropdownMenuItem>
               <DropdownMenuItem>おきに入り</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
