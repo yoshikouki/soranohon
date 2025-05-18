@@ -2,7 +2,7 @@
 
 import { CheckIcon, CopyIcon } from "lucide-react";
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface CopyButtonProps {
@@ -29,14 +29,8 @@ export function CopyButton({
     await writer(value);
     setIsCopied(true);
     onCopy?.();
+    setTimeout(() => setIsCopied(false), 2000);
   };
-
-  useEffect(() => {
-    if (isCopied) {
-      const timer = setTimeout(() => setIsCopied(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [isCopied]);
 
   return (
     <button
