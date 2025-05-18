@@ -67,12 +67,14 @@ export default async function BookEditPage({
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <h2 className="font-semibold text-xl">挿絵計画</h2>
-        <IllustrationPlanDisplay
-          book={book}
-          contentsLength={bookContent.toMdx().length}
-          contentsWithoutTagsLength={bookContent.toStringWithoutTags().length}
-        />
+        <div>
+          <h2 className="mb-4 font-semibold text-xl">挿絵計画</h2>
+          <IllustrationPlanDisplay
+            book={book}
+            contentsLength={bookContent.toMdx().length}
+            contentsWithoutTagsLength={bookContent.toStringWithoutTags().length}
+          />
+        </div>
       </div>
     </main>
   );
