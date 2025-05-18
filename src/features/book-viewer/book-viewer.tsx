@@ -10,18 +10,25 @@ interface BookViewerProps {
 }
 
 const FONT_SIZE_CLASSES: Record<string, string> = {
-  sm: "prose prose-lg",
-  base: "prose prose-lg",
-  lg: "prose prose-xl",
-  xl: "prose prose-xl",
-  "2xl": "prose prose-2xl",
+  sm: "prose-sm text-sm",
+  base: "prose-base text-base",
+  lg: "prose-lg text-lg",
+  xl: "prose-xl text-xl",
+  "2xl": "prose-2xl text-2xl",
 };
 
 export function BookViewer({ children, className }: BookViewerProps) {
   const { showRuby, fontSize } = useViewerSettings();
 
   return (
-    <div className={cn(className, FONT_SIZE_CLASSES[fontSize], !showRuby && "[&_rt]:hidden")}>
+    <div
+      className={cn(
+        "prose",
+        className,
+        FONT_SIZE_CLASSES[fontSize],
+        !showRuby && "[&_rt]:hidden",
+      )}
+    >
       {children}
     </div>
   );

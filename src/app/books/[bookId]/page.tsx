@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { books } from "@/books";
 import { BookViewer } from "@/features/book-viewer/book-viewer";
+import { BibliographyInfo } from "@/features/book-viewer/components/bibliography-info";
 import { Paragraph } from "@/features/book-viewer/paragraph";
 import { StickyImage } from "@/features/book-viewer/sticky-image";
 import { logger } from "@/lib/logger";
@@ -47,7 +48,7 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
   const title = book.title;
 
   return (
-    <main className="relative flex h-full w-full flex-col items-center justify-center py-6">
+    <main className="relative flex h-full w-full flex-col items-center justify-center gap-10 py-6">
       <div className="sticky top-0 z-10 flex h-16 w-full items-center justify-center bg-linear-to-b from-background via-background/95 to-background/50 px-4">
         <div className="w-full max-w-3xl px-4">
           <h1 className="text-start font-bold text-3xl sm:text-4xl">{title}</h1>
@@ -55,7 +56,7 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
       </div>
       <BookViewer
         className={cn(
-          "prose prose-xl max-w-3xl font-semibold leading-loose",
+          "max-w-3xl font-semibold leading-loose",
           "[&_rt]:font-normal [&_rt]:text-foreground/60 [&_rt]:text-sm",
           styles.booksLineBreak,
         )}
@@ -67,6 +68,11 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
           }}
         />
       </BookViewer>
+
+      <div className="max-w-3xl px-4">
+        <BibliographyInfo book={book} />
+      </div>
+
       <div className="flex flex-col items-center gap-4 py-10 text-center">
         <Link
           href={paths.home()}
