@@ -135,9 +135,10 @@ export function ImageUpload({
           <Image
             src={preview}
             alt="Preview"
-            width={400}
-            height={300}
-            className="h-auto max-h-64 w-full object-contain"
+            width={1200}
+            height={800}
+            className="h-auto w-full object-contain"
+            unoptimized
           />
           <Button
             size="icon"

@@ -42,29 +42,31 @@ export function SceneListDisplay({ bookId, scenes, style }: SceneListDisplayProp
                   }
                   className="h-8 px-3 text-sm"
                 >
-                  <span className="text-xs">プロンプトコピー</span>
+                  <span className="text-xs">プロンプト</span>
                 </CopyButton>
                 <CopyImageButton
                   imageUrl={paths.images.books.scene(bookId, scene.index)}
                   onCopy={() => {}}
                   className="h-8 px-3 text-sm"
                 >
-                  <span className="text-xs">画像コピー</span>
+                  <span className="text-xs">画像</span>
                 </CopyImageButton>
                 <GenerateIllustrationButton
                   bookId={bookId}
                   type="scene"
                   sceneId={`scene-${scene.index}`}
-                  label={`シーン${scene.index}画像生成`}
+                  label="生成"
                 />
               </div>
             </div>
 
-            <ImageUpload
-              bookId={bookId}
-              imageType={`scene-${scene.index}` as `scene-${number}`}
-              currentImagePath={paths.images.books.scene(bookId, scene.index)}
-            />
+            <div className="mt-4 w-full">
+              <ImageUpload
+                bookId={bookId}
+                imageType={`scene-${scene.index}` as `scene-${number}`}
+                currentImagePath={paths.images.books.scene(bookId, scene.index)}
+              />
+            </div>
 
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="prompt">

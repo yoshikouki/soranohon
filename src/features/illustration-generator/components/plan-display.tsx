@@ -109,7 +109,7 @@ export function PlanDisplay({ plan, bookId, book, fullPlan }: PlanDisplayProps) 
           <h4 className="font-semibold text-foreground text-lg">キャラクターデザイン</h4>
           <div className="flex items-center gap-2">
             <CopyButton value={characterDesignPrompt} className="h-8 px-3 text-sm">
-              <span className="text-xs">プロンプトコピー</span>
+              <span className="text-xs">プロンプト</span>
             </CopyButton>
             {generatedDesignPath && (
               <CopyImageButton
@@ -117,7 +117,7 @@ export function PlanDisplay({ plan, bookId, book, fullPlan }: PlanDisplayProps) 
                 onCopy={() => {}}
                 className="h-8 px-3 text-sm"
               >
-                <span className="text-xs">画像コピー</span>
+                <span className="text-xs">画像</span>
               </CopyImageButton>
             )}
             <Button
@@ -134,21 +134,23 @@ export function PlanDisplay({ plan, bookId, book, fullPlan }: PlanDisplayProps) 
               ) : (
                 <>
                   <PaintbrushIcon className="mr-2 h-4 w-4" />
-                  デザイン生成
+                  生成
                 </>
               )}
             </Button>
           </div>
         </div>
 
-        <ImageUpload
-          bookId={bookId}
-          imageType="character-design"
-          currentImagePath={generatedDesignPath || paths.images.books.characterDesign(bookId)}
-          onUploadComplete={(newPath) => {
-            setGeneratedDesignPath(newPath);
-          }}
-        />
+        <div className="mt-4 w-full">
+          <ImageUpload
+            bookId={bookId}
+            imageType="character-design"
+            currentImagePath={generatedDesignPath || paths.images.books.characterDesign(bookId)}
+            onUploadComplete={(newPath) => {
+              setGeneratedDesignPath(newPath);
+            }}
+          />
+        </div>
 
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="prompt">
@@ -197,28 +199,26 @@ export function PlanDisplay({ plan, bookId, book, fullPlan }: PlanDisplayProps) 
           <h4 className="font-semibold text-foreground text-lg">キービジュアル</h4>
           <div className="flex items-center gap-2">
             <CopyButton value={keyVisualPrompt} className="h-8 px-3 text-sm">
-              <span className="text-xs">プロンプトコピー</span>
+              <span className="text-xs">プロンプト</span>
             </CopyButton>
             <CopyImageButton
               imageUrl={paths.images.books.keyVisual(bookId)}
               onCopy={() => {}}
               className="h-8 px-3 text-sm"
             >
-              <span className="text-xs">画像コピー</span>
+              <span className="text-xs">画像</span>
             </CopyImageButton>
-            <GenerateIllustrationButton
-              bookId={bookId}
-              type="key-visual"
-              label="キービジュアル生成"
-            />
+            <GenerateIllustrationButton bookId={bookId} type="key-visual" label="生成" />
           </div>
         </div>
 
-        <ImageUpload
-          bookId={bookId}
-          imageType="key-visual"
-          currentImagePath={paths.images.books.keyVisual(bookId)}
-        />
+        <div className="mt-4 w-full">
+          <ImageUpload
+            bookId={bookId}
+            imageType="key-visual"
+            currentImagePath={paths.images.books.keyVisual(bookId)}
+          />
+        </div>
 
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="prompt">
