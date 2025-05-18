@@ -56,17 +56,17 @@ export async function IllustrationPlanDisplay({
         <div className="space-y-8">
           <Accordion type="single" collapsible>
             <AccordionItem value="raw-plan" className="border-0">
-              <AccordionTrigger className="rounded-md px-4 py-2 text-primary hover:bg-muted/20">
-                <div className="flex w-full items-center justify-between">
+              <div className="flex items-center">
+                <CopyButton value={plan.rawPlan} icon={true} className="ml-2 p-1" />
+                <AccordionTrigger className="rounded-md px-4 py-2 text-primary hover:bg-muted/20">
                   <div className="flex items-center gap-1 font-medium text-sm">
                     計画生データ
-                    <CopyButton value={plan.rawPlan} icon={true} className="ml-2 p-1" />
                   </div>
                   <div className="pr-4 text-muted-foreground text-xs">
                     {plan.rawPlan.length.toLocaleString()}文字
                   </div>
-                </div>
-              </AccordionTrigger>
+                </AccordionTrigger>
+              </div>
               <AccordionContent>
                 <div className="rounded-lg bg-muted/30 p-4">
                   <pre className="max-h-96 overflow-x-auto whitespace-pre-wrap text-muted-foreground text-xs">

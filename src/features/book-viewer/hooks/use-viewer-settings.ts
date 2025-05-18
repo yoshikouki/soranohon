@@ -20,9 +20,18 @@ export function useViewerSettings() {
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored) as ViewerSettings;
+      const parsed = JSON.parse(stored);
       setSettings(parsed);
     }
+    const onStorageChange = (event: StorageEvent) => {
+      if (event.key !== STORAGE_KEY) {
+        return;
+      }
+      const parsed = JSON.parse(event.newValue || "{}");
+      setSettings(parsed);
+    };
+    window.addEventListener("storage", onStorageChange);
+    return () => window.removeEventListener("storage", onStorageChange);
   }, []);
 
   useEffect(() => {
