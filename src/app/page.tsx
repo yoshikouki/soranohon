@@ -25,14 +25,14 @@ export default function Home() {
             <Link key={book.id} href={paths.books.detail(book.id)}>
               <Card className="h-full transition-all duration-200 hover:text-primary/60">
                 <CardHeader className="">
-                  <div className="flex min-h-20 items-center justify-center">
-                    {book.imageSrc ? (
+                  <div className="flex h-40 items-center justify-center">
+                    {book.coverImage ? (
                       <Image
-                        src={book.imageSrc}
+                        src={book.coverImage}
                         alt={book.title}
-                        width={70}
-                        height={70}
-                        className="h-full w-full object-contain"
+                        width={120}
+                        height={160}
+                        className="h-full w-auto object-contain"
                       />
                     ) : (
                       <div className="text-4xl">📚</div>
