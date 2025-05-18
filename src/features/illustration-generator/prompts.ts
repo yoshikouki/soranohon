@@ -247,6 +247,7 @@ ${
 # 青空文庫 児童文学 キービジュアル制作依頼
 あなたは **熟練の絵本イラストレーター** です。
 絵本『${book.title}』を象徴する 1 枚絵（正方形）を描いてください。
+添付したキャラクターデザイン画像を参照してキャラクターを描いてください。
 
 ## 作品トーン
 - テーマ : ${plan.theme ?? "児童文学"}
@@ -261,11 +262,11 @@ ${
 - カラー／光源    : ${plan.keyVisual.colorLighting ?? "柔らかい色彩"}
 
 ## 登場キャラクター
-${
-  plan.keyVisual.characters
-    .map((c) => `- **${c.name}**｜外見: ${c.appearance}｜感情: ${c.emotion}`)
-    .join("\n") ?? "- （キャラクター情報なし）"
-}
+キャラクターデザイン画像を添付しています。
+この画像のキャラクターデザインを忠実に参照して、キャラクターの外見・衣装・スタイルを一貫して維持してください。
+${plan.keyVisual.characters
+  .map((c) => `- **${c.name}**｜外見: ${c.appearance}｜感情: ${c.emotion}`)
+  .join("\n")}
 
 ## 出力仕様
 - アスペクト比 : 1:1（正方形）
@@ -275,15 +276,7 @@ ${
 - NegativePrompt: "no text, no watermark, no extreme shadow, no weapon, no blood, no violence, no extreme emotion, no fear"
 
 ## 演出メモ
-${plan.keyVisual.notes ?? ""}${
-  characterDesignImageUrl
-    ? `
-
-## 重要: キャラクターデザイン
-URL: ${characterDesignImageUrl}
-上記のURLのキャラクターデザインを参照して、キャラクターの外見・衣装・スタイルを徐ったかに維持してください。`
-    : ""
-}
+${plan.keyVisual.notes}
 `.trim();
 
     const content: Array<
@@ -318,6 +311,7 @@ URL: ${characterDesignImageUrl}
 # 青空文庫 児童文学 シーン${scene.index} イラスト制作依頼
 あなたは **熟練の絵本イラストレーター** です。
 以下の要件を満たすシーン「${scene.title}」のイラストを描いてください。
+${characterDesignImageUrl ? "このイラストでは、添付のキャラクターデザイン画像を参照して登場キャラクターを一貫したデザインで描いてください。" : ""}
 
 ## シーン概要
 - 場所          : ${scene.location}
@@ -327,6 +321,7 @@ URL: ${characterDesignImageUrl}
 - カラー／光源  : ${scene.colorLighting}
 
 ## 登場キャラクター
+添付のキャラクターデザイン画像を忠実に参照して、キャラクターの外見・衣装・スタイルを一貫して維持してください。
 ${scene.characters
   .map((c) => `- **${c.name}**｜外見: ${c.appearance}｜感情: ${c.emotion}`)
   .join("\n")}
@@ -334,13 +329,13 @@ ${scene.characters
 ## 出力仕様
 - アスペクト比 : 1:1（正方形）
 - ビジュアルスタイル : ${style}
-- キャラ造形   : 統一感のあるデザイン${characterDesignImageUrl ? `\n- キャラ参照   : 添付のキャラクターデザイン画像を参照して同じキャラクターデザインを維持する` : ""}${keyVisualImageUrl ? `\n- キービジュアル参照 : 添付のキービジュアル画像も参照して同じビジュアルスタイルを維持する` : ""}
+- キャラ造形   : 統一感のあるデザイン${characterDesignImageUrl ? `\n- キャラ参照   : 添付のキャラクターデザイン画像を参照して、同じデザインを忠実に維持` : ""}${keyVisualImageUrl ? `\n- キービジュアル参照 : 添付のキービジュアル画像も参照して、同じスタイルを維持` : ""}
 - 年齢層       : 5〜8 歳児向け、優しいタッチ
 - 安全性       : 暴力的表現、過激な感情/動作、ネガティブ表現を避ける
 - NegativePrompt: "no text, no watermark, no extreme shadow, no weapon, no blood, no violence, no extreme emotion, no fear"
 
 ## 演出メモ
-${scene.notes}${characterDesignImageUrl ? `\n\n## 重要: 添付のキャラクターデザイン画像を参照して、キャラクターの外見・衣装・スタイルを一貫させてください` : ""}${keyVisualImageUrl ? `\n\n## 重要: 添付のキービジュアル画像も参照して、ビジュアルスタイルを一貫させてください` : ""}
+${scene.notes}
 `.trim();
 
     const content: Array<
