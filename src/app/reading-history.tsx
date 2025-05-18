@@ -8,7 +8,7 @@ import { useReadingHistory } from "@/features/reading-history/hooks/use-reading-
 
 export function ReadingHistoryDialog() {
   const { isOpen, closeDialog } = useReadingHistoryDialog();
-  const { history, isLoading, removeFromHistory, clearHistory, refreshHistory } =
+  const { history, isLoading, removeFromHistory, clearHistory, refetch: refreshHistory } =
     useReadingHistory();
 
   const handleOpenChange = (open: boolean) => {

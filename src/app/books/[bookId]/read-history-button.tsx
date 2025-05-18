@@ -28,7 +28,7 @@ export function ReadHistoryButton({
   const [isLoading, setIsLoading] = useState(false);
   const [isRead, setIsRead] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const { addToHistory, history, refreshHistory } = useReadingHistory();
+  const { addToHistory, history, refetch: refreshHistory } = useReadingHistory();
 
   useEffect(() => {
     const existingEntry = history.find((item) => item.bookId === book.bookId);
