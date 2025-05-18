@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { paths } from "@/lib/paths";
-import { ReadingHistoryDialogWithTrigger } from "./reading-history";
 
 export default function Home() {
   const bookList = Object.values(books);
@@ -19,7 +18,6 @@ export default function Home() {
       <div className="w-full max-w-3xl">
         <div className="flex flex-col items-center gap-4 pb-12 text-center">
           <p className="text-xl">青空文庫で公開されている児童文学を集めました</p>
-          <ReadingHistoryDialogWithTrigger />
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">

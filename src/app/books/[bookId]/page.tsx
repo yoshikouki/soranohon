@@ -8,9 +8,7 @@ import { StickyImage } from "@/features/book-viewer/sticky-image";
 import { logger } from "@/lib/logger";
 import { paths } from "@/lib/paths";
 import { cn } from "@/lib/utils";
-import { BookVisitRecorder } from "./book-visit-recorder";
 import styles from "./books.module.css";
-import { ReadHistoryButton } from "./read-history-button";
 
 export async function generateMetadata({
   params,
@@ -69,17 +67,6 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
         />
       </div>
       <div className="flex flex-col items-center gap-4 py-10 text-center">
-        <ReadHistoryButton
-          book={{
-            bookId: bookId,
-            title: title,
-            coverImage: book.coverImage,
-          }}
-          variant="default"
-          completed={true}
-        >
-          よんだ
-        </ReadHistoryButton>
         <Link
           href={paths.home()}
           className="inline-flex items-center gap-1 py-2 font-bold text-primary transition-colors hover:text-primary/70"
@@ -87,15 +74,6 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
           ← ほんのリストに もどる
         </Link>
       </div>
-
-      {/* 自動記録コンポーネント */}
-      <BookVisitRecorder
-        book={{
-          bookId: bookId,
-          title: title,
-          coverImage: book.coverImage,
-        }}
-      />
     </main>
   );
 }

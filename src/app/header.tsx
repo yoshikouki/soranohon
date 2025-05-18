@@ -1,5 +1,3 @@
-"use client";
-
 import { User2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,12 +8,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useReadingHistoryDialog } from "@/features/reading-history/context";
 import { paths } from "@/lib/paths";
 
 export const Header = () => {
-  const { openDialog: openReadingHistoryDialog } = useReadingHistoryDialog();
-
   return (
     <>
       {/* 通常ヘッダー - スクロールで隠れる */}
@@ -55,9 +50,6 @@ export const Header = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={openReadingHistoryDialog}>
-                よんだほん
-              </DropdownMenuItem>
               <DropdownMenuItem>おきに入り</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -3,11 +3,9 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Geist_Mono, Noto_Sans_JP } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
-import { ReadingHistoryDialogProvider } from "@/features/reading-history/context";
 import { cn } from "@/lib/utils";
 import { Footer } from "./footer";
 import { Header } from "./header";
-import { ReadingHistoryDialog } from "./reading-history";
 
 const notoSansJP = Noto_Sans_JP({
   subsets: ["latin"],
@@ -34,13 +32,10 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className={cn("antialiased", notoSansJP.variable, geistMono.variable)}>
-        <ReadingHistoryDialogProvider>
-          <Header />
-          {children}
-          <Footer />
-          <ReadingHistoryDialog />
-          <Toaster />
-        </ReadingHistoryDialogProvider>
+        <Header />
+        {children}
+        <Footer />
+        <Toaster />
       </body>
     </html>
   );
