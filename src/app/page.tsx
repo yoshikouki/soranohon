@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { books } from "@/books";
 import {
@@ -9,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { paths } from "@/lib/paths";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
   const bookList = Object.values(books);
@@ -23,26 +23,37 @@ export default function Home() {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           {bookList.map((book) => (
             <Link key={book.id} href={paths.books.detail(book.id)}>
-              <Card className="h-full transition-all duration-200 hover:text-primary/60">
+              <Card
+                className={cn(
+                  "aspect-square h-full border-8 border-background transition-all duration-200 hover:text-primary/60",
+                  book.coverImage && `bg-[url(${book.coverImage})]`,
+                )}
+                style={{
+                  backgroundImage: book.coverImage ? `url(${book.coverImage})` : undefined,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
+              >
                 <CardHeader className="">
                   <div className="flex h-40 items-center justify-center">
-                    {book.coverImage ? (
-                      <Image
-                        src={book.coverImage}
-                        alt={book.title}
-                        width={120}
-                        height={160}
-                        className="h-full w-auto object-contain"
-                      />
-                    ) : (
-                      <div className="text-4xl">📚</div>
-                    )}
+                    {!book.coverImage && <div className="text-4xl">📚</div>}
                   </div>
-                  <CardTitle className="mt-2 text-2xl">{book.title}</CardTitle>
+                  <CardTitle
+                    className={cn(
+                      "mt-2 text-2xl",
+                      book.coverImage && "font-bold text-background",
+                    )}
+                  >
+                    {book.title}
+                  </CardTitle>
                 </CardHeader>
                 {book.description && (
                   <CardContent>
-                    <CardDescription className="">{book.description}</CardDescription>
+                    <CardDescription
+                      className={cn("text-sm", book.coverImage && "font-bold text-background")}
+                    >
+                      {book.description}
+                    </CardDescription>
                   </CardContent>
                 )}
               </Card>
