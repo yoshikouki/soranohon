@@ -18,7 +18,7 @@ bun run illustration:claude src/books/59835_72466.mdx
 
 ### 出力内容
 
-生成される挿絵計画（`[ファイル名]-illustration-plan.md`）には以下の情報が含まれます：
+生成される挿絵計画（`[ファイル名]-illustration-plan.json`）には以下の情報が含まれます：
 
 1. **物語の概要** - 物語の簡潔な要約
 2. **登場人物リスト** - 主要登場人物とその特徴

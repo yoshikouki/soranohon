@@ -26,7 +26,52 @@ export interface IllustrationCharacter {
 export interface IllustrationPlan {
   bookId: string;
   rawPlan: string;
-  plan: IllustrationPlanSchema | null;
+  plan: IllustrationPlanJSON | null;
+}
+
+export interface IllustrationPlanJSON {
+  theme: string;
+  style: string;
+  characters: {
+    name: string;
+    age: string;
+    sex: string;
+    appearance: string;
+    description: string;
+  }[];
+  characterCount: number;
+  scenes: {
+    index: number;
+    title: string;
+    location: string;
+    time: string;
+    characters: {
+      name: string;
+      appearance: string;
+      description: string;
+      emotion: string;
+    }[];
+    situation: string;
+    camera: string;
+    colorLighting: string;
+    notes: string;
+  }[];
+  sceneCount: number;
+  keyVisual: {
+    title: string;
+    location: string;
+    time: string;
+    characters: {
+      name: string;
+      appearance: string;
+      description: string;
+      emotion: string;
+    }[];
+    situation: string;
+    camera: string;
+    colorLighting: string;
+    notes: string;
+  };
 }
 
 export type IllustrationPlanSchema = {

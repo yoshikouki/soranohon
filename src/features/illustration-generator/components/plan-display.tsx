@@ -3,30 +3,31 @@
 import { Loader2Icon, PaintbrushIcon } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import type { Book } from "@/books";
+import { CopyButton } from "@/components/copy-button";
 import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
 import { paths } from "@/lib/paths";
-import { IllustrationPlanSchema } from "../types";
+import { prompts } from "../prompts";
+import { IllustrationPlanJSON } from "../types";
 import { GenerateIllustrationButton } from "./generate-illustration-button";
+import { PromptDisplayWithCopy } from "./prompt-display-with-copy";
 import { SceneListDisplay } from "./scene-list-display";
 
-type BookWithoutMdx = {
-  id: string;
-  title: string;
-  creator: string;
-  translator: string | undefined;
-  bibliographyRaw: string;
-  aozoraBunkoUrl: string;
-};
+type BookInfo = Pick<
+  Book,
+  "id" | "title" | "creator" | "translator" | "bibliographyRaw" | "aozoraBunkoUrl"
+>;
 
 interface PlanDisplayProps {
-  plan: IllustrationPlanSchema;
+  plan: IllustrationPlanJSON;
   bookId: string;
-  book: BookWithoutMdx;
+  book: BookInfo;
+  fullPlan: { plan: IllustrationPlanJSON | null; rawPlan: string };
 }
 
-export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
-  const { theme, style, characters, scenes, keyVisual } = plan.plan;
+export function PlanDisplay({ plan, bookId, book, fullPlan }: PlanDisplayProps) {
+  const { theme, style, characters, scenes, keyVisual } = plan;
   const [isGeneratingDesign, setIsGeneratingDesign] = useState(false);
   const [generatedDesignPath, setGeneratedDesignPath] = useState<string | null>(null);
 
@@ -44,6 +45,22 @@ export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
     };
     checkExistingDesign();
   }, [bookId]);
+
+  const characterDesignPrompt =
+    prompts
+      .characterDesign({
+        plan: { ...fullPlan, bookId: bookId },
+        book: { ...book, mdx: () => Promise.resolve({}) },
+      })
+      .find((item) => item.type === "text")?.text || "";
+
+  const keyVisualPrompt =
+    prompts
+      .keyVisual({
+        plan: { ...fullPlan, bookId: bookId },
+        book: { ...book, mdx: () => Promise.resolve({}) },
+      })
+      .find((item) => item.type === "text")?.text || "";
 
   const handleGenerateDesign = async () => {
     setIsGeneratingDesign(true);
@@ -72,39 +89,37 @@ export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <div className="space-y-1">
           <h4 className="font-semibold text-md text-primary">テーマ</h4>
-          <p className="text-lg">{theme.value}</p>
+          <p className="text-lg">{theme}</p>
         </div>
         <div className="space-y-1">
           <h4 className="font-semibold text-md text-primary">スタイル</h4>
-          <p className="text-lg">{style.value}</p>
+          <p className="text-lg">{style}</p>
         </div>
       </div>
 
       <div className="space-y-4">
         <h4 className="font-semibold text-foreground text-lg">
           登場人物{" "}
-          <span className="text-muted-foreground text-sm">
-            ({characters.children.length}人)
-          </span>
+          <span className="text-muted-foreground text-sm">({characters.length}人)</span>
         </h4>
         <div className="space-y-6">
-          {characters.children.map((character) => (
-            <div key={character.charaName.value} className="space-y-2 bg-background p-4">
+          {characters.map((character) => (
+            <div key={character.name} className="space-y-2 bg-background p-4">
               <h5 className="font-semibold text-foreground text-md">
-                {character.charaName.value}
+                {character.name}
                 <span className="font-normal text-muted-foreground text-sm">
                   {" "}
-                  {character.charaAge.value}歳・{character.charaSex.value}
+                  {character.age}歳・{character.sex}
                 </span>
               </h5>
               <div className="space-y-2 text-muted-foreground text-sm">
                 <div className="space-y-1">
                   <p className="text-primary/70 text-xs">外見</p>
-                  <p>{character.charaAppearance.value}</p>
+                  <p>{character.appearance}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-primary/70 text-xs">説明</p>
-                  <p>{character.charaDescription.value}</p>
+                  <p>{character.description}</p>
                 </div>
               </div>
             </div>
@@ -141,11 +156,23 @@ export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
               src={generatedDesignPath}
               alt="Character Design"
               fill
-              className="object-cover"
+              className="cursor-pointer object-cover"
               unoptimized
+              onClick={() => navigator.clipboard.writeText(generatedDesignPath)}
             />
+            <div className="absolute top-2 right-2">
+              <CopyButton value={generatedDesignPath} onCopy={() => {}}>
+                <span className="text-xs">画像URLをコピー</span>
+              </CopyButton>
+            </div>
           </div>
         )}
+
+        <PromptDisplayWithCopy
+          prompt={characterDesignPrompt}
+          title="キャラクターデザイン生成プロンプト"
+          itemValue="character-design-prompt"
+        />
       </div>
 
       <div className="space-y-4">
@@ -161,46 +188,47 @@ export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
         <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-lg">
           <Image
             src={paths.images.books.keyVisual(bookId)}
-            alt={keyVisual.keyVisualTitle.value}
+            alt={keyVisual.title}
             fill
-            className="object-cover"
+            className="cursor-pointer object-cover"
             unoptimized
+            onClick={() => navigator.clipboard.writeText(paths.images.books.keyVisual(bookId))}
             onError={() => {
-              const selector = `img[alt="${keyVisual.keyVisualTitle.value}"]`;
+              const selector = `img[alt="${keyVisual.title}"]`;
               const img = document.querySelector(selector);
               if (img && img instanceof HTMLImageElement) {
                 img.style.display = "none";
               }
             }}
           />
+          <div className="absolute top-2 right-2">
+            <CopyButton value={paths.images.books.keyVisual(bookId)} onCopy={() => {}}>
+              <span className="text-xs">画像URLをコピー</span>
+            </CopyButton>
+          </div>
         </div>
 
         <div className="space-y-4 bg-background p-4">
-          <h5 className="font-semibold text-foreground text-md">
-            {keyVisual.keyVisualTitle.value}
-          </h5>
+          <h5 className="font-semibold text-foreground text-md">{keyVisual.title}</h5>
 
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-1">
               <p className="text-primary/70 text-xs">場所</p>
-              <p className="text-sm">{keyVisual.keyVisualLocation.value}</p>
+              <p className="text-sm">{keyVisual.location}</p>
             </div>
             <div className="space-y-1">
               <p className="text-primary/70 text-xs">時間</p>
-              <p className="text-sm">{keyVisual.keyVisualTime.value}</p>
+              <p className="text-sm">{keyVisual.time}</p>
             </div>
           </div>
 
           <div className="space-y-2">
             <p className="text-primary/70 text-xs">登場キャラクター</p>
             <div className="space-y-2">
-              {keyVisual.keyVisualCharacters.children.map((character) => (
-                <div key={character.keyVisualCharaName.value} className="text-sm">
-                  <span className="font-medium">{character.keyVisualCharaName.value}</span>
-                  <span className="text-muted-foreground">
-                    {" "}
-                    {character.keyVisualCharaEmotion.value}
-                  </span>
+              {keyVisual.characters.map((character) => (
+                <div key={character.name} className="text-sm">
+                  <span className="font-medium">{character.name}</span>
+                  <span className="text-muted-foreground"> {character.emotion}</span>
                 </div>
               ))}
             </div>
@@ -209,28 +237,34 @@ export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
           <div className="space-y-4">
             <div className="space-y-1">
               <p className="text-primary/70 text-xs">状況</p>
-              <p className="text-sm">{keyVisual.keyVisualSituation.value}</p>
+              <p className="text-sm">{keyVisual.situation}</p>
             </div>
 
             <div className="space-y-1">
               <p className="text-primary/70 text-xs">カメラアングル</p>
-              <p className="text-sm">{keyVisual.keyVisualCamera.value}</p>
+              <p className="text-sm">{keyVisual.camera}</p>
             </div>
 
             <div className="space-y-1">
               <p className="text-primary/70 text-xs">色・照明</p>
-              <p className="text-sm">{keyVisual.keyVisualColorLighting.value}</p>
+              <p className="text-sm">{keyVisual.colorLighting}</p>
             </div>
 
             <div className="space-y-1">
               <p className="text-primary/70 text-xs">備考</p>
-              <p className="text-sm">{keyVisual.keyVisualNotes.value}</p>
+              <p className="text-sm">{keyVisual.notes}</p>
             </div>
           </div>
         </div>
+
+        <PromptDisplayWithCopy
+          prompt={keyVisualPrompt}
+          title="キービジュアル生成プロンプト"
+          itemValue="key-visual-prompt"
+        />
       </div>
 
-      <SceneListDisplay bookId={bookId} scenes={scenes.children} style={style.value} />
+      <SceneListDisplay bookId={bookId} scenes={scenes} style={style} />
     </div>
   );
 }

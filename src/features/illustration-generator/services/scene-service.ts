@@ -22,7 +22,7 @@ export async function generateScene(request: SceneGenerateRequest): Promise<{
     throw new Error("插絵計画が完成していません");
   }
 
-  const scene = plan.plan.plan.scenes.children.find((s) => s.sceneIndex.value === sceneIndex);
+  const scene = plan.plan.scenes.find((s) => s.index === sceneIndex);
 
   if (!scene) {
     throw new Error(`シーンが見つかりません: ${sceneIndex}`);
@@ -37,12 +37,7 @@ export async function generateScene(request: SceneGenerateRequest): Promise<{
     ? urls.images.books.characterDesign(bookId)
     : undefined;
 
-  const prompt = prompts.scene(
-    scene,
-    plan.plan.plan.style.value,
-    keyVisualUrl,
-    characterDesignUrl,
-  );
+  const prompt = prompts.scene(scene, plan.plan.style, keyVisualUrl, characterDesignUrl);
   const promptText = prompt.find((p) => p.type === "text")?.text;
   if (!promptText) {
     throw new Error("テキストプロンプトが見つかりません");

@@ -1,8 +1,8 @@
 import { google } from "@ai-sdk/google";
-import { streamText } from "ai";
+import { streamObject } from "ai";
 import { books } from "@/books";
 import { BookContent } from "@/features/book-content/core";
-import { prompts } from "@/features/illustration-generator/prompts";
+import { illustrationPlanSchema, prompts } from "@/features/illustration-generator/prompts";
 import { FilesystemPlanRepository } from "@/features/illustration-generator/repository/plan-repository";
 import { logger } from "@/lib/logger";
 
@@ -45,22 +45,25 @@ export async function POST(
   });
 
   const usingModel = models.gemini25Pro;
-  const result = streamText({
+  const result = streamObject({
+    mode: "json",
     model: usingModel.model,
-    prompt: illustrationPlanPrompt,
+    output: "object",
+    system: illustrationPlanPrompt,
+    schema: illustrationPlanSchema,
     onFinish: async (result) => {
       logger.info(
         `Model Usage: Generate Illustration Plan: ${result.usage} (${usingModel.name})`,
       );
       const planRepository = new FilesystemPlanRepository();
-      await planRepository.savePlan(bookId, result.text);
+      if (result.object) {
+        await planRepository.savePlan(bookId, JSON.stringify(result.object));
+      }
     },
     onError: (error) => {
       logger.error("挿絵計画生成エラー:", error);
     },
   });
 
-  return result.toDataStreamResponse({
-    sendReasoning: true,
-  });
+  return result.toTextStreamResponse();
 }

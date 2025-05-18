@@ -80,6 +80,7 @@ export async function IllustrationPlanDisplay({
                 bibliographyRaw: book.bibliographyRaw,
                 aozoraBunkoUrl: book.aozoraBunkoUrl,
               }}
+              fullPlan={plan}
             />
           )}
         </div>
