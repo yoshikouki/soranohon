@@ -26,9 +26,7 @@ export function StickyImage({
   className,
   ...props
 }: StickyImageProps) {
-  // 絶対パスに変換
   const src = _src?.startsWith("/") ? _src : `/${_src}`;
-  // 画像IDを生成（アンカーリンク用）
   const id = src?.split("/").pop()?.split(".")[0] || "image";
 
   if (!src) return null;

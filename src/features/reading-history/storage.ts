@@ -1,98 +1,93 @@
 import { v4 as uuidv4 } from "uuid";
 import { logger } from "@/lib/logger";
-import { readingHistoryEntrySchema, readingHistorySchema } from "./schema";
-import { ReadingHistoryEntry, ReadingSession } from "./types";
+import {
+  type ReadingHistoryEntry,
+  type ReadingSession,
+  readingHistoryEntrySchema,
+} from "./schema";
 
-const STORAGE_KEY = "soranohon:reading-history";
+const STORAGE_KEY = "reading-history";
 
-function isStorageAvailable(): boolean {
-  if (typeof window === "undefined" || typeof localStorage === "undefined") {
+export function getCurrentDate() {
+  return new Date();
+}
+
+export function isStorageAvailable(): boolean {
+  if (typeof window === "undefined") {
     return false;
   }
 
-  const testKey = "soranohon:storage-test";
-  const result = (() => {
-    localStorage.setItem(testKey, "test");
-    localStorage.removeItem(testKey);
+  try {
+    const testKey = "__storage_test__";
+    window.localStorage.setItem(testKey, "1");
+    window.localStorage.removeItem(testKey);
     return true;
-  })();
-
-  if (!result) {
-    logger.error("LocalStorage is not available");
+  } catch {
+    logger.warn("localStorage is not available");
+    return false;
   }
-  return result;
 }
 
 export function getReadingHistory(): ReadingHistoryEntry[] {
   if (!isStorageAvailable()) {
-    logger.warn("LocalStorage is not available, returning empty history");
+    logger.warn("LocalStorage is not available");
     return [];
   }
 
-  const data = localStorage.getItem(STORAGE_KEY);
-  if (!data) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (!data) {
+      return [];
+    }
+
+    const parsedData = JSON.parse(data);
+    if (!Array.isArray(parsedData)) {
+      logger.warn("Reading history is not an array, returning empty");
+      return [];
+    }
+
+    const filteredData = parsedData.filter(
+      (item) => item !== null && item !== undefined && typeof item === "object",
+    );
+
+    if (filteredData.length !== parsedData.length) {
+      logger.warn("Filtered out invalid reading history entries");
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(filteredData));
+    }
+
+    return migrateReadingHistory(filteredData);
+  } catch (error) {
+    logger.error("Failed to parse reading history", { error });
     return [];
   }
+}
 
-  const parsedData = (() => {
-    const parsed = JSON.parse(data);
-    return parsed;
-  })();
-
-  const validationResult = readingHistorySchema.safeParse(parsedData);
-
-  if (validationResult.success) {
-    return validationResult.data.sort((a, b) => {
-      const dateA = new Date(a.lastReadAt).getTime();
-      const dateB = new Date(b.lastReadAt).getTime();
-      return Number.isNaN(dateA) || Number.isNaN(dateB) ? 0 : dateB - dateA;
-    });
-  }
-
-  if (!Array.isArray(parsedData)) {
-    logger.warn("Invalid reading history format, resetting");
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
-    return [];
-  }
-
-  const migratedEntries: ReadingHistoryEntry[] = parsedData
+function migrateReadingHistory(data: unknown[]): ReadingHistoryEntry[] {
+  const migratedEntries = data
     .map((entry: unknown) => {
       if (
         !entry ||
         typeof entry !== "object" ||
-        // @ts-ignore
         typeof entry.bookId !== "string" ||
-        // @ts-ignore
         typeof entry.title !== "string"
       ) {
         return null;
       }
 
-      // @ts-ignore
       if (!entry.sessions) {
         const session: ReadingSession = {
           sessionId: uuidv4(),
-          // @ts-ignore
           startedAt: entry.readAt || getCurrentDate().toISOString(),
-          // @ts-ignore
           endedAt: entry.lastReadAt || undefined,
-          // @ts-ignore
           completed: entry.completed || false,
         };
 
         const newEntry = {
-          // @ts-ignore
           bookId: entry.bookId,
-          // @ts-ignore
           title: entry.title,
-          // @ts-ignore
           firstReadAt: entry.readAt || getCurrentDate().toISOString(),
-          // @ts-ignore
           lastReadAt: entry.lastReadAt || entry.readAt || getCurrentDate().toISOString(),
-          // @ts-ignore
           completed: entry.completed || false,
-          // @ts-ignore
           coverImage: entry.coverImage,
           sessions: [session],
         };
@@ -165,113 +160,29 @@ export function addReadingHistoryEntry(
         sessions: [newSession],
       };
 
-  const updatedEntries = existingEntry
-    ? entries.map((e) => (e.bookId === entry.bookId ? newEntry : e))
-    : [newEntry, ...entries];
+  const filteredEntries = entries.filter((e) => e.bookId !== entry.bookId);
+  const updatedEntries = [newEntry, ...filteredEntries];
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries));
+  const limitedEntries = updatedEntries.slice(0, 20);
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(limitedEntries));
 }
 
-export function updateReadingSession(
-  bookId: string,
-  sessionId: string,
-  completed?: boolean,
-  notes?: string,
-  progress?: number,
-): void {
-  updateReadingSessionEnd(bookId, sessionId, completed, notes, progress);
-}
-
-export function removeReadingSession(bookId: string, sessionId: string): void {
-  if (!isStorageAvailable()) {
-    logger.warn("LocalStorage is not available, skipping remove operation");
-    return;
-  }
-
-  const entries = getReadingHistory();
-  const entry = entries.find((e) => e.bookId === bookId);
-
-  if (!entry) {
-    logger.warn(`No reading entry found for book: ${bookId}`);
-    return;
-  }
-
-  const filteredSessions = entry.sessions.filter((s) => s.sessionId !== sessionId);
-
-  if (filteredSessions.length === 0) {
-    deleteReadingHistoryEntry(bookId);
-    return;
-  }
-
-  const updatedEntry = {
-    ...entry,
-    sessions: filteredSessions,
-  };
-
-  const updatedEntries = entries.map((e) => (e.bookId === bookId ? updatedEntry : e));
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries));
-}
-
-export function removeReadingHistoryEntry(bookId: string): void {
-  deleteReadingHistoryEntry(bookId);
-}
-
-function updateReadingSessionEnd(
-  bookId: string,
-  sessionId: string,
-  completed?: boolean,
-  notes?: string,
-  progress?: number,
-): void {
+export function updateReadingHistoryEntry(entry: ReadingHistoryEntry): void {
   if (!isStorageAvailable()) {
     logger.warn("LocalStorage is not available, skipping update operation");
     return;
   }
 
   const entries = getReadingHistory();
-  const entryIndex = entries.findIndex((e) => e.bookId === bookId);
-
-  if (entryIndex === -1) {
-    logger.warn(`No reading entry found for book: ${bookId}`);
-    return;
-  }
-
-  const entry = entries[entryIndex];
-  const sessionIndex = entry.sessions.findIndex((s) => s.sessionId === sessionId);
-
-  if (sessionIndex === -1) {
-    logger.warn(`No session found with ID: ${sessionId}`);
-    return;
-  }
-
-  const now = getCurrentDate().toISOString();
-  const updatedSession = {
-    ...entry.sessions[sessionIndex],
-    endedAt: now,
-    ...(completed !== undefined && { completed }),
-    ...(notes !== undefined && { notes }),
-    ...(progress !== undefined && { progress }),
-  };
-
-  const updatedSessions = [...entry.sessions];
-  updatedSessions[sessionIndex] = updatedSession;
-
-  const updatedEntry = {
-    ...entry,
-    lastReadAt: now,
-    sessions: updatedSessions,
-    completed: updatedSessions.some((s) => s.completed) || entry.completed,
-  };
-
-  const updatedEntries = [...entries];
-  updatedEntries[entryIndex] = updatedEntry;
+  const updatedEntries = entries.map((e) => (e.bookId === entry.bookId ? entry : e));
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries));
 }
 
-export function deleteReadingHistoryEntry(bookId: string): void {
+export function removeReadingHistoryEntry(bookId: string): void {
   if (!isStorageAvailable()) {
-    logger.warn("LocalStorage is not available, skipping delete operation");
+    logger.warn("LocalStorage is not available, skipping remove operation");
     return;
   }
 
@@ -281,65 +192,56 @@ export function deleteReadingHistoryEntry(bookId: string): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(filteredEntries));
 }
 
-export function clearReadingHistory(): void {
-  if (!isStorageAvailable()) {
-    logger.warn("LocalStorage is not available, skipping clear operation");
-    return;
-  }
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
-}
-
-export function markAsRead(
+export function endReadingSession(
   bookId: string,
-  title: string,
-  coverImage?: string,
+  sessionId: string,
+  completed = false,
   notes?: string,
   progress?: number,
 ): void {
   if (!isStorageAvailable()) {
-    logger.warn("LocalStorage is not available, skipping mark as read operation");
+    logger.warn("LocalStorage is not available, skipping end session operation");
     return;
   }
 
   const entries = getReadingHistory();
   const now = getCurrentDate().toISOString();
 
-  const existingEntry = entries.find((e) => e.bookId === bookId);
-
-  if (existingEntry) {
-    const sessionId = existingEntry.sessions.find((s) => !s.endedAt)?.sessionId;
-
-    if (sessionId) {
-      updateReadingSessionEnd(bookId, sessionId, true, notes, progress);
-    } else {
-      addReadingHistoryEntry({ bookId, title, coverImage }, true, notes, progress);
+  const updatedEntries = entries.map((entry) => {
+    if (entry.bookId !== bookId) {
+      return entry;
     }
-  } else {
-    const newSession: ReadingSession = {
-      sessionId: uuidv4(),
-      startedAt: now,
-      endedAt: now,
-      completed: true,
-      notes,
-      progress,
-    };
 
-    const newEntry: ReadingHistoryEntry = {
-      bookId,
-      title,
-      firstReadAt: now,
+    const updatedSessions = entry.sessions.map((session) => {
+      if (session.sessionId !== sessionId) {
+        return session;
+      }
+
+      return {
+        ...session,
+        endedAt: now,
+        completed,
+        notes,
+        progress,
+      };
+    });
+
+    return {
+      ...entry,
       lastReadAt: now,
-      completed: true,
-      sessions: [newSession],
-      coverImage,
+      completed: completed || entry.completed,
+      sessions: updatedSessions,
     };
+  });
 
-    const updatedEntries = [newEntry, ...entries];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries));
-  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries));
 }
 
-export function getCurrentDate(): Date {
-  return new Date();
+export function clearReadingHistory(): void {
+  if (!isStorageAvailable()) {
+    logger.warn("LocalStorage is not available, skipping clear operation");
+    return;
+  }
+
+  localStorage.removeItem(STORAGE_KEY);
 }

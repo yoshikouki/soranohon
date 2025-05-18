@@ -6,7 +6,6 @@
 export const BASE_URL =
   process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || "https://soranohon.vercel.app";
 
-// Internal application paths (all starting with /)
 export const paths = {
   home: () => "/",
   books: {
@@ -34,7 +33,6 @@ export const paths = {
   },
 };
 
-// External URLs (all starting with https://)
 export const urls = {
   images: {
     books: {

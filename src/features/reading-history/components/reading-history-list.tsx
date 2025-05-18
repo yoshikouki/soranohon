@@ -32,7 +32,6 @@ export function ReadingHistoryList({
 }: ReadingHistoryListProps) {
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // 空の履歴を表示
   if (!isLoading && history.length === 0) {
     return (
       <Card className="w-full">
@@ -44,7 +43,6 @@ export function ReadingHistoryList({
     );
   }
 
-  // ローディング中の表示
   if (isLoading) {
     return (
       <Card className="w-full">
@@ -82,7 +80,6 @@ export function ReadingHistoryList({
     );
   }
 
-  // 履歴リストを表示
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between">

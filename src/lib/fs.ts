@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
 
-// ファイルシステム操作の抽象化
 export interface FileSystem {
   existsSync(path: string): boolean;
   readFileSync(path: string, encoding: BufferEncoding): string;
@@ -12,7 +11,6 @@ export interface FileSystem {
   getCwd(): string;
 }
 
-// デフォルトのファイルシステム実装
 export const defaultFileSystem: FileSystem = {
   existsSync: (filePath: string) => fs.existsSync(filePath),
   readFileSync: (filePath: string, encoding: BufferEncoding) =>

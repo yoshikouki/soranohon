@@ -2,7 +2,6 @@
 
 import { createContext, ReactNode, useContext, useState } from "react";
 
-// 読書履歴ダイアログの状態を管理するコンテキスト
 type ReadingHistoryDialogContextType = {
   isOpen: boolean;
   openDialog: () => void;
@@ -13,7 +12,6 @@ const ReadingHistoryDialogContext = createContext<ReadingHistoryDialogContextTyp
   undefined,
 );
 
-// コンテキストを使用するためのフック
 export function useReadingHistoryDialog() {
   const context = useContext(ReadingHistoryDialogContext);
   if (!context) {
@@ -24,7 +22,6 @@ export function useReadingHistoryDialog() {
   return context;
 }
 
-// プロバイダーコンポーネント
 export function ReadingHistoryDialogProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
 
