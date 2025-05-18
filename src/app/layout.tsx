@@ -9,7 +9,6 @@ import { Footer } from "./footer";
 import { Header } from "./header";
 import { ReadingHistoryDialog } from "./reading-history";
 
-// 子ども向けに読みやすいフォント
 const notoSansJP = Noto_Sans_JP({
   subsets: ["latin"],
   weight: ["400", "700"],

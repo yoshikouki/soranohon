@@ -30,14 +30,12 @@ export function ReadHistoryButton({
   const [isCompleted, setIsCompleted] = useState(false);
   const { addToHistory, history, refreshHistory } = useReadingHistory();
 
-  // 本が既に読書履歴に存在するかチェック
   useEffect(() => {
     const existingEntry = history.find((item) => item.bookId === book.bookId);
     setIsRead(!!existingEntry);
     setIsCompleted(existingEntry?.completed || false);
   }, [history, book.bookId]);
 
-  // コンポーネントマウント時に最新の履歴を確認
   useEffect(() => {
     refreshHistory();
   }, [refreshHistory]);

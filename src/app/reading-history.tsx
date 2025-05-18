@@ -6,13 +6,11 @@ import { ReadingHistoryList } from "@/features/reading-history/components/readin
 import { useReadingHistoryDialog } from "@/features/reading-history/context";
 import { useReadingHistory } from "@/features/reading-history/hooks/use-reading-history";
 
-// 読書履歴ダイアログコンポーネント（グローバルで使用）
 export function ReadingHistoryDialog() {
   const { isOpen, closeDialog } = useReadingHistoryDialog();
   const { history, isLoading, removeFromHistory, clearHistory, refreshHistory } =
     useReadingHistory();
 
-  // ダイアログが開かれたときに履歴を更新
   const handleOpenChange = (open: boolean) => {
     if (open) {
       refreshHistory();
@@ -40,7 +38,6 @@ export function ReadingHistoryDialog() {
   );
 }
 
-// トップページ用のトリガー付きダイアログ
 export function ReadingHistoryDialogWithTrigger() {
   const { openDialog } = useReadingHistoryDialog();
 

@@ -1,4 +1,3 @@
-// 使用される本データの型定義
 export interface BookForIllustrationPlan {
   bookId: string;
   title: string;

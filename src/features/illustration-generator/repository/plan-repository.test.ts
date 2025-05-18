@@ -9,7 +9,6 @@ describe("FilesystemPlanRepository", () => {
   let samplePlanXml: string;
 
   beforeEach(() => {
-    // ファイルシステムのモック
     mockFs = {
       existsSync: vi.fn().mockReturnValue(true),
       readFileSync: vi.fn(),

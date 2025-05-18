@@ -43,7 +43,6 @@ export function SceneListDisplay({ bookId, scenes }: SceneListDisplayProps) {
                 className="object-cover"
                 unoptimized
                 onError={() => {
-                  // エラー時に表示するプレースホルダー画像を設定
                   const selector = `img[alt="シーン${scene.sceneIndex.value}: ${scene.sceneTitle.value}"]`;
                   const img = document.querySelector(selector);
                   if (img && img instanceof HTMLImageElement) {

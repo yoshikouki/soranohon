@@ -53,7 +53,6 @@ export function GenerateIllustrationButton({
       logger.info("画像生成成功:", data);
       toast.success("画像を生成しました");
 
-      // 生成された画像をページに反映するためにリロード
       window.location.reload();
     } catch (error) {
       logger.error("画像生成エラー:", error);

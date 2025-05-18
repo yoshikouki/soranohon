@@ -83,7 +83,6 @@ export class FilesystemPlanRepository implements PlanRepository {
       const characterCount = parseInt($("character-count").text(), 10) || 0;
       const sceneCount = parseInt($("scene-count").text(), 10) || 0;
 
-      // キャラクター情報の解析
       const characters: CharacterSchema[] = [];
       $("chara").each((_, elem) => {
         characters.push({
@@ -105,10 +104,8 @@ export class FilesystemPlanRepository implements PlanRepository {
         });
       });
 
-      // シーン情報の解析
       const scenes: SceneSchema[] = [];
       $("scene").each((_, elem) => {
-        // シーン内のキャラクター情報を解析
         const sceneCharacters: SceneCharaSchema[] = [];
         $(elem)
           .find("scene-chara")
@@ -160,7 +157,6 @@ export class FilesystemPlanRepository implements PlanRepository {
         });
       });
 
-      // キービジュアル情報の解析
       const keyVisualCharacters: KeyVisualCharaSchema[] = [];
       $("key-visual-chara").each((_, elem) => {
         keyVisualCharacters.push({
