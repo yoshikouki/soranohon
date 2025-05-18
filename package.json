@@ -58,6 +58,7 @@
     "@radix-ui/react-tooltip": "^1.2.4",
     "@types/mdx": "^2.0.13",
     "ai": "^4.3.15",
+    "babel-plugin-react-compiler": "^19.1.0-rc.2",
     "cheerio": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

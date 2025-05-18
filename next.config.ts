@@ -4,7 +4,9 @@ import rehypeUnwrapImages from "rehype-unwrap-images";
 
 const nextConfig: NextConfig = {
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
-  /* config options here */
+  experimental: {
+    reactCompiler: true,
+  },
   distDir: process.env.NEXT_DIST_DIR || ".next",
 };
 
