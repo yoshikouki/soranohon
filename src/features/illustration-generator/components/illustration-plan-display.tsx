@@ -1,4 +1,5 @@
 import { Book } from "@/books";
+import { CopyButton } from "@/components/copy-button";
 import {
   Accordion,
   AccordionContent,
@@ -39,9 +40,14 @@ export async function IllustrationPlanDisplay({
             <span className="text-muted-foreground text-xs">タグ込み:</span>{" "}
             <span className="font-medium">{contentsLength.toLocaleString()}</span>
           </div>
-          <div>
+          <div className="flex items-center">
             <span className="text-muted-foreground text-xs">タグなし:</span>{" "}
             <span className="font-medium">{contentsWithoutTagsLength.toLocaleString()}</span>
+            <CopyButton
+              value={bookContent.toStringWithoutTags()}
+              icon={true}
+              className="ml-2 p-1"
+            />
           </div>
         </div>
       </div>
