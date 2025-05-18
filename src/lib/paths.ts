@@ -39,6 +39,7 @@ export const urls = {
   images: {
     books: {
       keyVisual: (bookId: string) => toUrl(paths.images.books.keyVisual(bookId)),
+      characterDesign: (bookId: string) => toUrl(paths.images.books.characterDesign(bookId)),
     },
   },
   github: () => "https://github.com/yoshikouki/soranohon",

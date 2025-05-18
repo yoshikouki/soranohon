@@ -172,7 +172,51 @@ export function addReadingHistoryEntry(
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries));
 }
 
-export function updateReadingSessionEnd(
+export function updateReadingSession(
+  bookId: string,
+  sessionId: string,
+  completed?: boolean,
+  notes?: string,
+  progress?: number,
+): void {
+  updateReadingSessionEnd(bookId, sessionId, completed, notes, progress);
+}
+
+export function removeReadingSession(bookId: string, sessionId: string): void {
+  if (!isStorageAvailable()) {
+    logger.warn("LocalStorage is not available, skipping remove operation");
+    return;
+  }
+
+  const entries = getReadingHistory();
+  const entry = entries.find((e) => e.bookId === bookId);
+
+  if (!entry) {
+    logger.warn(`No reading entry found for book: ${bookId}`);
+    return;
+  }
+
+  const filteredSessions = entry.sessions.filter((s) => s.sessionId !== sessionId);
+
+  if (filteredSessions.length === 0) {
+    deleteReadingHistoryEntry(bookId);
+    return;
+  }
+
+  const updatedEntry = {
+    ...entry,
+    sessions: filteredSessions,
+  };
+
+  const updatedEntries = entries.map((e) => (e.bookId === bookId ? updatedEntry : e));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries));
+}
+
+export function removeReadingHistoryEntry(bookId: string): void {
+  deleteReadingHistoryEntry(bookId);
+}
+
+function updateReadingSessionEnd(
   bookId: string,
   sessionId: string,
   completed?: boolean,
@@ -296,6 +340,6 @@ export function markAsRead(
   }
 }
 
-function getCurrentDate(): Date {
+export function getCurrentDate(): Date {
   return new Date();
 }

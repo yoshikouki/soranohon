@@ -189,7 +189,9 @@ ${
     plan: IllustrationPlan;
     book: Book;
     characterDesignImageUrl?: string;
-  }): string => {
+  }): Array<
+    { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }
+  > => {
     const plan = _plan.plan?.plan;
     if (!plan) {
       throw new Error("plan が見つかりません");
@@ -241,7 +243,18 @@ URL: ${characterDesignImageUrl}
 }
 `.trim();
 
-    return prompt;
+    const content: Array<
+      { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }
+    > = [{ type: "text", text: prompt }];
+
+    if (characterDesignImageUrl) {
+      content.push({
+        type: "image_url",
+        image_url: { url: characterDesignImageUrl },
+      });
+    }
+
+    return content;
   },
 
   /**
