@@ -1,10 +1,11 @@
+import { ClipboardIcon } from "lucide-react";
+import { CopyButton } from "@/components/copy-button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { CopyPromptButton } from "./copy-prompt-button";
 
 interface PromptDisplayWithCopyProps {
   prompt: string;
@@ -23,7 +24,14 @@ export function PromptDisplayWithCopy({
         <AccordionTrigger className="rounded-md px-4 py-2 text-primary hover:bg-muted/20">
           <div className="flex w-full items-center justify-between">
             <span className="font-medium text-sm">{title}</span>
-            <CopyPromptButton prompt={prompt} className="mr-4" />
+            <CopyButton
+              value={prompt}
+              icon={false}
+              className="mr-4 inline-flex h-9 items-center rounded-md border border-input bg-background px-4 py-2 font-medium text-sm transition-colors hover:bg-accent hover:bg-accent hover:text-accent-foreground hover:text-accent-foreground"
+            >
+              <ClipboardIcon className="mr-2 h-4 w-4" />
+              プロンプトをコピー
+            </CopyButton>
           </div>
         </AccordionTrigger>
         <AccordionContent>

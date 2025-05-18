@@ -1,20 +1,32 @@
 "use client";
 
 import { CheckIcon, CopyIcon } from "lucide-react";
+import * as React from "react";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface CopyButtonProps {
   value: string;
   icon?: boolean;
   children?: React.ReactNode;
   onCopy?: () => void;
+  writeTextToClipboard?: (text: string) => Promise<void>;
+  className?: string;
 }
 
-export function CopyButton({ value, icon = true, children, onCopy }: CopyButtonProps) {
+export function CopyButton({
+  value,
+  icon = true,
+  children,
+  onCopy,
+  writeTextToClipboard,
+  className,
+}: CopyButtonProps) {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(value);
+    const writer = writeTextToClipboard || ((text) => navigator.clipboard.writeText(text));
+    await writer(value);
     setIsCopied(true);
     onCopy?.();
   };
@@ -30,7 +42,10 @@ export function CopyButton({ value, icon = true, children, onCopy }: CopyButtonP
     <button
       type="button"
       onClick={handleCopy}
-      className="flex items-center justify-center gap-2 rounded-md p-2 hover:bg-muted"
+      className={cn(
+        "flex items-center justify-center gap-2 rounded-md p-2 hover:bg-muted",
+        className,
+      )}
     >
       {icon &&
         (isCopied ? (

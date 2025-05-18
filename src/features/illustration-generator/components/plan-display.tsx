@@ -4,7 +4,7 @@ import { Loader2Icon, PaintbrushIcon } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import type { Book } from "@/books";
-import { CopyButton } from "@/components/copy-button";
+import { CopyImageButton } from "@/components/copy-image-button";
 import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
 import { paths } from "@/lib/paths";
@@ -161,9 +161,9 @@ export function PlanDisplay({ plan, bookId, book, fullPlan }: PlanDisplayProps) 
               onClick={() => navigator.clipboard.writeText(generatedDesignPath)}
             />
             <div className="absolute top-2 right-2">
-              <CopyButton value={generatedDesignPath} onCopy={() => {}}>
-                <span className="text-xs">画像URLをコピー</span>
-              </CopyButton>
+              <CopyImageButton imageUrl={generatedDesignPath} onCopy={() => {}}>
+                <span className="text-xs">画像をコピー</span>
+              </CopyImageButton>
             </div>
           </div>
         )}
@@ -202,9 +202,9 @@ export function PlanDisplay({ plan, bookId, book, fullPlan }: PlanDisplayProps) 
             }}
           />
           <div className="absolute top-2 right-2">
-            <CopyButton value={paths.images.books.keyVisual(bookId)} onCopy={() => {}}>
-              <span className="text-xs">画像URLをコピー</span>
-            </CopyButton>
+            <CopyImageButton imageUrl={paths.images.books.keyVisual(bookId)} onCopy={() => {}}>
+              <span className="text-xs">画像をコピー</span>
+            </CopyImageButton>
           </div>
         </div>
 

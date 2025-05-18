@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { CopyButton } from "@/components/copy-button";
+import { CopyImageButton } from "@/components/copy-image-button";
 import { paths } from "@/lib/paths";
 import { prompts } from "../prompts";
 import { IllustrationPlanJSON } from "../types";
@@ -55,12 +55,12 @@ export function SceneListDisplay({ bookId, scenes, style }: SceneListDisplayProp
                 }}
               />
               <div className="absolute top-2 right-2">
-                <CopyButton
-                  value={paths.images.books.scene(bookId, scene.index)}
+                <CopyImageButton
+                  imageUrl={paths.images.books.scene(bookId, scene.index)}
                   onCopy={() => {}}
                 >
-                  <span className="text-xs">画像URLをコピー</span>
-                </CopyButton>
+                  <span className="text-xs">画像をコピー</span>
+                </CopyImageButton>
               </div>
             </div>
 
