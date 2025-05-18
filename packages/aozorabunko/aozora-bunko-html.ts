@@ -19,7 +19,6 @@ export class AozoraBunkoHtml {
 
   private constructor(html: string) {
     this.html = html;
-    // コンストラクタでmain_text要素の存在を確認
     const $ = cheerio.load(html);
     const mainText = $(".main_text");
     if (!mainText.length) {
@@ -63,12 +62,9 @@ export class AozoraBunkoHtml {
     const lines = this.extractLines();
     const paragraphs = this.formParagraphs(lines);
 
-    // 画像タグの保持のために既存のコンテンツから抽出
     let imageTagContents: string[] = [];
     if (existingRubyTags) {
-      // ルビがある場合は、元のMDXから画像タグを収集する
       try {
-        // リファクタリング前のオリジナルMDXから画像タグを抽出
         const imageTags: string[] = [];
         const bookIdMatch = bookContent.contents[0]?.match(/\d+_\d+/);
         const bookId = bookIdMatch?.[0] || "";
@@ -87,7 +83,6 @@ export class AozoraBunkoHtml {
               }
             }
           } catch (e) {
-            // ファイルが存在しないか読み込みエラー（新規の場合）
             logger.error(`Failed to read original MDX file: ${originalMdxPath}`, e);
           }
         }
@@ -100,27 +95,22 @@ export class AozoraBunkoHtml {
       }
     }
 
-    // 段落ごとにHTMLを処理
     for (const paragraph of paragraphs) {
       bookContent.addParagraph(paragraph);
     }
 
-    // 既存のルビタグがある場合は、変換後のコンテンツに適用する
     if (existingRubyTags) {
       const mdx = bookContent.toMdx();
       const mdxWithRuby = existingRubyTags.addRubyTagsWithPreservation(mdx);
 
-      // BookContentを空にしてルビ適用後のコンテンツで再構築
       bookContent.contents = [];
 
-      // 画像タグがあれば最初に追加
       if (imageTagContents.length > 0) {
         for (const imageTag of imageTagContents) {
           bookContent.addParagraph(imageTag);
         }
       }
 
-      // ルビを適用したコンテンツを追加
       const paragraphsWithRuby = mdxWithRuby.split("\n\n");
       for (const p of paragraphsWithRuby) {
         if (p.trim()) {
@@ -162,7 +152,7 @@ export class AozoraBunkoHtml {
       if (element.type !== "tag") return;
 
       if (element.name === "br") {
-        if (prevIsBr) return; // 直前が<br />ならスキップ
+        if (prevIsBr) return;
 
         lines.push("<br />");
         prevIsBr = true;
@@ -219,7 +209,6 @@ export class AozoraBunkoHtml {
         !current.some((l) => l.includes("」")) &&
         (line === "<br />" || line.startsWith("　"));
 
-      // 改行タグの後になし領域がある場合を考慮 (「ゴロゴロ ガラガラ」のような詩的な表現)
       const isPoemOrSong = line.includes("<br />") && current.some((l) => l.includes("<br />"));
 
       const isNewParagraphStart =

@@ -40,15 +40,10 @@ export class FilesystemIllustrationRepository implements IllustrationRepository 
   }
 
   private ensureDirectoryExists(directoryPath: string): void {
-    try {
-      if (!this.fs.existsSync(directoryPath)) {
-        logger.info(`Creating directory: ${directoryPath}`);
-        this.fs.mkdirSync(directoryPath, { recursive: true });
-        logger.info(`Directory created: ${directoryPath}`);
-      }
-    } catch (error) {
-      logger.error(`Error creating directory ${directoryPath}: ${error}`);
-      throw new Error(`ディレクトリの作成に失敗しました: ${directoryPath}`);
+    if (!this.fs.existsSync(directoryPath)) {
+      logger.info(`Creating directory: ${directoryPath}`);
+      this.fs.mkdirSync(directoryPath, { recursive: true });
+      logger.info(`Directory created: ${directoryPath}`);
     }
   }
 
@@ -96,29 +91,24 @@ export class FilesystemIllustrationRepository implements IllustrationRepository 
     imageData: Uint8Array | string,
     options?: SaveOptions,
   ): Promise<string> {
-    try {
-      const bookDirPath = path.join(this.fs.getCwd(), "public", "images", "books", bookId);
-      this.ensureDirectoryExists(bookDirPath);
+    const bookDirPath = path.join(this.fs.getCwd(), "public", "images", "books", bookId);
+    this.ensureDirectoryExists(bookDirPath);
 
-      const filePath = this.getPublicFilePath(bookId, options);
-      const dirPath = path.dirname(filePath);
-      this.ensureDirectoryExists(dirPath);
+    const filePath = this.getPublicFilePath(bookId, options);
+    const dirPath = path.dirname(filePath);
+    this.ensureDirectoryExists(dirPath);
 
-      logger.info(`Saving illustration to file: ${filePath}`);
+    logger.info(`Saving illustration to file: ${filePath}`);
 
-      const buffer =
-        typeof imageData === "string"
-          ? Buffer.from(imageData.replace(/^data:image\/\w+;base64,/, ""), "base64")
-          : Buffer.from(imageData);
+    const buffer =
+      typeof imageData === "string"
+        ? Buffer.from(imageData.replace(/^data:image\/\w+;base64,/, ""), "base64")
+        : Buffer.from(imageData);
 
-      await sharp(buffer).webp({ quality: 90 }).toFile(filePath);
+    await sharp(buffer).webp({ quality: 90 }).toFile(filePath);
 
-      logger.info(`Illustration saved to: ${filePath}`);
+    logger.info(`Illustration saved to: ${filePath}`);
 
-      return this.getIllustrationPath(bookId, options);
-    } catch (error) {
-      logger.error(`Failed to save illustration: ${error}`);
-      throw new Error(`画像の保存に失敗しました: ${error}`);
-    }
+    return this.getIllustrationPath(bookId, options);
   }
 }

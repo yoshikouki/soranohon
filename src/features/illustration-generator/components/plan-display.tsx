@@ -31,7 +31,6 @@ export function PlanDisplay({ plan, bookId }: PlanDisplayProps) {
   const [generatedDesignPath, setGeneratedDesignPath] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if character design already exists
     const checkExistingDesign = async () => {
       try {
         const designPath = paths.images.books.characterDesign(bookId);

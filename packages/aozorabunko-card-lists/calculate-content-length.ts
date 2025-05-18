@@ -7,12 +7,10 @@ import { logger } from "../../src/lib/logger";
 import { regex } from "../../src/lib/regex";
 import { decode } from "../aozorabunko";
 
-// パス設定
 const csvPath = "./packages/aozorabunko-card-lists/data/childrens-books-without-copyright.csv";
 const aozoraPath = process.env.AOZORA_PATH || "~/src/github.com/aozorabunko/aozorabunko";
 const outputPath = csvPath; // 元のCSVファイルに上書き
 
-// レコードの型定義
 interface AozoraRecord {
   作品ID: string;
   作品名: string;
@@ -28,7 +26,7 @@ interface AozoraRecord {
   公開日: string;
   最終更新日: string;
   図書カードURL: string;
-  [key: string]: string; // その他のプロパティ
+  [key: string]: string;
 }
 
 /**

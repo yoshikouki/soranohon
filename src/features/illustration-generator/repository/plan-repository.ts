@@ -45,17 +45,16 @@ export class FilesystemPlanRepository implements PlanRepository {
     if (!this.fs.existsSync(planFilePath)) {
       return null;
     }
-    try {
-      const planContent = this.fs.readFileSync(planFilePath, "utf8");
-      return {
-        bookId,
-        rawPlan: planContent,
-        plan: this.parseIllustrationPlanXML(planContent),
-      };
-    } catch (error) {
-      logger.error(`getPlan error: ${error}`);
+    const planContent = this.fs.readFileSync(planFilePath, "utf8");
+    const parsedPlan = this.parseIllustrationPlanXML(planContent);
+    if (!parsedPlan) {
       return null;
     }
+    return {
+      bookId,
+      rawPlan: planContent,
+      plan: parsedPlan,
+    };
   }
 
   private extractIllustrationPlanXml(rawPlan: string): string {

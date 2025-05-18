@@ -1,4 +1,3 @@
-// BookContentインターフェースの定義
 // このインターフェースによって@/features/book-content/coreへの直接依存を避ける
 export interface BookContentInterface {
   contents: string[];
@@ -19,7 +18,6 @@ export class SimpleBookContent implements BookContentInterface {
   }
 
   toStringWithoutTags(): string {
-    // シンプルな実装（HTMLタグを取り除く処理は省略）
     return this.contents.join("\n\n");
   }
 

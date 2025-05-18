@@ -29,7 +29,6 @@ export function GenerateIllustrationButton({
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGenerateIllustration = async () => {
-    // sceneIdがあればsceneタイプとして扱う
     const illustrationType = sceneId ? "scene" : type;
 
     setIsLoading(true);

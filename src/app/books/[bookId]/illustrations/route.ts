@@ -48,11 +48,15 @@ export async function POST(
     return Response.json({ error: "挿絵計画が見つかりません" }, { status: 404 });
   }
 
-  const repository = new FilesystemIllustrationRepository();
-  const hasCharacterDesign = repository.hasCharacterDesign(bookId);
-  const characterDesignUrl = hasCharacterDesign ? urls.images.books.characterDesign(bookId) : undefined;
+  const illustrationRepository = new FilesystemIllustrationRepository();
+  const hasCharacterDesign = illustrationRepository.hasCharacterDesign(bookId);
+  const characterDesignUrl = hasCharacterDesign
+    ? urls.images.books.characterDesign(bookId)
+    : undefined;
 
-  let prompt: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }>;
+  let prompt: Array<
+    { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }
+  >;
   if (data.type === "key-visual") {
     prompt = prompts.keyVisual({
       plan: plan,
@@ -71,7 +75,7 @@ export async function POST(
       return Response.json({ error: `シーンが見つかりません: ${sceneIndex}` }, { status: 404 });
     }
 
-    const hasKeyVisual = repository.hasKeyVisual(bookId);
+    const hasKeyVisual = illustrationRepository.hasKeyVisual(bookId);
     const keyVisualUrl = hasKeyVisual ? urls.images.books.keyVisual(bookId) : undefined;
 
     prompt = prompts.scene(scene, plan.plan.plan.style.value, keyVisualUrl, characterDesignUrl);
@@ -85,76 +89,41 @@ export async function POST(
   }
 
   const usingModel = models.gptImage1;
-  try {
-    logger.info(`Image generation started for book ID: ${bookId}`);
+  logger.info(`Image generation started for book ID: ${bookId}`);
 
-    // 画像生成APIはテキストプロンプトのみを受け付けるため、配列の最初の要素（テキスト）を使用
-    const promptText = prompt[0].text;
-    
-    const result = await generateImage({
-      model: usingModel.model,
-      prompt: promptText,
-      aspectRatio: "1:1",
-      providerOptions: {
-        openai: {
-          quality: "high",
-          output_format: "webp",
-        },
+  const promptText = prompt[0].text;
+
+  const result = await generateImage({
+    model: usingModel.model,
+    prompt: promptText,
+    aspectRatio: "1:1",
+    providerOptions: {
+      openai: {
+        quality: "high",
+        output_format: "webp",
       },
-    });
+    },
+  });
 
-    if (!result.image.uint8Array) {
-      throw new Error("画像の生成に失敗しました");
-    }
-
-    const image = result.image.uint8Array;
-    logger.info(`Image generation successful. Preparing to save image for book ID: ${bookId}`);
-
-    const repository = new FilesystemIllustrationRepository();
-    const imagePath = await repository.saveIllustration(bookId, image, {
-      sceneId: data.sceneId,
-      type: data.type,
-    });
-
-    return Response.json(
-      {
-        success: true,
-        imagePath,
-        message: "画像を生成しました",
-        prompt: promptText,
-      },
-      { status: 200 },
-    );
-  } catch (error) {
-    logger.error("挿絵生成エラー:", error);
-
-    if (error instanceof Error && error.message.includes("rate limit")) {
-      return Response.json(
-        {
-          error: error.message,
-          message: "APIレート制限に達しました。しばらく時間をおいて再試行してください。",
-        },
-        { status: 429 },
-      );
-    }
-
-    if (error instanceof Error && error.message.toLowerCase().includes("content policy")) {
-      return Response.json(
-        {
-          error: error.message,
-          message:
-            "生成リクエストがコンテンツポリシーに違反しています。プロンプトを修正してください。",
-        },
-        { status: 400 },
-      );
-    }
-
-    return Response.json(
-      {
-        error: (error as Error).message,
-        message: "画像生成中にエラーが発生しました",
-      },
-      { status: 500 },
-    );
+  if (!result.image.uint8Array) {
+    return Response.json({ error: "画像の生成に失敗しました" }, { status: 500 });
   }
+
+  const image = result.image.uint8Array;
+  logger.info(`Image generation successful. Preparing to save image for book ID: ${bookId}`);
+
+  const imagePath = await illustrationRepository.saveIllustration(bookId, image, {
+    sceneId: data.sceneId,
+    type: data.type,
+  });
+
+  return Response.json(
+    {
+      success: true,
+      imagePath,
+      message: "画像を生成しました",
+      prompt: promptText,
+    },
+    { status: 200 },
+  );
 }

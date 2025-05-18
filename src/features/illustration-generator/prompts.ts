@@ -123,7 +123,13 @@ ${book.contentWithTags}
    * モデルに渡す。キャラクターデザインはストーリーに登場する主要キャラクターの
    * 全身像を描画するための補助として使用する。
    */
-  characterDesign: ({ plan: _plan, book }: { plan: IllustrationPlan; book: Book }): Array<{ type: "text"; text: string }> => {
+  characterDesign: ({
+    plan: _plan,
+    book,
+  }: {
+    plan: IllustrationPlan;
+    book: Book;
+  }): Array<{ type: "text"; text: string }> => {
     const plan = _plan.plan?.plan;
     if (!plan) {
       throw new Error("plan が見つかりません");
@@ -175,7 +181,15 @@ ${
    * illustrationPlan の <theme>, <style>, および <key-visual> 要素を抜粋して
    * モデルに渡す。raw XML 全体は渡さないことで安全システムのリジェクトを回避する。
    */
-  keyVisual: ({ plan: _plan, book, characterDesignImageUrl }: { plan: IllustrationPlan; book: Book; characterDesignImageUrl?: string }): string => {
+  keyVisual: ({
+    plan: _plan,
+    book,
+    characterDesignImageUrl,
+  }: {
+    plan: IllustrationPlan;
+    book: Book;
+    characterDesignImageUrl?: string;
+  }): string => {
     const plan = _plan.plan?.plan;
     if (!plan) {
       throw new Error("plan が見つかりません");
@@ -216,11 +230,15 @@ ${
 - NegativePrompt: "no text, no watermark, no extreme shadow, no weapon, no blood, no violence, no extreme emotion, no fear"
 
 ## 演出メモ
-${plan.keyVisual.keyVisualNotes.value ?? ""}${characterDesignImageUrl ? `
+${plan.keyVisual.keyVisualNotes.value ?? ""}${
+  characterDesignImageUrl
+    ? `
 
 ## 重要: キャラクターデザイン
 URL: ${characterDesignImageUrl}
-上記のURLのキャラクターデザインを参照して、キャラクターの外見・衣装・スタイルを徐ったかに維持してください。` : ""}
+上記のURLのキャラクターデザインを参照して、キャラクターの外見・衣装・スタイルを徐ったかに維持してください。`
+    : ""
+}
 `.trim();
 
     return prompt;
@@ -238,7 +256,9 @@ URL: ${characterDesignImageUrl}
     style: string,
     keyVisualImageUrl?: string,
     characterDesignImageUrl?: string,
-  ): Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> => {
+  ): Array<
+    { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }
+  > => {
     const prompt = `
 # 青空文庫 児童文学 シーン${scene.sceneIndex.value} イラスト制作依頼
 あなたは **熟練の絵本イラストレーター** です。
@@ -271,21 +291,21 @@ ${scene.sceneCharacters.children
 ${scene.sceneNotes.value}${characterDesignImageUrl ? `\n\n## 重要: 添付のキャラクターデザイン画像を参照して、キャラクターの外見・衣装・スタイルを一貫させてください` : ""}${keyVisualImageUrl ? `\n\n## 重要: 添付のキービジュアル画像も参照して、ビジュアルスタイルを一貫させてください` : ""}
 `.trim();
 
-    const content: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
-      { type: "text", text: prompt },
-    ];
+    const content: Array<
+      { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }
+    > = [{ type: "text", text: prompt }];
 
     if (characterDesignImageUrl) {
-      content.push({ 
-        type: "image_url", 
-        image_url: { url: characterDesignImageUrl } 
+      content.push({
+        type: "image_url",
+        image_url: { url: characterDesignImageUrl },
       });
     }
 
     if (keyVisualImageUrl) {
-      content.push({ 
-        type: "image_url", 
-        image_url: { url: keyVisualImageUrl } 
+      content.push({
+        type: "image_url",
+        image_url: { url: keyVisualImageUrl },
       });
     }
 
