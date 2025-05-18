@@ -187,11 +187,10 @@ describe("FilesystemPlanRepository", () => {
       });
     });
 
-    it("不正なXMLの場合にnullをplan内に返すこと", () => {
+    it("不正なXMLの場合にエラーが発生すること", async () => {
       mockFs.readFileSync = vi.fn().mockReturnValue("不正なXML");
-      const result = repository.getPlan("test_book");
-      const parseResult = result.then((data) => data?.plan);
-      return expect(parseResult).resolves.toBeNull();
+      const result = await repository.getPlan("test_book");
+      expect(result).toBeNull();
     });
 
     it("XML内の数値を正しく変換すること", () => {
@@ -228,12 +227,11 @@ describe("FilesystemPlanRepository", () => {
       expect(result).toBeNull();
     });
 
-    it("エラーが発生した場合はnullを返すこと", async () => {
+    it("エラーが発生した場合は例外をスローすること", async () => {
       mockFs.readFileSync = vi.fn().mockImplementation(() => {
         throw new Error("Read error");
       });
-      const result = await repository.getPlan("test_book");
-      expect(result).toBeNull();
+      await expect(repository.getPlan("test_book")).rejects.toThrow("Read error");
     });
   });
 });
