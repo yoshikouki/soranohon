@@ -1,14 +1,14 @@
-import { MDXBook } from "@/features/book-content/core";
+import { Book } from "@/books";
 import { prompts } from "@/features/illustration-generator/prompts";
 import { FilesystemIllustrationRepository } from "@/features/illustration-generator/repository/illustration-repository";
-import { Plan } from "@/features/illustration-generator/types";
+import { IllustrationPlan } from "@/features/illustration-generator/types";
 import { urls } from "@/lib/paths";
 import { generateIllustration } from "./illustration-generator";
 
 export interface KeyVisualGenerateRequest {
   bookId: string;
-  book: MDXBook;
-  plan: Plan;
+  book: Book;
+  plan: IllustrationPlan;
 }
 
 export async function generateKeyVisual(request: KeyVisualGenerateRequest): Promise<{
@@ -29,7 +29,10 @@ export async function generateKeyVisual(request: KeyVisualGenerateRequest): Prom
     characterDesignImageUrl: characterDesignUrl,
   });
 
-  const promptText = prompt[0].text;
+  const promptText = prompt.find((p) => p.type === "text")?.text;
+  if (!promptText) {
+    throw new Error("テキストプロンプトが見つかりません");
+  }
   const imageData = await generateIllustration(promptText);
 
   const imagePath = await illustrationRepository.saveIllustration(bookId, imageData, {

@@ -1,13 +1,13 @@
-import { MDXBook } from "@/features/book-content/core";
+import { Book } from "@/books";
 import { prompts } from "@/features/illustration-generator/prompts";
 import { FilesystemIllustrationRepository } from "@/features/illustration-generator/repository/illustration-repository";
-import { Plan } from "@/features/illustration-generator/types";
+import { IllustrationPlan } from "@/features/illustration-generator/types";
 import { generateIllustration } from "./illustration-generator";
 
 export interface CharacterDesignGenerateRequest {
   bookId: string;
-  book: MDXBook;
-  plan: Plan;
+  book: Book;
+  plan: IllustrationPlan;
 }
 
 export async function generateCharacterDesign(
@@ -23,7 +23,10 @@ export async function generateCharacterDesign(
     book,
   });
 
-  const promptText = prompt[0].text;
+  const promptText = prompt.find((p) => p.type === "text")?.text;
+  if (!promptText) {
+    throw new Error("テキストプロンプトが見つかりません");
+  }
   const imageData = await generateIllustration(promptText);
 
   const illustrationRepository = new FilesystemIllustrationRepository();

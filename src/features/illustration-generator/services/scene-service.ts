@@ -1,12 +1,12 @@
 import { prompts } from "@/features/illustration-generator/prompts";
 import { FilesystemIllustrationRepository } from "@/features/illustration-generator/repository/illustration-repository";
-import { Plan } from "@/features/illustration-generator/types";
+import { IllustrationPlan } from "@/features/illustration-generator/types";
 import { urls } from "@/lib/paths";
 import { generateIllustration } from "./illustration-generator";
 
 export interface SceneGenerateRequest {
   bookId: string;
-  plan: Plan;
+  plan: IllustrationPlan;
   sceneId: string;
 }
 
@@ -17,6 +17,11 @@ export async function generateScene(request: SceneGenerateRequest): Promise<{
   const { bookId, plan, sceneId } = request;
 
   const sceneIndex = parseInt(sceneId.replace(/[^0-9]/g, ""), 10);
+
+  if (!plan.plan) {
+    throw new Error("插絵計画が完成していません");
+  }
+
   const scene = plan.plan.plan.scenes.children.find((s) => s.sceneIndex.value === sceneIndex);
 
   if (!scene) {
@@ -38,7 +43,10 @@ export async function generateScene(request: SceneGenerateRequest): Promise<{
     keyVisualUrl,
     characterDesignUrl,
   );
-  const promptText = prompt[0].text;
+  const promptText = prompt.find((p) => p.type === "text")?.text;
+  if (!promptText) {
+    throw new Error("テキストプロンプトが見つかりません");
+  }
   const imageData = await generateIllustration(promptText);
 
   const imagePath = await illustrationRepository.saveIllustration(bookId, imageData, {
