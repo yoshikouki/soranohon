@@ -4,6 +4,7 @@ import { CheckIcon, CopyIcon } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
 
 interface CopyImageButtonProps {
   imageUrl: string;
@@ -11,6 +12,7 @@ interface CopyImageButtonProps {
   onCopy?: () => void;
   writeImageToClipboard?: (imageBlob: Blob) => Promise<void>;
   fetchImage?: (url: string) => Promise<Response>;
+  className?: string;
 }
 
 export function CopyImageButton({
@@ -19,6 +21,7 @@ export function CopyImageButton({
   onCopy,
   writeImageToClipboard,
   fetchImage,
+  className,
 }: CopyImageButtonProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -86,7 +89,10 @@ export function CopyImageButton({
       type="button"
       onClick={handleCopy}
       disabled={isLoading}
-      className="flex items-center justify-center gap-2 rounded-md p-2 hover:bg-muted"
+      className={cn(
+        "flex items-center justify-center gap-2 rounded-md p-2 hover:bg-muted",
+        className,
+      )}
     >
       {isCopied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
       {children}

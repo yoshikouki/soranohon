@@ -1,7 +1,6 @@
 "use client";
 
 import { Loader2Icon, PaintbrushIcon } from "lucide-react";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import type { Book } from "@/books";
 import { CopyButton } from "@/components/copy-button";
@@ -142,34 +141,14 @@ export function PlanDisplay({ plan, bookId, book, fullPlan }: PlanDisplayProps) 
           </div>
         </div>
 
-        <div className="mt-4 space-y-4">
-          <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
-            {generatedDesignPath && (
-              <Image
-                src={generatedDesignPath}
-                alt="Character Design"
-                fill
-                className="cursor-pointer object-cover"
-                unoptimized
-                onClick={() => navigator.clipboard.writeText(generatedDesignPath)}
-              />
-            )}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="rounded-lg bg-background/80 p-4 backdrop-blur-sm">
-                <ImageUpload
-                  bookId={bookId}
-                  imageType="character-design"
-                  currentImagePath={
-                    generatedDesignPath || paths.images.books.characterDesign(bookId)
-                  }
-                  onUploadComplete={(newPath) => {
-                    setGeneratedDesignPath(newPath);
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+        <ImageUpload
+          bookId={bookId}
+          imageType="character-design"
+          currentImagePath={generatedDesignPath || paths.images.books.characterDesign(bookId)}
+          onUploadComplete={(newPath) => {
+            setGeneratedDesignPath(newPath);
+          }}
+        />
 
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="prompt">
@@ -235,36 +214,11 @@ export function PlanDisplay({ plan, bookId, book, fullPlan }: PlanDisplayProps) 
           </div>
         </div>
 
-        <div className="mt-4 space-y-4">
-          <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
-            <Image
-              src={paths.images.books.keyVisual(bookId)}
-              alt={keyVisual.title}
-              fill
-              className="cursor-pointer object-cover"
-              unoptimized
-              onClick={() =>
-                navigator.clipboard.writeText(paths.images.books.keyVisual(bookId))
-              }
-              onError={() => {
-                const selector = `img[alt="${keyVisual.title}"]`;
-                const img = document.querySelector(selector);
-                if (img && img instanceof HTMLImageElement) {
-                  img.style.display = "none";
-                }
-              }}
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="rounded-lg bg-background/80 p-4 backdrop-blur-sm">
-                <ImageUpload
-                  bookId={bookId}
-                  imageType="key-visual"
-                  currentImagePath={paths.images.books.keyVisual(bookId)}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+        <ImageUpload
+          bookId={bookId}
+          imageType="key-visual"
+          currentImagePath={paths.images.books.keyVisual(bookId)}
+        />
 
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="prompt">

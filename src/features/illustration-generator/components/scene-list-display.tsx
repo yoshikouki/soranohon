@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { CopyButton } from "@/components/copy-button";
 import { CopyImageButton } from "@/components/copy-image-button";
 import {
@@ -61,36 +60,11 @@ export function SceneListDisplay({ bookId, scenes, style }: SceneListDisplayProp
               </div>
             </div>
 
-            <div className="mt-4 space-y-4">
-              <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
-                <Image
-                  src={paths.images.books.scene(bookId, scene.index)}
-                  alt={`シーン${scene.index}: ${scene.title}`}
-                  fill
-                  className="cursor-pointer object-cover"
-                  unoptimized
-                  onClick={() =>
-                    navigator.clipboard.writeText(paths.images.books.scene(bookId, scene.index))
-                  }
-                  onError={() => {
-                    const selector = `img[alt="シーン${scene.index}: ${scene.title}"]`;
-                    const img = document.querySelector(selector);
-                    if (img && img instanceof HTMLImageElement) {
-                      img.style.display = "none";
-                    }
-                  }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="rounded-lg bg-background/80 p-4 backdrop-blur-sm">
-                    <ImageUpload
-                      bookId={bookId}
-                      imageType={`scene-${scene.index}` as `scene-${number}`}
-                      currentImagePath={paths.images.books.scene(bookId, scene.index)}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ImageUpload
+              bookId={bookId}
+              imageType={`scene-${scene.index}` as `scene-${number}`}
+              currentImagePath={paths.images.books.scene(bookId, scene.index)}
+            />
 
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="prompt">
