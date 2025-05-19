@@ -18,7 +18,7 @@ const FONT_SIZE_MAP: Record<FontSize, number> = {
 const FONT_SIZE_VALUES: FontSize[] = ["sm", "base", "lg", "xl", "2xl"];
 
 export const ViewerSettingsMenu = () => {
-  const { showRuby, fontSize, toggleRuby, setFontSize } = useViewerSettings();
+  const { showRuby, showIllustrations, fontSize, toggleRuby, toggleIllustrations, setFontSize } = useViewerSettings();
 
   const handleSliderChange = (value: number[]) => {
     const size = FONT_SIZE_VALUES[value[0]] || "xl";
@@ -37,6 +37,12 @@ export const ViewerSettingsMenu = () => {
               ふりがな
             </Label>
             <Switch id="ruby-toggle" checked={showRuby} onCheckedChange={toggleRuby} />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="illustrations-toggle" className="font-normal text-sm">
+              挿絵
+            </Label>
+            <Switch id="illustrations-toggle" checked={showIllustrations} onCheckedChange={toggleIllustrations} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="font-size" className="font-normal text-sm">

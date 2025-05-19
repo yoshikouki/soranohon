@@ -4,11 +4,13 @@ export type FontSize = "sm" | "base" | "lg" | "xl" | "2xl";
 
 interface ViewerSettings {
   showRuby: boolean;
+  showIllustrations: boolean;
   fontSize: FontSize;
 }
 
 const DEFAULT_SETTINGS: ViewerSettings = {
   showRuby: true,
+  showIllustrations: true,
   fontSize: "xl",
 };
 
@@ -41,7 +43,7 @@ export function useViewerSettings() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        _setSettings(parsed);
+        _setSettings({ ...DEFAULT_SETTINGS, ...parsed });
       } catch (e) {
         console.error("Failed to parse stored settings:", e);
         _setSettings(DEFAULT_SETTINGS);
@@ -69,14 +71,23 @@ export function useViewerSettings() {
     setSettings((prev) => ({ ...prev, showRuby: !prev.showRuby }));
   };
 
+  const toggleIllustrations = () => {
+    setSettings((prev) => ({
+      ...prev,
+      showIllustrations: !prev.showIllustrations,
+    }));
+  };
+
   const setFontSize = (fontSize: FontSize) => {
     setSettings((prev) => ({ ...prev, fontSize }));
   };
 
   return {
     showRuby: settings.showRuby,
+    showIllustrations: settings.showIllustrations,
     fontSize: settings.fontSize,
     toggleRuby,
+    toggleIllustrations,
     setFontSize,
   };
 }

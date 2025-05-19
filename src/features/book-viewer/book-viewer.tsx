@@ -18,7 +18,7 @@ const FONT_SIZE_CLASSES: Record<string, string> = {
 };
 
 export function BookViewer({ children, className }: BookViewerProps) {
-  const { showRuby, fontSize } = useViewerSettings();
+  const { showRuby, showIllustrations, fontSize } = useViewerSettings();
 
   return (
     <div
@@ -27,6 +27,7 @@ export function BookViewer({ children, className }: BookViewerProps) {
         className,
         FONT_SIZE_CLASSES[fontSize],
         !showRuby && "[&_rt]:hidden",
+        !showIllustrations && "*:data-illustration:hidden",
       )}
     >
       {children}

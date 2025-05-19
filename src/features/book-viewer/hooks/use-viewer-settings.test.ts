@@ -11,6 +11,7 @@ describe("useViewerSettings", () => {
     const { result } = renderHook(() => useViewerSettings());
 
     expect(result.current.showRuby).toBe(true);
+    expect(result.current.showIllustrations).toBe(true);
     expect(result.current.fontSize).toBe("xl");
   });
 
@@ -49,6 +50,7 @@ describe("useViewerSettings", () => {
   it("should load settings from localStorage", () => {
     const savedSettings = {
       showRuby: false,
+      showIllustrations: false,
       fontSize: "lg",
     };
     localStorage.setItem("viewer-settings", JSON.stringify(savedSettings));
@@ -56,6 +58,7 @@ describe("useViewerSettings", () => {
     const { result } = renderHook(() => useViewerSettings());
 
     expect(result.current.showRuby).toBe(false);
+    expect(result.current.showIllustrations).toBe(false);
     expect(result.current.fontSize).toBe("lg");
   });
 
@@ -64,11 +67,13 @@ describe("useViewerSettings", () => {
 
     act(() => {
       result.current.toggleRuby();
+      result.current.toggleIllustrations();
       result.current.setFontSize("sm");
     });
 
     const saved = JSON.parse(localStorage.getItem("viewer-settings") || "{}");
     expect(saved.showRuby).toBe(false);
+    expect(saved.showIllustrations).toBe(false);
     expect(saved.fontSize).toBe("sm");
   });
 });
