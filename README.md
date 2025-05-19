@@ -33,7 +33,7 @@ bun run illustration:claude src/books/59835_72466.mdx
    - 視覚的要素
    - 挿絵生成用プロンプト案
 
-詳細については `/src/tools/illustration-automation/README.md` を参照してください。
+詳細については `./docs/requirements.md` を参照してください。
 
 ## Docs
 
