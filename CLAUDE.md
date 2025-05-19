@@ -21,7 +21,6 @@
 bun run dev          # Start dev server (PORT=8888, Turbopack)
 bun run build        # Build production version
 bun run start        # Start production server
-bun run convertToUTF8:all  # Convert all files to UTF-8
 ```
 
 ## Test Commands
@@ -36,7 +35,6 @@ bun run test -- src/path/to/file.test.ts -t "test description"  # Run specific t
 ## Lint & Format Commands
 ```bash
 bun run lint         # Check code with Biome
-bun run lint:next    # Check with Next.js linter
 bun run format       # Auto-format with Biome
 bun run format:unsafe  # Format with unsafe rules
 ```
