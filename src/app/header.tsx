@@ -50,10 +50,8 @@ export const Header = () => {
                 <span className="sr-only">ユーザーメニュー</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className={"w-72"}>
-              <DropdownMenuItem>
-                <ViewerSettingsMenu />
-              </DropdownMenuItem>
+            <DropdownMenuContent align="end" className="w-72">
+              <ViewerSettingsMenu />
               <DropdownMenuItem>おきに入り</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
