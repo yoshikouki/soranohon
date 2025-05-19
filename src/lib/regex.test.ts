@@ -28,6 +28,13 @@ describe("Boundary tests for regex.html.ruby.captureBase", () => {
     expect(matches[0][1]).toBe("あ");
   });
 
+  it("should match ruby tag without rb", () => {
+    const text = "<ruby>漢字<rt>かんじ</rt></ruby>";
+    const matches = [...text.matchAll(regex.html.ruby.captureBase)];
+    expect(matches.length).toBe(1);
+    expect(matches[0][1]).toBe("漢字");
+  });
+
   it("should match when rb tag is very long", () => {
     const longStr = "ギャル".repeat(1000);
     const text = `<ruby><rb>${longStr}</rb></ruby>`;

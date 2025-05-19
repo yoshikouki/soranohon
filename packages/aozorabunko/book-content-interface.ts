@@ -19,8 +19,9 @@ export class SimpleBookContent implements BookContentInterface {
   }
 
   toStringWithoutTags(): string {
+    const captureBase = /<ruby>(?:<rb>)?([^<]*?)(?:<\/rb>)?(?:.|\n)*?<\/ruby>/g;
     const _contents = this.contents.map((content) =>
-      content.replace(/<ruby>.*?<rb>(.*?)<\/rb>.*?<\/ruby>/g, "$1").replace(/<[^>]*>/g, ""),
+      content.replace(captureBase, "$1").replace(/<[^>]*>/g, ""),
     );
     return _contents.join("\n\n");
   }
