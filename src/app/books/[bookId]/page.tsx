@@ -1,3 +1,4 @@
+import { ChevronLeftIcon } from "lucide-react";
 import { MDXContent } from "mdx/types";
 import { Metadata } from "next";
 import Link from "next/link";
@@ -78,7 +79,8 @@ export default async function BookPage({ params }: { params: Promise<{ bookId: s
           href={paths.home()}
           className="inline-flex items-center gap-1 py-2 font-bold text-primary transition-colors hover:text-primary/70"
         >
-          ← ほんのリストに もどる
+          <ChevronLeftIcon className="size-4" />
+          ほんのリストに もどる
         </Link>
       </div>
     </main>
