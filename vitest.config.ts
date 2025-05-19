@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
     include: ["src/**/*.test.{ts,tsx}", "packages/**/*.test.{ts,tsx}"],
-    exclude: ["**/node_modules/**"],
+    exclude: ["**/node_modules/**", "packages/aozorabunko-backup/**"],
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     env: {
