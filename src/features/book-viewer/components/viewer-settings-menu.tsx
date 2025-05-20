@@ -1,7 +1,11 @@
 "use client";
 
 import { Settings2 } from "lucide-react";
-import { DropdownMenuSeparator, DropdownMenuLabel, DropdownMenuGroup } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
@@ -18,7 +22,14 @@ const FONT_SIZE_MAP: Record<FontSize, number> = {
 const FONT_SIZE_VALUES: FontSize[] = ["sm", "base", "lg", "xl", "2xl"];
 
 export const ViewerSettingsMenu = () => {
-  const { showRuby, showIllustrations, fontSize, toggleRuby, toggleIllustrations, setFontSize } = useViewerSettings();
+  const {
+    showRuby,
+    showIllustrations,
+    fontSize,
+    toggleRuby,
+    toggleIllustrations,
+    setFontSize,
+  } = useViewerSettings();
 
   const handleSliderChange = (value: number[]) => {
     const size = FONT_SIZE_VALUES[value[0]] || "xl";
@@ -42,7 +53,11 @@ export const ViewerSettingsMenu = () => {
           <Label htmlFor="illustrations-toggle" className="font-normal text-sm">
             挿絵
           </Label>
-          <Switch id="illustrations-toggle" checked={showIllustrations} onCheckedChange={toggleIllustrations} />
+          <Switch
+            id="illustrations-toggle"
+            checked={showIllustrations}
+            onCheckedChange={toggleIllustrations}
+          />
         </div>
         <div className="pt-2">
           <Label htmlFor="font-size" className="font-normal text-sm">
