@@ -13,11 +13,12 @@ import { transformHeadings } from "./transformer/headings";
 import { transformLinks } from "./transformer/links";
 import { transformRuby } from "./transformer/ruby";
 import { getMdxOutputPath } from "./utils/path";
+import type { Metadata, AST } from "./types";
 
 /**
  * Orchestrator layer: パイプライン制御、依存注入、エラーハンドリング、ロギング
  */
-export async function run(options: CLIOptions): Promise<void> {
+export async function run(options: CLIOptions): Promise<{ mdx: string; metadata: Metadata }> {
   const inputPath = options.input;
   const outputPath = options.output ?? getMdxOutputPath(inputPath);
 
@@ -26,7 +27,7 @@ export async function run(options: CLIOptions): Promise<void> {
   const buffer = await fs.readFile(inputPath);
   const { text: html } = detectAndDecode(buffer);
 
-  const ast = parseHtml(html);
+  const ast: AST = parseHtml(html);
   const metadata = extractMetadata(ast, inputPath);
 
   const astWithHeadings = transformHeadings(ast);
@@ -39,4 +40,6 @@ export async function run(options: CLIOptions): Promise<void> {
   await fs.writeFile(outputPath, mdx, "utf-8");
 
   console.log(`Metadata: ${JSON.stringify(metadata)}`);
+
+  return { mdx, metadata };
 }

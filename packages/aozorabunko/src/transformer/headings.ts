@@ -2,7 +2,9 @@
  * 見出し変換など AST 操作
  */
 
-export function transformHeadings(ast: unknown): unknown {
+import type { AST, ASTNode } from "../types";
+
+export function transformHeadings(ast: AST | ASTNode): AST | ASTNode {
   if (
     typeof ast === "object" &&
     ast !== null &&
@@ -17,14 +19,18 @@ export function transformHeadings(ast: unknown): unknown {
         type: "heading",
         depth,
         children: (ast as any).children,
-      };
+      } as ASTNode;
     }
   }
-  if (typeof ast === "object" && ast !== null && Array.isArray((ast as any).children)) {
+  if (
+    typeof ast === "object" &&
+    ast !== null &&
+    Array.isArray((ast as any).children)
+  ) {
     return {
       ...(ast as any),
       children: (ast as any).children.map(transformHeadings),
-    };
+    } as typeof ast;
   }
   return ast;
 }

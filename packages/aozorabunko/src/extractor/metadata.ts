@@ -1,17 +1,11 @@
 import path from "path";
+import type { AST, ASTNode, Metadata } from "../types";
 
 /**
  * メタデータ（書誌情報）抽出
  */
-export interface Metadata {
-  id: string;
-  title: string;
-  creator: string;
-  translator?: string;
-  bibliographyRaw: string;
-}
 
-export function extractMetadata(ast: unknown, htmlPath?: string): Metadata {
+export function extractMetadata(ast: AST, htmlPath?: string): Metadata {
   const id = htmlPath ? path.basename(htmlPath, path.extname(htmlPath)) : "";
   let title = "";
   let creator = "";

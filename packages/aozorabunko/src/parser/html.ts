@@ -3,21 +3,21 @@
  */
 
 import { JSDOM } from "jsdom";
+import type { ASTNode, AST } from "../types";
 
 /**
  * HTML → AST parser
  * JSDOMを使用してDOMを生成し、簡易的なHASTライクなASTを返す
  */
-export function parseHtml(html: string): { type: string; children: unknown[] } {
+export function parseHtml(html: string): AST {
   const { document } = new JSDOM(html).window;
 
-  function traverse(node: Node): any {
+  function traverse(node: Node): ASTNode | null {
     if (node.nodeType === node.TEXT_NODE) {
       return { type: "text", value: node.textContent || "" };
     }
     if (node.nodeType === node.ELEMENT_NODE) {
       const el = node as Element;
-      // 属性情報を properties に保持
       const properties: Record<string, string> = {};
       for (const attr of Array.from(el.attributes)) {
         properties[attr.name] = attr.value;
@@ -26,12 +26,16 @@ export function parseHtml(html: string): { type: string; children: unknown[] } {
         type: "element",
         tagName: el.tagName.toLowerCase(),
         properties,
-        children: Array.from(el.childNodes).map(traverse).filter(Boolean),
+        children: Array.from(el.childNodes)
+          .map(traverse)
+          .filter(Boolean) as ASTNode[],
       };
     }
     return null;
   }
 
-  const children = Array.from(document.body.childNodes).map(traverse).filter(Boolean);
+  const children = Array.from(document.body.childNodes)
+    .map(traverse)
+    .filter(Boolean) as ASTNode[];
   return { type: "root", children };
 }

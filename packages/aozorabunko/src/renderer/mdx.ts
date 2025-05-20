@@ -2,7 +2,9 @@
  * AST → MDX 文字列生成
  */
 
-export function renderMdx(ast: unknown): string {
+import type { AST, ASTNode } from "../types";
+
+export function renderMdx(ast: AST | ASTNode): string {
   function serialize(node: any): string {
     if (node.type === "root" && Array.isArray(node.children)) {
       return node.children.map(serialize).join("");

@@ -2,8 +2,9 @@
  * リンク変換: <a href="..."> を MDX 出力パスに変換
  */
 import { convertUrlToFilePath } from "../utils/path";
+import type { AST, ASTNode } from "../types";
 
-export function transformLinks(ast: unknown): unknown {
+export function transformLinks(ast: AST | ASTNode): AST | ASTNode {
   if (
     typeof ast === "object" &&
     ast !== null &&
@@ -25,7 +26,7 @@ export function transformLinks(ast: unknown): unknown {
     return {
       ...el,
       children: el.children.map(transformLinks),
-    };
+    } as typeof ast;
   }
   return ast;
 }
