@@ -22,19 +22,19 @@ Refer to `CLAUDE.md` for coding principles, file naming conventions, import rule
 
 ## Dev Environment Tips
 
-- `bun run dev` — Start development server (PORT=8888, Turbopack)
-- `bun run build` — Build production version
-- `bun run start` — Start production server
+- `pnpm run dev` — Start development server (PORT=8888, Turbopack)
+- `pnpm run build` — Build production version
+- `pnpm run start` — Start production server
 
 ## Testing Instructions
 
 - Find the CI plan in `.github/workflows` folder.
-- `bun run test` — Run all tests (Vitest)
-- `bun run test:watch` — Run tests in watch mode
-- `bun run build:test` — Run tests in build mode
+- `pnpm run test` — Run all tests (Vitest)
+- `pnpm run test:watch` — Run tests in watch mode
+- `pnpm run build:test` — Run tests in build mode
 
 ## Lint & Format
 
-- `bun run lint` — Run Biome for code checks
-- `bun run format` — Auto-format with Biome
-- `bun run format:unsafe` — Format to sort classNames
+- `pnpm run lint` — Run Biome for code checks
+- `pnpm run format` — Auto-format with Biome
+- `pnpm run format:unsafe` — Format to sort classNames
