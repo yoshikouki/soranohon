@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import * as path from "path";
 import { convertHtmlUrlToFilePath, getAozoraBunkoHtmlUrl } from "./get-aozora-bunko-html-url";
 import * as getBookCardUrl from "./get-book-card-url";
 
@@ -61,11 +62,39 @@ describe("getAozoraBunkoHtmlUrl", () => {
 
 describe("convertHtmlUrlToFilePath", () => {
   it("URLからファイルパスに変換する", () => {
+    const originalEnv = process.env.AOZORA_PATH;
+    process.env.AOZORA_PATH = "/tmp/aozora";
     const url = "https://www.aozora.gr.jp/cards/001091/files/59835_72466.html";
-    const expected =
-      "/Users/yoshikouki/src/github.com/aozorabunko/aozorabunko/cards/001091/files/59835_72466.html";
+    const expected = path.join(
+      "/tmp/aozora",
+      "cards",
+      "001091",
+      "files",
+      "59835_72466.html",
+    );
 
     expect(convertHtmlUrlToFilePath(url)).toBe(expected);
+    process.env.AOZORA_PATH = originalEnv;
+  });
+
+  it("環境変数がない場合はデフォルトパスを使用する", () => {
+    const originalEnv = process.env.AOZORA_PATH;
+    delete process.env.AOZORA_PATH;
+    const url = "https://www.aozora.gr.jp/cards/001091/files/59835_72466.html";
+    const expected = path.join(
+      "/Users/yoshikouki/src/github.com/aozorabunko/aozorabunko",
+      "cards",
+      "001091",
+      "files",
+      "59835_72466.html",
+    );
+
+    expect(convertHtmlUrlToFilePath(url)).toBe(expected);
+    if (originalEnv !== undefined) {
+      process.env.AOZORA_PATH = originalEnv;
+    } else {
+      delete process.env.AOZORA_PATH;
+    }
   });
 
   it("青空文庫以外のURLの場合はエラーをスローする", () => {
