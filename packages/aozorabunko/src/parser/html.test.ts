@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseHtml } from "../../../src/parser/html";
+import { parseHtml } from "./html";
 
 describe("parseHtml", () => {
   it("parses simple HTML into HAST AST", () => {

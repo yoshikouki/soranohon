@@ -1,7 +1,7 @@
 // @ts-expect-error: no type definitions for encoding-japanese
 import Encoding from "encoding-japanese";
 import { describe, expect, it } from "vitest";
-import { detectAndDecode } from "../../../src/parser/encoding";
+import { detectAndDecode } from "./encoding";
 
 const utf8Text = "こんにちは、世界！";
 const sjisText = "こんにちは、世界！";

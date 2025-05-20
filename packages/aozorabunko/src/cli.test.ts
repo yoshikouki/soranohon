@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CLIOptions, parseCLIOptions } from "../../src/cli";
+import { CLIOptions, parseCLIOptions } from "./cli";
 
 describe("parseCLIOptions", () => {
   it("入力パスのみの場合、outputはundefinedとなる", () => {

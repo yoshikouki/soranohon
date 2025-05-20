@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractMetadata } from "../../../src/extractor/metadata";
+import { extractMetadata } from "./metadata";
 
 describe("extractMetadata", () => {
   it("returns default values when no metadata present", () => {

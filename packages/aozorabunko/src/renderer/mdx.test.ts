@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { renderMdx } from "../../../src/renderer/mdx";
+import { renderMdx } from "./mdx";
 
 describe("renderMdx", () => {
   it("returns empty string by default", () => {

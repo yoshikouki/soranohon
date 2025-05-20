@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { convertUrlToFilePath, getMdxOutputPath } from "../../../src/utils/path";
+import { convertUrlToFilePath, getMdxOutputPath } from "./path";
 
 describe("getMdxOutputPath", () => {
   it("should convert html path to src/books/<basename>.mdx", () => {

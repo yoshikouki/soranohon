@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { transformLinks } from "../../../src/transformer/links";
+import { transformLinks } from "./links";
 
 describe("transformLinks", () => {
   it("converts a href URLs to MDX output paths", () => {

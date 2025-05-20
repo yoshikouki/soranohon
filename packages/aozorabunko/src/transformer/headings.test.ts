@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { transformHeadings } from "../../../src/transformer/headings";
+import { transformHeadings } from "./headings";
 
 describe("transformHeadings", () => {
   it("returns the same AST when no headings present", () => {

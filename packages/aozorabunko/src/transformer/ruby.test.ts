@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { transformRuby } from "../../../src/transformer/ruby";
+import { transformRuby } from "./ruby";
 
 describe("transformRuby", () => {
   it("returns the same AST when no ruby present", () => {

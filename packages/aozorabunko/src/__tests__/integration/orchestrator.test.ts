@@ -1,8 +1,8 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { CLIOptions } from "../../src/cli";
-import { run } from "../../src/orchestrator";
+import type { CLIOptions } from "../../cli";
+import { run } from "../../orchestrator";
 
 const tmpDir = path.join(__dirname, "tmp");
 
