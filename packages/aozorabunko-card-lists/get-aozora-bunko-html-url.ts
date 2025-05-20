@@ -57,7 +57,8 @@ export function convertHtmlUrlToFilePath(htmlFileUrl: string): string {
     throw new Error("Unexpected URL format");
   }
 
-  return (
-    "/Users/yoshikouki/src/github.com/aozorabunko/aozorabunko/" + pathParts.slice(1).join("/")
-  );
+  const basePath =
+    process.env.AOZORA_PATH ||
+    "/Users/yoshikouki/src/github.com/aozorabunko/aozorabunko";
+  return path.join(basePath, ...pathParts.slice(1));
 }

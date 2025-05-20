@@ -61,11 +61,14 @@ describe("getAozoraBunkoHtmlUrl", () => {
 
 describe("convertHtmlUrlToFilePath", () => {
   it("URLからファイルパスに変換する", () => {
+    const originalEnv = process.env.AOZORA_PATH;
+    process.env.AOZORA_PATH = "/tmp/aozora";
     const url = "https://www.aozora.gr.jp/cards/001091/files/59835_72466.html";
     const expected =
-      "/Users/yoshikouki/src/github.com/aozorabunko/aozorabunko/cards/001091/files/59835_72466.html";
+      "/tmp/aozora/cards/001091/files/59835_72466.html";
 
     expect(convertHtmlUrlToFilePath(url)).toBe(expected);
+    process.env.AOZORA_PATH = originalEnv;
   });
 
   it("青空文庫以外のURLの場合はエラーをスローする", () => {
