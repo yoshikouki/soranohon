@@ -15,6 +15,7 @@ describe("detectAndDecode", () => {
     const { text } = detectAndDecode(utf8Buffer);
     expect(text).toBe(utf8Text);
   });
+
   it("should decode Shift_JIS buffer", () => {
     const { text } = detectAndDecode(sjisBuffer);
     expect(text).toBe(sjisText);
