@@ -1,10 +1,11 @@
 # soranohon
 
-soranohon は、青空文庫の児童文学を子どもに読みやすいように提供するサービスです。
+soranohon は、Next.js と TypeScript を使用して構築された、青空文庫の児童文学を子どもに読みやすいように提供するサービスです。
+主な目的は、古典的な日本の児童文学へのアクセスを容易にし、若い読者にとって魅力的な読書体験を提供することです。
 
-## 挿絵計画機能
+## 挿絵計画機能 (Illustration Planning Feature)
 
-このプロジェクトには、物語から挿絵計画を自動的に生成する機能が含まれています。
+このプロジェクトの主要な機能の一つとして、物語から挿絵計画を自動的に生成する機能が含まれています。
 
 ### 使い方
 
@@ -48,18 +49,16 @@ src/
 ├── app/                    # Next.js App Router directory
 │   ├── layout.tsx         # Root layout with providers and global components
 │   ├── page.tsx           # Root page
-│   ├── main-navigation.tsx # App-specific navigation component
-│   └── [feature]/         # Feature-specific pages and routes
+│   └── [feature]/         # Feature-specific pages and routes (e.g., src/app/books/[bookId]/page.tsx)
 │       ├── page.tsx       # Feature main page
 │       └── [...]/         # Additional feature pages
-├── components/            # Shared UI components (e.g., Button, Card)
+├── components/            # Shared UI components (e.g., Button, Card) - currently empty or not heavily used
 ├── features/             # Feature-specific business logic and components
-│   └── [feature]/
-│       ├── components/   # Feature-specific UI components
-│       └── *.ts         # Feature-specific business logic, types, and utilities
-└── lib/                 # Shared utilities and configurations
-    ├── db/             # Database configuration and schema
-    └── utils.ts        # Shared utility functions
+│   └── [feature]/         # Example: src/features/book-viewer/
+│       ├── components/   # Feature-specific UI components (e.g., book-viewer/components/viewer-settings-menu.tsx)
+│       ├── *.ts          # Feature-specific logic, types, hooks, or utilities (e.g., book-viewer/book-viewer.tsx, illustration-generator/prompts.ts)
+│       └── [subfolder]/  # Other feature-specific subfolders (e.g., book-viewer/hooks/, illustration-generator/services/)
+└── lib/                 # Shared utilities, configurations, and helper functions (e.g., fs.ts, logger.ts, utils.ts)
 ```
 
 ### Package by Feature
@@ -139,25 +138,25 @@ src/app/
 3. **Features (`src/features/`)**
    - Organized by feature/domain
    - Contains all feature-specific code
-   - Only UI components are separated into a `components/` directory
-   - Other feature-specific code (business logic, types, utilities) lives directly in the feature directory
+   - Feature-specific UI components are typically in a `components/` sub-directory.
+   - Other feature-specific code (business logic, types, hooks, services, repositories, utilities etc.) might live directly in the feature directory (e.g., `feature-name.ts`) or be organized into further sub-directories like `hooks/`, `services/`, `utils/` depending on complexity.
    - Each feature is self-contained and can be moved/refactored easily
 
 4. **Shared Libraries (`src/lib/`)**
-   - Shared utilities, configurations, and types
-   - Database and external service configurations
-   - Helper functions used across features
+   - Shared utilities, configurations, and types (e.g., `src/lib/fs.ts`, `src/lib/logger.ts`).
+   - Helper functions used across features.
+   - Does not currently contain database (`db/`) specific configurations as previously mentioned.
 
 ### File Naming Conventions
 
-- React Components: kebab-case (e.g., `login-button.tsx`)
-- Other files: kebab-case (e.g., `main-navigation.tsx`, `use-auth.ts`)
-- Next.js special files: as per Next.js conventions (e.g., `layout.tsx`, `page.tsx`)
+- React Components: kebab-case (e.g., `login-button.tsx`, `book-viewer.tsx`).
+- Other files (including hooks): kebab-case (e.g., `use-viewer-settings.ts`, `fs.ts`).
+- Next.js special files: as per Next.js conventions (e.g., `layout.tsx`, `page.tsx`, `route.ts`).
 
 ### Import Conventions
 
 - Use absolute imports with `@/` prefix for non-relative imports
 - Use relative imports for files within the same feature/module
 - Keep import paths as short as possible while maintaining clarity
-- **NEVER use index.ts** files for re-exporting - import directly from the source files
-- Avoid barrel exports to prevent circular dependency issues
+- Avoid using `index.ts` files for re-exporting within `src/features` and `src/components` to prevent potential circular dependency issues. Import directly from source files in these cases. Their use in other areas like `packages/` (e.g. `packages/aozorabunko/index.ts`) or for simple data aggregation might be acceptable.
+- Avoid barrel exports to prevent circular dependency issues, especially within the `src/` directory.
