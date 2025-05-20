@@ -1,5 +1,5 @@
 import path from "path";
-import type { AST, Metadata } from "../types";
+import type { AST, ASTNode, ElementNode, Metadata, RootNode, TextNode } from "../types";
 
 /**
  * メタデータ（書誌情報）抽出
@@ -12,25 +12,23 @@ export function extractMetadata(ast: AST, htmlPath?: string): Metadata {
   let translator: string | undefined;
   let bibliographyRaw = "";
 
-  function extractText(nodes: any[]): string {
+  function extractText(nodes: ASTNode[]): string {
     return nodes
       .map((node) => {
-        if (node && typeof node === "object") {
-          if (node.type === "text" && typeof (node as any).value === "string") {
-            return (node as any).value;
-          }
-          if (Array.isArray((node as any).children)) {
-            return extractText((node as any).children);
-          }
+        if (node.type === "text") {
+          return node.value;
+        }
+        if ("children" in node) {
+          return extractText(node.children);
         }
         return "";
       })
       .join("");
   }
 
-  function traverse(node: any): void {
-    if (node && typeof node === "object" && node.type === "element") {
-      const { tagName, properties, children } = node;
+  function traverse(node: ASTNode | RootNode): void {
+    if (node.type === "element") {
+      const { tagName, properties, children } = node as ElementNode;
       const className = properties?.class;
       if (tagName === "h1" && !title) {
         title = extractText(children);
@@ -43,18 +41,18 @@ export function extractMetadata(ast: AST, htmlPath?: string): Metadata {
         className === "bibliographical_information" &&
         !bibliographyRaw
       ) {
-        const lines = (children as any[])
-          .filter((n) => n.type === "text" && typeof n.value === "string")
+        const lines = children
+          .filter((n): n is TextNode => n.type === "text")
           .map((n) => n.value.trim());
         bibliographyRaw = lines.join("\n");
       }
     }
-    if (node && typeof node === "object" && Array.isArray((node as any).children)) {
-      (node as any).children.forEach(traverse);
+    if ("children" in node) {
+      node.children.forEach(traverse);
     }
   }
 
-  traverse(ast as any);
+  traverse(ast);
 
   return { id, title, creator, translator, bibliographyRaw };
 }
