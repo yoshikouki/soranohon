@@ -7,26 +7,21 @@ import { convertUrlToFilePath } from "../utils/path";
 
 export function transformLinks(ast: AST | ASTNode): AST | ASTNode {
   if (
-    typeof ast === "object" &&
-    ast !== null &&
-    (ast as any).type === "element" &&
-    (ast as any).tagName === "a" &&
-    typeof (ast as any).properties === "object" &&
-    typeof (ast as any).properties.href === "string"
+    ast.type === "element" &&
+    ast.tagName === "a" &&
+    typeof ast.properties?.href === "string"
   ) {
-    const el = ast as any;
-    const newHref = convertUrlToFilePath(el.properties.href);
+    const newHref = convertUrlToFilePath(ast.properties.href);
     return {
-      ...el,
-      properties: { ...el.properties, href: newHref },
-      children: Array.isArray(el.children) ? el.children.map(transformLinks) : el.children,
+      ...ast,
+      properties: { ...ast.properties, href: newHref },
+      children: ast.children.map(transformLinks),
     };
   }
-  if (typeof ast === "object" && ast !== null && Array.isArray((ast as any).children)) {
-    const el = ast as any;
+  if ("children" in ast) {
     return {
-      ...el,
-      children: el.children.map(transformLinks),
+      ...ast,
+      children: ast.children.map(transformLinks),
     } as typeof ast;
   }
   return ast;

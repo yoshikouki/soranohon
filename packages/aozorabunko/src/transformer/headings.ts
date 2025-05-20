@@ -5,27 +5,21 @@
 import type { AST, ASTNode } from "../types";
 
 export function transformHeadings(ast: AST | ASTNode): AST | ASTNode {
-  if (
-    typeof ast === "object" &&
-    ast !== null &&
-    (ast as any).type === "element" &&
-    typeof (ast as any).tagName === "string"
-  ) {
-    const tag = (ast as any).tagName;
-    const match = tag.match(/^h([1-6])$/);
+  if (ast.type === "element") {
+    const match = ast.tagName.match(/^h([1-6])$/);
     if (match) {
       const depth = parseInt(match[1], 10);
       return {
         type: "heading",
         depth,
-        children: (ast as any).children,
+        children: ast.children,
       } as ASTNode;
     }
   }
-  if (typeof ast === "object" && ast !== null && Array.isArray((ast as any).children)) {
+  if ("children" in ast) {
     return {
-      ...(ast as any),
-      children: (ast as any).children.map(transformHeadings),
+      ...ast,
+      children: ast.children.map(transformHeadings),
     } as typeof ast;
   }
   return ast;

@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
+import type { AST } from "../types";
 import { extractMetadata } from "./metadata";
 
 describe("extractMetadata", () => {
   it("returns default values when no metadata present", () => {
-    const ast = { type: "root", children: [] };
-    const meta = extractMetadata(ast as any);
+    const ast: AST = { type: "root", children: [] };
+    const meta = extractMetadata(ast);
     expect(meta).toEqual({
       id: "",
       title: "",
@@ -15,7 +16,7 @@ describe("extractMetadata", () => {
   });
 
   it("extracts id, title, creator, translator, and bibliographyRaw", () => {
-    const ast = {
+    const ast: AST = {
       type: "root",
       children: [
         {
@@ -47,7 +48,7 @@ describe("extractMetadata", () => {
         },
       ],
     };
-    const meta = extractMetadata(ast as any, "/path/to/123_456.html");
+    const meta = extractMetadata(ast, "/path/to/123_456.html");
     expect(meta).toEqual({
       id: "123_456",
       title: "My Book Title",

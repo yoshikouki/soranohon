@@ -2,27 +2,22 @@
  * ルビ処理等 AST 操作
  */
 
-import type { AST, ASTNode } from "../types";
+import type { AST, ASTNode, ElementNode, TextNode } from "../types";
 
 export function transformRuby(ast: AST | ASTNode): AST | ASTNode {
-  if (
-    typeof ast === "object" &&
-    ast !== null &&
-    (ast as any).type === "element" &&
-    (ast as any).tagName === "ruby" &&
-    Array.isArray((ast as any).children)
-  ) {
-    const children = (ast as any).children as ASTNode[];
-    const baseNodes = children.filter(
-      (node) => !(node.type === "element" && (node.tagName as string).toLowerCase() === "rt"),
+  if (ast.type === "element" && ast.tagName === "ruby") {
+    const baseNodes = ast.children.filter(
+      (node) => !(node.type === "element" && node.tagName.toLowerCase() === "rt"),
     );
-    const rtNode = children.find(
-      (node) => node.type === "element" && (node.tagName as string).toLowerCase() === "rt",
-    ) as any | undefined;
+    const rtNode = ast.children.find(
+      (node): node is ElementNode =>
+        node.type === "element" && node.tagName.toLowerCase() === "rt",
+    );
     let kana = "";
-    if (rtNode && Array.isArray(rtNode.children)) {
+    if (rtNode) {
       kana = rtNode.children
-        .map((c: any) => (c.type === "text" && typeof c.value === "string" ? c.value : ""))
+        .filter((c): c is TextNode => c.type === "text")
+        .map((c) => c.value)
         .join("");
     }
     return {
@@ -32,10 +27,10 @@ export function transformRuby(ast: AST | ASTNode): AST | ASTNode {
       children: baseNodes.map(transformRuby),
     } as ASTNode;
   }
-  if (typeof ast === "object" && ast !== null && Array.isArray((ast as any).children)) {
+  if ("children" in ast) {
     return {
-      ...(ast as any),
-      children: (ast as any).children.map(transformRuby),
+      ...ast,
+      children: ast.children.map(transformRuby),
     } as typeof ast;
   }
   return ast;
