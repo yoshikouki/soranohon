@@ -22,11 +22,7 @@ export function transformHeadings(ast: AST | ASTNode): AST | ASTNode {
       } as ASTNode;
     }
   }
-  if (
-    typeof ast === "object" &&
-    ast !== null &&
-    Array.isArray((ast as any).children)
-  ) {
+  if (typeof ast === "object" && ast !== null && Array.isArray((ast as any).children)) {
     return {
       ...(ast as any),
       children: (ast as any).children.map(transformHeadings),

@@ -1,8 +1,9 @@
 /**
  * リンク変換: <a href="..."> を MDX 出力パスに変換
  */
-import { convertUrlToFilePath } from "../utils/path";
+
 import type { AST, ASTNode } from "../types";
+import { convertUrlToFilePath } from "../utils/path";
 
 export function transformLinks(ast: AST | ASTNode): AST | ASTNode {
   if (

@@ -1,5 +1,5 @@
 import path from "path";
-import type { AST, ASTNode, Metadata } from "../types";
+import type { AST, Metadata } from "../types";
 
 /**
  * メタデータ（書誌情報）抽出

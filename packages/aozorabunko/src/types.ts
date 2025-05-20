@@ -36,4 +36,3 @@ export interface Metadata {
   translator?: string;
   bibliographyRaw: string;
 }
-

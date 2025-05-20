@@ -3,7 +3,7 @@
  */
 
 import { JSDOM } from "jsdom";
-import type { ASTNode, AST } from "../types";
+import type { AST, ASTNode } from "../types";
 
 /**
  * HTML → AST parser
@@ -26,9 +26,7 @@ export function parseHtml(html: string): AST {
         type: "element",
         tagName: el.tagName.toLowerCase(),
         properties,
-        children: Array.from(el.childNodes)
-          .map(traverse)
-          .filter(Boolean) as ASTNode[],
+        children: Array.from(el.childNodes).map(traverse).filter(Boolean) as ASTNode[],
       };
     }
     return null;
