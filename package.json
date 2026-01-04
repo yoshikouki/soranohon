@@ -10,7 +10,7 @@
     "build": "next build",
     "build:test": "NEXT_DIST_DIR=.next-build next build && git checkout -- tsconfig.json || git checkout -- tsconfig.json",
     "start": "next start",
-    "lint:next": "next lint",
+    "lint:next": "eslint .",
     "lint": "biome check .",
     "format": "biome check --write .",
     "format:unsafe": "biome check --write --unsafe .",
@@ -29,7 +29,7 @@
     "@hookform/resolvers": "^5.0.1",
     "@mdx-js/loader": "^3.1.0",
     "@mdx-js/react": "^3.1.0",
-    "@next/mdx": "15.3.1",
+    "@next/mdx": "16.1.1",
     "@radix-ui/react-accordion": "^1.2.8",
     "@radix-ui/react-alert-dialog": "^1.1.11",
     "@radix-ui/react-aspect-ratio": "^1.1.4",
@@ -71,11 +71,11 @@
     "input-otp": "^1.4.2",
     "lucide-react": "^0.509.0",
     "motion": "^12.9.2",
-    "next": "15.3.1",
+    "next": "16.1.1",
     "next-themes": "^0.4.6",
-    "react": "^19.0.0",
+    "react": "19.2.3",
     "react-day-picker": "8.10.1",
-    "react-dom": "^19.0.0",
+    "react-dom": "19.2.3",
     "react-hook-form": "^7.56.1",
     "react-resizable-panels": "^2.1.8",
     "recharts": "^2.15.3",
@@ -97,11 +97,13 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/encoding-japanese": "^2.2.1",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
     "@types/unzipper": "^0.10.11",
     "@types/uuid": "^10.0.0",
     "@vitest/coverage-v8": "3.1.2",
+    "eslint": "^9.39.2",
+    "eslint-config-next": "16.1.1",
     "jsdom": "^26.1.0",
     "knip": "^5.53.0",
     "tailwindcss": "^4",
@@ -110,5 +112,11 @@
     "typescript": "^5",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.1.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.2.7",
+      "@types/react-dom": "19.2.3"
+    }
   }
 }
