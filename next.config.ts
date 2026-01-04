@@ -4,14 +4,11 @@ import rehypeUnwrapImages from "rehype-unwrap-images";
 
 const nextConfig: NextConfig = {
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
-  experimental: {
-    reactCompiler: true,
-  },
+  reactCompiler: true,
   distDir: process.env.NEXT_DIST_DIR || ".next",
 };
 
 const withMDX = createMDX({
-  // 必要に応じて remark/rehype プラグインを追加可能
   options: {
     remarkPlugins: [],
     rehypePlugins: [rehypeUnwrapImages],
